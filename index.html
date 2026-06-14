@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мой Магазин</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
+        .card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; width: 200px; }
+    </style>
+</head>
+<body>
+    <div id="shop">Загрузка товаров...</div>
+    <script>
+        // Твой API адрес здесь
+        const apiUrl = '[https://my-strapi-project-production-7ebd.up.railway.app/api/models](https://my-strapi-project-production-7ebd.up.railway.app/api/models)'; 
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const shopDiv = document.getElementById('shop');
+                shopDiv.innerHTML = '';
+                data.data.forEach(item => {
+                    shopDiv.innerHTML += `
+                        <div class="card">
+                            <h3>${item.Title}</h3>
+                            <p>Цена: ${item.Price}$</p>
+                        </div>
+                    `;
+                });
+            });
+    </script>
+</body>
+</html>
