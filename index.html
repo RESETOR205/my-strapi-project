@@ -18,14 +18,28 @@
             .then(data => {
                 const shopDiv = document.getElementById('shop');
                 shopDiv.innerHTML = '';
-                data.data.forEach(item => {
-                    shopDiv.innerHTML += `
-                        <div class="card">
-                            <h3>${item.Title}</h3>
-                            <p>Цена: ${item.Price}$</p>
-                        </div>
-                    `;
-                });
+                
+                // Проверяем, что данные пришли в правильном формате
+                if (data && data.data) {
+                    data.data.forEach(item => {
+                        // Strapi прячет поля внутрь attributes
+                        const title = item.attributes ? item.attributes.Title : (item.Title || 'Без названия');
+                        const price = item.attributes ? item.attributes.Price : (item.Price || '0');
+                        
+                        shopDiv.innerHTML += `
+                            <div class="card">
+                                <h3>${title}</h3>
+                                <p>Цена: ${price}$</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    shopDiv.innerHTML = 'Товары не найдены или база пуста';
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                document.getElementById('shop').innerHTML = 'Ошибка загрузки данных';
             });
     </script>
 </body>
