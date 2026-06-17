@@ -1,17 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Мой Магазин</title>
-    <style>
-        body { font-family: sans-serif; display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
-        .card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; width: 200px; }
-    </style>
-</head>
-<body>
-    <div id="shop">Загрузка товаров...</div>
-    <script>
+<script>
         // Твой API адрес здесь
-        const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models';
+        const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
 
         fetch(apiUrl)
             .then(response => response.json())
@@ -19,17 +8,36 @@
                 const shopDiv = document.getElementById('shop');
                 shopDiv.innerHTML = '';
                 
-                // Проверяем, что данные пришли в правильном формате
                 if (data && data.data) {
                     data.data.forEach(item => {
-                        // Strapi прячет поля внутрь attributes
-                        const title = item.attributes ? item.attributes.Title : (item.Title || 'Без названия');
-                        const price = item.attributes ? item.attributes.Price : (item.Price || '0');
+                        const attrs = item.attributes || item;
+                        
+                        const title = attrs.Title || 'Без названия';
+                        const price = attrs.Price || '0';
+                        
+                        // Логика поиска картинки в системе Strapi v4/v5
+                        let imgUrl = 'https://placehold.co/200x150?text=No+Image'; // Картинка-заглушка
+                        
+                        if (attrs.Previews && attrs.Previews.data) {
+                            // Если это одиночное или первое медиа в массиве
+                            const mediaData = Array.isArray(attrs.Previews.data) ? attrs.Previews.data[0] : attrs.Previews.data;
+                            if (mediaData && mediaData.attributes && mediaData.attributes.url) {
+                                imgUrl = mediaData.attributes.url;
+                            } else if (mediaData && mediaData.url) {
+                                imgUrl = mediaData.url;
+                            }
+                        }
+
+                        // Если Strapi дал относительный путь (например, /uploads/...), склеиваем его с адресом сервера
+                        if (imgUrl.startsWith('/uploads/')) {
+                            imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
+                        }
                         
                         shopDiv.innerHTML += `
                             <div class="card">
+                                <img src="${imgUrl}" alt="${title}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 10px;">
                                 <h3>${title}</h3>
-                                <p>Цена: ${price}$</p>
+                                <p>Price: ${price}$</p>
                             </div>
                         `;
                     });
@@ -42,5 +50,3 @@
                 document.getElementById('shop').innerHTML = 'Ошибка загрузки данных';
             });
     </script>
-</body>
-</html>
