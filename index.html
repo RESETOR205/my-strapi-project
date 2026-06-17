@@ -11,7 +11,8 @@
     <div id="shop">Загрузка товаров...</div>
     <script>
         // Твой API адрес здесь
-            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/products';
+        const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/products';
+
         fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
