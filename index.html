@@ -5,166 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Market | Витрина</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fafafa;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        h1 {
-            text-align: center;
-            color: #111;
-            font-weight: 700;
-            margin-bottom: 30px;
-        }
-
-        /* Сетка товаров как на CGTrader */
-        #shop {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 25px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Стильная карточка товара */
-        .card {
-            background: #ffffff;
-            border: 1px solid #eef0f2;
-            border-radius: 12px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
-        }
-
-        .card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 8px;
-            background-color: #f0f2f5;
-            margin-bottom: 12px;
-        }
-
-        .card-info {
-            text-align: left;
-            margin-bottom: 15px;
-        }
-
-        .card h3 {
-            font-size: 1.05rem;
-            margin: 0 0 6px 0;
-            color: #1a1a1a;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .card .price {
-            font-size: 1.15rem;
-            color: #2b6cb0;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .buy-btn {
-            background: #2b6cb0;
-            color: white;
-            border: none;
-            padding: 11px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.15s ease;
-        }
-
-        .buy-btn:hover {
-            background: #1a4975;
-        }
-
-        .loading {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #666;
-            grid-column: 1 / -1;
-            padding: 50px 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0f111a; color: #fff; padding: 20px; }
+        
+        /* ШАПКА САЙТА И ПРОФИЛЬ (Слайд 4 и 5) */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
+        h1 { color: #fff; font-size: 28px; }
+        
+        .profile-area { position: relative; display: flex; align-items: center; cursor: pointer; }
+        .avatar-circle { width: 45px; height: 45px; background: #4f46e5; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; }
+        
+        /* ВЫПАДАЮЩЕЕ МЕНЮ ИЗ 5 СТРОК (Слайд 5) */
+        .profile-dropdown { display: none; position: absolute; top: 55px; right: 0; background: #1a1d29; border: 1px solid #334155; border-radius: 12px; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 100; overflow: hidden; }
+        .profile-area:hover .profile-dropdown { display: block; }
+        
+        .dropdown-item { padding: 12px 16px; font-size: 14px; color: #94a3b8; border-bottom: 1px solid #27273a; transition: background 0.2s, color 0.2s; text-decoration: none; display: block; }
+        .dropdown-item:hover { background: #24283b; color: #fff; }
+        .dropdown-item.user-name { font-weight: bold; color: #4f46e5; background: #131520; }
+        
+        .auth-btn { background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
+        
+        /* СЕТКА С КАРТОЧКАМИ (Слайд 4) */
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+        .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-decoration: none; color: inherit; transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
+        
+        /* Эффект увеличения при наведении */
+        .product-card:hover { transform: scale(1.06); box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); }
+        
+        .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; }
+        .product-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
+        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
+        
+        .error-text { color: #ef4444; text-align: center; margin-top: 40px; font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <h1>Витрина 3D Моделей</h1>
-    <div id="shop"><div class="loading">Загрузка моделей...</div></div>
+    <header>
+        <h1>Витрина 3D Моделей</h1>
+        <div id="navigation-zone"></div>
+    </header>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
+    <div id="products-box" class="products-grid">
+        <p style="color: #94a3b8;">Загрузка моделей с сервера...</p>
+    </div>
 
-            fetch(apiUrl)
-                .then(response => {
-                    if (!response.ok) throw new Error('Ошибка сети (403/400)');
-                    return response.json();
-                })
-                .then(data => {
-                    const shopDiv = document.getElementById('shop');
-                    shopDiv.innerHTML = '';
-                    
-                    if (data && data.data && data.data.length > 0) {
-                        data.data.forEach(item => {
-                            const title = item.Title || 'Без названия';
-                            const price = item.Price || '0';
-                            const productId = item.documentId || item.id;
-                            
-                            let imgUrl = 'https://placehold.co/240x180?text=No+Preview';
-                            
-                            if (item.Previews && item.Previews.length > 0) {
-                                imgUrl = item.Previews[0].url || imgUrl;
-                            } else if (item.Previews && item.Previews.url) {
-                                imgUrl = item.Previews.url;
-                            }
-                            
-                            if (imgUrl.startsWith('/uploads/')) {
-                                imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
-                            }
-                            
-                            // При клике на карточку открывается product.html?id=ID_ТОВАРА
-                            shopDiv.innerHTML += `
-                                <div class="card" onclick="location.href='product.html?id=${productId}'">
-                                    <img src="${imgUrl}" alt="${title}">
-                                    <div class="card-info">
-                                        <h3>${title}</h3>
-                                        <p class="price">${price}$</p>
-                                    </div>
-                                    <button class="buy-btn" onclick="event.stopPropagation(); addToCart('${productId}')">В корзину</button>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        shopDiv.innerHTML = '<div class="loading">Товары не найдены</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    document.getElementById('shop').innerHTML = '<div class="loading" style="color: #c53030;">Ошибка загрузки бэкенда. Проверьте права Public в Strapi.</div>';
-                });
-        });
+<script>
+    const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
 
-        function addToCart(id) {
-            alert('Товар добавлен в корзину! ID: ' + id);
+    // 1. ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ВХОДЕ (Слайд 1)
+    document.addEventListener("DOMContentLoaded", function() {
+        const userStatus = localStorage.getItem('userStatus');
+        
+        // Если пользователь зашел вообще впервые — отправляем на auth.html
+        if (!userStatus) {
+            window.location.href = 'auth.html';
+            return;
         }
-    </script>
+
+        renderHeader();
+        loadProducts();
+    });
+
+    // 2. ОТРИСОВКА ШАПКИ (Слайд 4 и 5)
+    function renderHeader() {
+        const zone = document.getElementById('navigation-zone');
+        const status = localStorage.getItem('userStatus');
+        const username = localStorage.getItem('username') || 'Креатор';
+
+        if (status === 'user') {
+            const firstLetter = username.charAt(0).toUpperCase();
+            zone.innerHTML = `
+                <div class="profile-area">
+                    <div class="avatar-circle">${firstLetter}</div>
+                    <div class="profile-dropdown">
+                        <div class="dropdown-item user-name">@${username}</div>
+                        <a href="profile.html" class="dropdown-item">Мой профиль (ЛК)</a>
+                        <a href="#" onclick="openSupport()" class="dropdown-item">Поддержка (Бот)</a>
+                        <a href="#" class="dropdown-item">Мои покупки</a>
+                        <a href="#" onclick="handleLogout()" class="dropdown-item" style="color: #ef4444;">Выйти</a>
+                    </div>
+                </div>
+            `;
+        } else {
+            zone.innerHTML = `<a href="auth.html" class="auth-btn">Sign In / Sign Up</a>`;
+        }
+    }
+
+    // 3. ЗАГРУЗКА ТОВАРОВ
+    async function loadProducts() {
+        const box = document.getElementById('products-box');
+        try {
+            const res = await fetch(`${STRAPI_URL}/api/models?populate=*`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+
+            if(!data.data || data.data.length === 0) {
+                box.innerHTML = `<p style="color: #94a3b8; grid-column: 1/-1; text-align: center;">Товаров пока нет.</p>`;
+                return;
+            }
+
+            box.innerHTML = '';
+            data.data.forEach(item => {
+                const title = item.Title || 'Без названия';
+                const price = item.Price ? `${item.Price} ₽` : 'Бесплатно';
+                
+                let imgUrl = 'https://placehold.co/600x400/1a1d29/fff?text=3D+Model';
+                if(item.Previews && item.Previews[0]) {
+                    imgUrl = STRAPI_URL + item.Previews[0].url;
+                }
+
+                box.innerHTML += `
+                    <a href="product.html?id=${item.documentId}" class="product-card">
+                        <img src="${imgUrl}" class="product-img" alt="${title}">
+                        <div class="product-info">
+                            <h3 class="product-title">${title}</h3>
+                            <div class="product-price">${price}</div>
+                        </div>
+                    </a>
+                `;
+            });
+        } catch (err) {
+            box.innerHTML = `<div class="error-text" style="grid-column: 1/-1;">Ошибка загрузки бэкенда. Проверьте права Public в Strapi и нажмите кнопку Save!</div>`;
+        }
+    }
+
+    function handleLogout() {
+        localStorage.clear();
+        window.location.href = 'auth.html';
+    }
+
+    function openSupport() {
+        alert('Система поддержки: Бот активирован. Напишите ваш запрос в чат!');
+    }
+</script>
 </body>
 </html>
