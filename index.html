@@ -58,7 +58,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // В Strapi v5 запрашиваем конкретное поле Previews через populate
-            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate[Previews]=*';
+            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
 
             fetch(apiUrl)
                 .then(response => response.json())
