@@ -53,44 +53,35 @@
 <body>
 
     <h1>Витрина товаров</h1>
-
     <div id="shop">Загрузка товаров...</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
+            // В Strapi v5 запрашиваем конкретное поле Previews через populate
+            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate[Previews]=*';
 
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
                     const shopDiv = document.getElementById('shop');
-                    if (!shopDiv) {
-                        console.error('Элемент #shop не найден!');
-                        return;
-                    }
-                    
                     shopDiv.innerHTML = '';
                     
                     if (data && data.data && data.data.length > 0) {
                         data.data.forEach(item => {
-                            const attrs = item.attributes || item;
-                            const title = attrs.Title || 'Без названия';
-                            const price = attrs.Price || '0';
+                            // В Strapi v5 данные могут лежать в корне объекта, а не в attributes
+                            const title = item.Title || 'Без названия';
+                            const price = item.Price || '0';
                             
-                            // Заглушка, если картинки нет
                             let imgUrl = 'https://placehold.co/200x150?text=No+Image';
                             
-                            // Проверка картинок для разных версий Strapi
-                            if (attrs.Previews && attrs.Previews.data) {
-                                const mediaData = Array.isArray(attrs.Previews.data) ? attrs.Previews.data[0] : attrs.Previews.data;
-                                if (mediaData && mediaData.attributes && mediaData.attributes.url) {
-                                    imgUrl = mediaData.attributes.url;
-                                } else if (mediaData && mediaData.url) {
-                                    imgUrl = mediaData.url;
-                                }
+                            // Проверяем массив Previews напрямую в объекте (специфика Strapi v5)
+                            if (item.Previews && item.Previews.length > 0) {
+                                imgUrl = item.Previews[0].url || imgUrl;
+                            } else if (item.Previews && item.Previews.url) {
+                                imgUrl = item.Previews.url;
                             }
-
-                            // Если путь относительный (/uploads/...), соединяем с Railway бэкендом
+                            
+                            // Если путь относительный, склеиваем с урлом Railway
                             if (imgUrl.startsWith('/uploads/')) {
                                 imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
                             }
@@ -104,15 +95,12 @@
                             `;
                         });
                     } else {
-                        shopDiv.innerHTML = 'Товары не найдены или база данных пуста';
+                        shopDiv.innerHTML = 'Товары не найдены';
                     }
                 })
                 .catch(error => {
                     console.error('Ошибка:', error);
-                    const shopDiv = document.getElementById('shop');
-                    if (shopDiv) {
-                        shopDiv.innerHTML = 'Ошибка загрузки данных с сервера';
-                    }
+                    document.getElementById('shop').innerHTML = 'Ошибка загрузки данных';
                 });
         });
     </script>
