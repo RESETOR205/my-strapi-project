@@ -1,52 +1,120 @@
-<script>
-        // Твой API адрес здесь
-        const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Магазин</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #shop {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 16px;
+            width: 220px;
+            text-align: center;
+        }
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            background-color: #eee;
+        }
+        .card h3 {
+            margin: 10px 0 5px 0;
+            font-size: 1.2rem;
+            color: #222;
+        }
+        .card p {
+            font-size: 1rem;
+            color: #666;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
 
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                const shopDiv = document.getElementById('shop');
-                shopDiv.innerHTML = '';
-                
-                if (data && data.data) {
-                    data.data.forEach(item => {
-                        const attrs = item.attributes || item;
-                        
-                        const title = attrs.Title || 'Без названия';
-                        const price = attrs.Price || '0';
-                        
-                        // Логика поиска картинки в системе Strapi v4/v5
-                        let imgUrl = 'https://placehold.co/200x150?text=No+Image'; // Картинка-заглушка
-                        
-                        if (attrs.Previews && attrs.Previews.data) {
-                            // Если это одиночное или первое медиа в массиве
-                            const mediaData = Array.isArray(attrs.Previews.data) ? attrs.Previews.data[0] : attrs.Previews.data;
-                            if (mediaData && mediaData.attributes && mediaData.attributes.url) {
-                                imgUrl = mediaData.attributes.url;
-                            } else if (mediaData && mediaData.url) {
-                                imgUrl = mediaData.url;
+    <h1>Витрина товаров</h1>
+
+    <div id="shop">Загрузка товаров...</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const shopDiv = document.getElementById('shop');
+                    if (!shopDiv) {
+                        console.error('Элемент #shop не найден!');
+                        return;
+                    }
+                    
+                    shopDiv.innerHTML = '';
+                    
+                    if (data && data.data && data.data.length > 0) {
+                        data.data.forEach(item => {
+                            const attrs = item.attributes || item;
+                            const title = attrs.Title || 'Без названия';
+                            const price = attrs.Price || '0';
+                            
+                            // Заглушка, если картинки нет
+                            let imgUrl = 'https://placehold.co/200x150?text=No+Image';
+                            
+                            // Проверка картинок для разных версий Strapi
+                            if (attrs.Previews && attrs.Previews.data) {
+                                const mediaData = Array.isArray(attrs.Previews.data) ? attrs.Previews.data[0] : attrs.Previews.data;
+                                if (mediaData && mediaData.attributes && mediaData.attributes.url) {
+                                    imgUrl = mediaData.attributes.url;
+                                } else if (mediaData && mediaData.url) {
+                                    imgUrl = mediaData.url;
+                                }
                             }
-                        }
 
-                        // Если Strapi дал относительный путь (например, /uploads/...), склеиваем его с адресом сервера
-                        if (imgUrl.startsWith('/uploads/')) {
-                            imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
-                        }
-                        
-                        shopDiv.innerHTML += `
-                            <div class="card">
-                                <img src="${imgUrl}" alt="${title}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 10px;">
-                                <h3>${title}</h3>
-                                <p>Price: ${price}$</p>
-                            </div>
-                        `;
-                    });
-                } else {
-                    shopDiv.innerHTML = 'Товары не найдены или база пуста';
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                document.getElementById('shop').innerHTML = 'Ошибка загрузки данных';
-            });
+                            // Если путь относительный (/uploads/...), соединяем с Railway бэкендом
+                            if (imgUrl.startsWith('/uploads/')) {
+                                imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
+                            }
+                            
+                            shopDiv.innerHTML += `
+                                <div class="card">
+                                    <img src="${imgUrl}" alt="${title}">
+                                    <h3>${title}</h3>
+                                    <p>Цена: ${price}$</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        shopDiv.innerHTML = 'Товары не найдены или база данных пуста';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    const shopDiv = document.getElementById('shop');
+                    if (shopDiv) {
+                        shopDiv.innerHTML = 'Ошибка загрузки данных с сервера';
+                    }
+                });
+        });
     </script>
+</body>
+</html>
