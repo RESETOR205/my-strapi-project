@@ -3,106 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Магазин</title>
+    <title>3D Market</title>
     <style>
+        /* Базовые стили для чистого современного интерфейса */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fafafa;
             margin: 0;
             padding: 20px;
-        }
-        h1 {
-            text-align: center;
             color: #333;
         }
-        #shop {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 16px;
-            width: 220px;
+
+        h1 {
             text-align: center;
+            color: #111;
+            font-weight: 700;
+            margin-bottom: 30px;
         }
+
+        /* Адаптивная сетка товаров, как на топовых маркетплейсах */
+        #shop {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Стильная карточка товара */
+        .card {
+            background: #ffffff;
+            border: 1px solid #eef0f2;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Мягкий заветный ховер при наведении на карточку */
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Область для превью модели */
         .card img {
             width: 100%;
-            height: 150px;
+            height: 180px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
+            background-color: #f0f2f5;
             margin-bottom: 12px;
-            background-color: #eee;
         }
+
+        /* Блок с текстовой информацией */
+        .card-info {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
         .card h3 {
-            margin: 10px 0 5px 0;
-            font-size: 1.2rem;
-            color: #222;
+            font-size: 1.05rem;
+            margin: 0 0 6px 0;
+            color: #1a1a1a;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Если название слишком длинное, оно аккуратно скроется */
         }
-        .card p {
-            font-size: 1rem;
-            color: #666;
+
+        .card .price {
+            font-size: 1.15rem;
+            color: #2b6cb0; /* Приятный синий цвет для цены */
+            font-weight: 700;
             margin: 0;
+        }
+
+        /* Кнопка "В корзину" */
+        .buy-btn {
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 11px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.15s ease;
+        }
+
+        .buy-btn:hover {
+            background: #1a4975;
+        }
+
+        /* Индикатор загрузки */
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            grid-column: 1 / -1;
+            padding: 50px 0;
         }
     </style>
 </head>
 <body>
 
-    <h1>Витрина товаров</h1>
-    <div id="shop">Загрузка товаров...</div>
+    <h1>Витрина 3D Моделей</h1>
+    <div id="shop"><div class="loading">Загрузка моделей...</div></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // В Strapi v5 запрашиваем конкретное поле Previews через populate
+            // Запрашиваем данные из Strapi с универсальным populate
             const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
 
             fetch(apiUrl)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка сети или доступа (403/400)');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const shopDiv = document.getElementById('shop');
                     shopDiv.innerHTML = '';
                     
                     if (data && data.data && data.data.length > 0) {
                         data.data.forEach(item => {
-                            // В Strapi v5 данные могут лежать в корне объекта, а не в attributes
+                            // Вытаскиваем свойства с защитой на случай пустых полей
                             const title = item.Title || 'Без названия';
                             const price = item.Price || '0';
+                            const productId = item.documentId || item.id; // Для роутинга в Strapi v5
                             
-                            let imgUrl = 'https://placehold.co/200x150?text=No+Image';
+                            let imgUrl = 'https://placehold.co/240x180?text=No+Preview';
                             
-                            // Проверяем массив Previews напрямую в объекте (специфика Strapi v5)
+                            // Проверяем наличие картинок в массиве Previews
                             if (item.Previews && item.Previews.length > 0) {
                                 imgUrl = item.Previews[0].url || imgUrl;
                             } else if (item.Previews && item.Previews.url) {
                                 imgUrl = item.Previews.url;
                             }
                             
-                            // Если путь относительный, склеиваем с урлом Railway
+                            // Если бэкенд отдал относительный путь, склеиваем его с доменом Railway
                             if (imgUrl.startsWith('/uploads/')) {
                                 imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
                             }
                             
+                            // Рендерим стильную карточку
+                            // onclick на карточке перенаправляет на product.html с ID товара в ссылке
                             shopDiv.innerHTML += `
-                                <div class="card">
+                                <div class="card" onclick="location.href='product.html?id=${productId}'">
                                     <img src="${imgUrl}" alt="${title}">
-                                    <h3>${title}</h3>
-                                    <p>Цена: ${price}$</p>
+                                    <div class="card-info">
+                                        <h3>${title}</h3>
+                                        <p class="price">${price}$</p>
+                                    </div>
+                                    <button class="buy-btn" onclick="event.stopPropagation(); addToCart('${productId}')">В корзину</button>
                                 </div>
                             `;
                         });
                     } else {
-                        shopDiv.innerHTML = 'Товары не найдены';
+                        shopDiv.innerHTML = '<div class="loading">Товары не найдены или база пуста</div>';
                     }
                 })
                 .catch(error => {
                     console.error('Ошибка:', error);
-                    document.getElementById('shop').innerHTML = 'Ошибка загрузки данных';
+                    document.getElementById('shop').innerHTML = '<div class="loading" style="color: #c53030;">Ошибка загрузки бэкенда. Проверьте права Public в Strapi.</div>';
                 });
         });
+
+        // Временная функция-заглушка для корзины, чтобы кнопка не выдавала ошибку при клике
+        function addToCart(id) {
+            alert('Товар добавлен в корзину! ID модели: ' + id);
+        }
     </script>
 </body>
 </html>
