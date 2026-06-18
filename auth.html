@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация | CG Маркетплейс</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0f111a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        .auth-container { background: #1a1d29; padding: 40px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+        h2 { margin-bottom: 25px; font-size: 24px; color: #4f46e5; }
+        
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
+        input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #334155; background: #0f111a; color: #fff; font-size: 16px; outline: none; }
+        input:focus { border-color: #4f46e5; }
+        
+        button { width: 100%; padding: 14px; background: #4f46e5; border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #4338ca; }
+        button:disabled { background: #334155; cursor: not-allowed; }
+        
+        .switch-mode { margin-top: 20px; color: #94a3b8; font-size: 14px; }
+        .switch-mode span { color: #4f46e5; cursor: pointer; text-decoration: underline; }
+        
+        .skip-btn { margin-top: 25px; color: #64748b; font-size: 14px; cursor: pointer; background: none; border: none; text-decoration: underline; }
+        
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        .timer-text { margin-top: 15px; font-size: 14px; color: #94a3b8; }
+        .error-msg { color: #ef4444; font-size: 14px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div id="signin-screen" class="screen active">
+        <h2>Войти в аккаунт</h2>
+        <div class="form-group">
+            <label>Почтовый ящик (Email)</label>
+            <input type="email" id="login-email" placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+        <button onclick="handleSignIn()">Sign In</button>
+        <div class="switch-mode">Нет аккаунта? <span onclick="switchScreen('signup-screen')">Зарегистрироваться (Sign Up)</span></div>
+        <button class="skip-btn" onclick="handleSkip()">Skip</button>
+    </div>
+
+    <div id="signup-screen" class="screen">
+        <h2>Регистрация креатора</h2>
+        <div class="form-group">
+            <label>Придумайте никнейм (Username)</label>
+            <input type="text" id="reg-username" placeholder="Крутой Креатор">
+        </div>
+        <div class="form-group">
+            <label>Почтовый ящик (Email)</label>
+            <input type="email" id="reg-email" placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="reg-password" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+            <label>Подтвердите пароль</label>
+            <input type="password" id="reg-confirm-password" placeholder="••••••••">
+        </div>
+        <button onclick="handleSignUp()">Sign Up</button>
+        <div class="switch-mode">Уже есть аккаунт? <span onclick="switchScreen('signin-screen')">Войти</span></div>
+    </div>
+
+    <div id="confirm-screen" class="screen">
+        <h2>Подтверждение почты</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Мы отправили ссылку для подтверждения на вашу почту. Пожалуйста, проверьте ящик.</p>
+        
+        <div class="timer-text">Повторная отправка будет доступна через: <span id="timer-count">40</span> сек.</div>
+        <button id="resend-btn" onclick="handleResendCode()" style="background: #334155; margin-top: 10px;" disabled>Выслать письмо повторно</button>
+        <br><br>
+        <div class="switch-mode"><span onclick="switchScreen('signin-screen')">Вернуться на страницу входа</span></div>
+    </div>
+    
+    <div id="error-box" class="error-msg"></div>
+</div>
+
+<script>
+    const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        document.getElementById('error-box').style.display = 'none';
+    }
+
+    function showError(text) {
+        const box = document.getElementById('error-box');
+        box.innerText = text;
+        box.style.display = 'block';
+    }
+
+    function handleSkip() {
+        localStorage.setItem('userStatus', 'guest');
+        localStorage.removeItem('jwt');
+        window.location.href = 'index.html'; 
+    }
+
+    async function handleSignIn() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        if(!email || !password) return showError('Заполните все поля!');
+
+        try {
+            const res = await fetch(`${STRAPI_URL}/api/auth/local`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier: email, password: password })
+            });
+            const data = await res.json();
+
+            if(!res.ok) throw new Error(data.error.message || 'Ошибка входа');
+
+            localStorage.setItem('jwt', data.jwt);
+            localStorage.setItem('userStatus', 'user');
+            localStorage.setItem('username', data.user.username);
+            
+            window.location.href = 'index.html'; 
+        } catch (err) {
+            showError(err.message);
+        }
+    }
+
+    async function handleSignUp() {
+        const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+        const confirmPass = document.getElementById('reg-confirm-password').value;
+
+        if(!username || !email || !password) return showError('Заполните все поля!');
+        if(password !== confirmPass) return showError('Пароли не совпадают!');
+
+        try {
+            const res = await fetch(`${STRAPI_URL}/api/auth/local/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            const data = await res.json();
+
+            if(!res.ok) throw new Error(data.error.message || 'Ошибка регистрации');
+
+            switchScreen('confirm-screen');
+            startTimer();
+        } catch (err) {
+            showError(err.message);
+        }
+    }
+
+    let timer;
+    function startTimer() {
+        let timeLeft = 40;
+        const countSpan = document.getElementById('timer-count');
+        const resendBtn = document.getElementById('resend-btn');
+        resendBtn.disabled = true;
+
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            if (countSpan) countSpan.innerText = timeLeft;
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                resendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    function handleResendCode() {
+        alert('Ссылка отправлена повторно!');
+        startTimer();
+    }
+</script>
+</body>
+</html>
