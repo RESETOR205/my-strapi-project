@@ -8,14 +8,12 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #0f111a; color: #fff; padding: 20px; }
         
-        /* ШАПКА САЙТА И ПРОФИЛЬ (Слайд 4 и 5) */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
         h1 { color: #fff; font-size: 28px; }
         
         .profile-area { position: relative; display: flex; align-items: center; cursor: pointer; }
         .avatar-circle { width: 45px; height: 45px; background: #4f46e5; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; }
         
-        /* ВЫПАДАЮЩЕЕ МЕНЮ ИЗ 5 СТРОК (Слайд 5) */
         .profile-dropdown { display: none; position: absolute; top: 55px; right: 0; background: #1a1d29; border: 1px solid #334155; border-radius: 12px; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 100; overflow: hidden; }
         .profile-area:hover .profile-dropdown { display: block; }
         
@@ -25,11 +23,8 @@
         
         .auth-btn { background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
         
-        /* СЕТКА С КАРТОЧКАМИ (Слайд 4) */
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
         .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-decoration: none; color: inherit; transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
-        
-        /* Эффект увеличения при наведении */
         .product-card:hover { transform: scale(1.06); box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); }
         
         .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; }
@@ -54,11 +49,9 @@
 <script>
     const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
 
-    // 1. ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ВХОДЕ (Слайд 1)
     document.addEventListener("DOMContentLoaded", function() {
         const userStatus = localStorage.getItem('userStatus');
         
-        // Если пользователь зашел вообще впервые — отправляем на auth.html
         if (!userStatus) {
             window.location.href = 'auth.html';
             return;
@@ -68,7 +61,6 @@
         loadProducts();
     });
 
-    // 2. ОТРИСОВКА ШАПКИ (Слайд 4 и 5)
     function renderHeader() {
         const zone = document.getElementById('navigation-zone');
         const status = localStorage.getItem('userStatus');
@@ -93,7 +85,6 @@
         }
     }
 
-    // 3. ЗАГРУЗКА ТОВАРОВ
     async function loadProducts() {
         const box = document.getElementById('products-box');
         try {
