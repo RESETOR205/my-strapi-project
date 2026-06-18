@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Market</title>
+    <title>3D Market | Витрина</title>
     <style>
-        /* Базовые стили для чистого современного интерфейса */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #fafafa;
@@ -21,7 +20,7 @@
             margin-bottom: 30px;
         }
 
-        /* Адаптивная сетка товаров, как на топовых маркетплейсах */
+        /* Сетка товаров как на CGTrader */
         #shop {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -43,13 +42,11 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Мягкий заветный ховер при наведении на карточку */
         .card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
         }
 
-        /* Область для превью модели */
         .card img {
             width: 100%;
             height: 180px;
@@ -59,7 +56,6 @@
             margin-bottom: 12px;
         }
 
-        /* Блок с текстовой информацией */
         .card-info {
             text-align: left;
             margin-bottom: 15px;
@@ -72,17 +68,16 @@
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Если название слишком длинное, оно аккуратно скроется */
+            text-overflow: ellipsis;
         }
 
         .card .price {
             font-size: 1.15rem;
-            color: #2b6cb0; /* Приятный синий цвет для цены */
+            color: #2b6cb0;
             font-weight: 700;
             margin: 0;
         }
 
-        /* Кнопка "В корзину" */
         .buy-btn {
             background: #2b6cb0;
             color: white;
@@ -100,7 +95,6 @@
             background: #1a4975;
         }
 
-        /* Индикатор загрузки */
         .loading {
             text-align: center;
             font-size: 1.2rem;
@@ -117,14 +111,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Запрашиваем данные из Strapi с универсальным populate
             const apiUrl = 'https://my-strapi-project-production-f85a.up.railway.app/api/models?populate=*';
 
             fetch(apiUrl)
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ошибка сети или доступа (403/400)');
-                    }
+                    if (!response.ok) throw new Error('Ошибка сети (403/400)');
                     return response.json();
                 })
                 .then(data => {
@@ -133,27 +124,23 @@
                     
                     if (data && data.data && data.data.length > 0) {
                         data.data.forEach(item => {
-                            // Вытаскиваем свойства с защитой на случай пустых полей
                             const title = item.Title || 'Без названия';
                             const price = item.Price || '0';
-                            const productId = item.documentId || item.id; // Для роутинга в Strapi v5
+                            const productId = item.documentId || item.id;
                             
                             let imgUrl = 'https://placehold.co/240x180?text=No+Preview';
                             
-                            // Проверяем наличие картинок в массиве Previews
                             if (item.Previews && item.Previews.length > 0) {
                                 imgUrl = item.Previews[0].url || imgUrl;
                             } else if (item.Previews && item.Previews.url) {
                                 imgUrl = item.Previews.url;
                             }
                             
-                            // Если бэкенд отдал относительный путь, склеиваем его с доменом Railway
                             if (imgUrl.startsWith('/uploads/')) {
                                 imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
                             }
                             
-                            // Рендерим стильную карточку
-                            // onclick на карточке перенаправляет на product.html с ID товара в ссылке
+                            // При клике на карточку открывается product.html?id=ID_ТОВАРА
                             shopDiv.innerHTML += `
                                 <div class="card" onclick="location.href='product.html?id=${productId}'">
                                     <img src="${imgUrl}" alt="${title}">
@@ -166,7 +153,7 @@
                             `;
                         });
                     } else {
-                        shopDiv.innerHTML = '<div class="loading">Товары не найдены или база пуста</div>';
+                        shopDiv.innerHTML = '<div class="loading">Товары не найдены</div>';
                     }
                 })
                 .catch(error => {
@@ -175,9 +162,8 @@
                 });
         });
 
-        // Временная функция-заглушка для корзины, чтобы кнопка не выдавала ошибку при клике
         function addToCart(id) {
-            alert('Товар добавлен в корзину! ID модели: ' + id);
+            alert('Товар добавлен в корзину! ID: ' + id);
         }
     </script>
 </body>

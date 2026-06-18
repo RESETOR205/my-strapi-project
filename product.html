@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали модели | 3D Market</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #fafafa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2b6cb0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Двухколоночный контейнер маркетплейса */
+        .product-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        /* Левая колонка — Контент товара */
+        .main-content {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .main-content img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #eee;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .formats-container {
+            margin: 20px 0;
+        }
+        .format-badge {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+
+        .description-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #eef0f2;
+            margin-top: 20px;
+        }
+
+        /* Правая колонка — Панель покупки и Автор */
+        .sidebar {
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .action-card, .author-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #eef0f2;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .product-title {
+            font-size: 1.6rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            color: #2b6cb0;
+            font-weight: 700;
+            margin: 0 0 20px 0;
+        }
+
+        .checkout-btn {
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.15s;
+        }
+        .checkout-btn:hover { background: #1a4975; }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #cbd5e0;
+        }
+        .author-name { font-weight: 600; font-size: 1.1rem; }
+
+        /* Отзывы */
+        .reviews-section {
+            margin-top: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #eef0f2;
+        }
+        .review-item {
+            border-bottom: 1px solid #edf2f7;
+            padding: 15px 0;
+        }
+        .review-item:last-child { border: none; }
+        .review-meta { font-weight: 600; font-size: 0.9rem; color: #718096; }
+
+        .loading { text-align: center; padding: 100px; font-size: 1.2rem; color: #666; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">← Вернуться к витрине</a>
+
+    <div id="product-page">
+        <div class="loading">Загрузка спецификаций модели...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                document.getElementById('product-page').innerHTML = 'Товар не указан';
+                return;
+            }
+
+            const apiUrl = `https://my-strapi-project-production-f85a.up.railway.app/api/models/${productId}?populate=*`;
+
+            fetch(apiUrl)
+                .then(r => {
+                    if(!r.ok) throw new Error('Модель не найдена');
+                    return r.json();
+                })
+                .then(res => {
+                    const item = res.data;
+                    if (!item) {
+                        document.getElementById('product-page').innerHTML = 'Модель не найдена';
+                        return;
+                    }
+
+                    const title = item.Title || 'Без названия';
+                    const price = item.Price || '0';
+                    const description = item.Description || 'Описание для данной 3D модели еще не заполнено автором.';
+                    const formats = item.Formats ? item.Formats.split(',') : ['FBX', 'OBJ', 'MAX'];
+
+                    let imgUrl = 'https://placehold.co/600x400?text=No+Preview';
+                    if (item.Previews && item.Previews.length > 0) {
+                        imgUrl = item.Previews[0].url || imgUrl;
+                    } else if (item.Previews && item.Previews.url) {
+                        imgUrl = item.Previews.url;
+                    }
+
+                    if (imgUrl.startsWith('/uploads/')) {
+                        imgUrl = 'https://my-strapi-project-production-f85a.up.railway.app' + imgUrl;
+                    }
+
+                    document.getElementById('product-page').innerHTML = `
+                        <div class="product-container">
+                            <div class="main-content">
+                                <img src="${imgUrl}" alt="${title}">
+                                <div class="formats-container">
+                                    ${formats.map(f => `<span class="format-badge">${f.trim()}</span>`).join('')}
+                                </div>
+                                <div class="description-box">
+                                    <h3>Описание товара</h3>
+                                    <p>${description}</p>
+                                </div>
+                                <div class="reviews-section">
+                                    <h3>Отзывы покупателей (2)</h3>
+                                    <div class="review-item">
+                                        <div class="review-meta">User_492 • ⭐⭐⭐⭐⭐</div>
+                                        <p style="margin: 5px 0 0 0;">Сетка чистая, топология отличная. Развертка без потяжек.</p>
+                                    </div>
+                                    <div class="review-item">
+                                        <div class="review-meta">3D_Artist • ⭐⭐⭐⭐</div>
+                                        <p style="margin: 5px 0 0 0;">Хорошая модель, всё устроило.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sidebar">
+                                <div class="action-card">
+                                    <h1 class="product-title">${title}</h1>
+                                    <p class="product-price">${price}$</p>
+                                    <button class="checkout-btn" onclick="alert('Оплата...')">Купить сейчас</button>
+                                </div>
+                                <div class="author-card">
+                                    <div class="author-info">
+                                        <div class="author-avatar"></div>
+                                        <div>
+                                            <div class="author-name">Resperator</div>
+                                            <span style="color: #718096; font-size: 0.85rem;">3D Моделлер</span>
+                                        </div>
+                                    </div>
+                                    <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0;">Другие работы автора доступны в его профиле.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('product-page').innerHTML = '<div class="loading" style="color: red;">Не удалось загрузить карточку товара.</div>';
+                });
+        });
+    </script>
+</body>
+</html>
