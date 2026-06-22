@@ -1,256 +1,158 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Market | Витрина</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #0f111a; color: #fff; padding: 20px; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
-        h1 { color: #fff; font-size: 28px; }
-        
-        .profile-area { position: relative; display: flex; align-items: center; cursor: pointer; }
-        .avatar-circle { width: 45px; height: 45px; background: #4f46e5; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; }
-        
-        .profile-dropdown { 
-  display: none; 
-  position: absolute; 
-  top: 40px; /* Сдвинули выше, чтобы убрать черную щель */
-  right: 0; 
-  background: #1a1d29; 
-  border: 1px solid #334155; 
-  border-radius: 12px; 
-  width: 220px; 
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
-  z-index: 100;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Market | Витрина</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: #0f111a; color: #fff; padding: 20px; }
 
-/* Стили для окна Личного Кабинета */
-.modal {
-  display: none; 
-  position: fixed; 
-  z-index: 1000; 
-  left: 0; top: 0; width: 100%; height: 100%; 
-  background-color: rgba(0,0,0,0.7);
-  justify-content: center; align-items: center;
-}
-.modal-content {
-  background: #1a1d29; padding: 30px; border-radius: 12px;
-  border: 1px solid #334155; width: 100%; max-width: 450px;
-  position: relative; color: #fff;
-}
-.close-modal {
-  position: absolute; right: 20px; top: 15px; font-size: 28px; color: #94a3b8; cursor: pointer;
-}
-.close-modal:hover { color: #fff; }
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 5px; color: #94a3b8; font-size: 14px; }
-.form-group input {
-  width: 100%; padding: 10px; background: #0f111a;
-  border: 1px solid #334155; border-radius: 6px; color: #fff; box-sizing: border-box;
-}
-        .profile-area:hover .profile-dropdown { display: block; }
-        
-        .dropdown-item { padding: 12px 16px; font-size: 14px; color: #94a3b8; border-bottom: 1px solid #27273a; transition: background 0.2s, color 0.2s; text-decoration: none; display: block; }
-        .dropdown-item:hover { background: #24283b; color: #fff; }
-        .dropdown-item.user-name { font-weight: bold; color: #4f46e5; background: #131520; }
-        
-        .auth-btn { background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
-        
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
-        .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-decoration: none; color: inherit; transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
-        .product-card:hover { transform: scale(1.06); box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); }
-        
-        .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; }
-        .product-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
-        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
-        
-        .error-text { color: #ef4444; text-align: center; margin-top: 40px; font-size: 18px; }
-    </style>
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
+    h1 { color: #fff; font-size: 28px; }
+
+    .profile-area { position: relative; display: flex; align-items: center; cursor: pointer; }
+    .avatar-circle { width: 45px; height: 45px; background: #4f46e5; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; }
+
+    /* Исправленный блок меню: без зазоров и щелей */
+    .profile-dropdown { 
+      display: none; 
+      position: absolute; 
+      top: 40px; 
+      right: 0; 
+      background: #1a1d29; 
+      border: 1px solid #334155; 
+      border-radius: 12px; 
+      width: 220px; 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
+      z-index: 100; 
+      overflow: hidden; 
+    }
+    .profile-area:hover .profile-dropdown { display: block; }
+
+    .dropdown-item { padding: 12px 16px; font-size: 14px; color: #94a3b8; border-bottom: 1px solid #27273a; transition: background 0.2s, color 0.2s; text-decoration: none; display: block; }
+    .dropdown-item:hover { background: #24283b; color: #fff; }
+    .dropdown-item.user-name { font-weight: bold; color: #4f46e5; background: #131520; }
+
+    .auth-btn { background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
+
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+    .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-decoration: none; color: inherit; transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
+    .product-card:hover { transform: scale(1.03); box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); }
+
+    .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; }
+    .product-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+    .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
+    .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
+
+    .error-text { color: #ef4444; text-align: center; margin-top: 40px; font-size: 18px; }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Витрина 3D Моделей</h1>
-        <div id="navigation-zone"></div>
-    </header>
-<div id="lk-modal" class="modal">
-  <div class="modal-content">
-    <span class="close-modal">&times;</span>
-    <h2>Личный кабинет: Добавление 3D-модели</h2>
-    
-    <form id="add-model-form">
-      <div class="form-group">
-        <label>Название модели</label>
-        <input type="text" id="model-title" required placeholder="Например: Меч Артаса">
-      </div>
+  <header>
+    <h1>Витрина 3D Моделей</h1>
+    <div id="navigation-zone"></div>
+  </header>
 
-      <div class="form-group">
-        <label>Цена ($)</label>
-        <input type="number" id="model-price" required placeholder="0">
-      </div>
-
-      <div class="form-group">
-        <label>Файл модели (.gltf / .glb)</label>
-        <input type="file" id="model-file" accept=".gltf,.glb" required>
-      </div>
-
-      <div class="form-group">
-        <label>Превью модели (Картинка)</label>
-        <input type="file" id="model-img" accept="image/*" required>
-      </div>
-
-      <button type="submit" class="submit-btn" style="width: 100%; padding: 12px; background: #4f46e5; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px;">Опубликовать на маркетплейс</button>
-    </form>
+  <div id="products-box" class="products-grid">
+    <p style="color: #94a3b8;">Загрузка моделей с сервера...</p>
   </div>
-</div>
-    <div id="products-box" class="products-grid">
-        <p style="color: #94a3b8;">Загрузка моделей с сервера...</p>
-    </div>
 
-<script>
+  <script>
     const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
 
     document.addEventListener("DOMContentLoaded", function() {
-        const userStatus = localStorage.getItem('userStatus');
-        
-        if (!userStatus) {
-            window.location.href = 'auth.html';
-            return;
-        }
+      const userStatus = localStorage.getItem('userStatus');
 
-        renderHeader();
-        loadProducts();
+      if (!userStatus) {
+        window.location.href = 'auth.html';
+        return;
+      }
+
+      renderHeader();
+      loadProducts();
     });
 
+    // Отрисовка шапки (кнопка входа или аватарка)
     function renderHeader() {
-        const zone = document.getElementById('navigation-zone');
-        const status = localStorage.getItem('userStatus');
-        const username = localStorage.getItem('username') || 'Креатор';
+      const zone = document.getElementById('navigation-zone');
+      const userStatus = localStorage.getItem('userStatus');
+      const username = localStorage.getItem('username') || 'User';
 
-        if (status === 'user') {
-            const firstLetter = username.charAt(0).toUpperCase();
-            zone.innerHTML = `
-                <div class="profile-area">
-                    <div class="avatar-circle">${firstLetter}</div>
-                    <div class="profile-dropdown">
-                        <div class="dropdown-item user-name">@${username}</div>
-                        <a href="profile.html" class="dropdown-item">Мой профиль (ЛК)</a>
-                        <a href="#" onclick="openSupport()" class="dropdown-item">Поддержка (Бот)</a>
-                        <a href="#" class="dropdown-item">Мои покупки</a>
-                        <a href="#" onclick="handleLogout()" class="dropdown-item" style="color: #ef4444;">Выйти</a>
-                    </div>
-                </div>
-            `;
-        } else {
-            zone.innerHTML = `<a href="auth.html" class="auth-btn">Sign In / Sign Up</a>`;
-        }
-    }
-
-    async function loadProducts() {
-        const box = document.getElementById('products-box');
-        try {
-            const res = await fetch(`${STRAPI_URL}/api/models?populate=*`);
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-
-            if(!data.data || data.data.length === 0) {
-                box.innerHTML = `<p style="color: #94a3b8; grid-column: 1/-1; text-align: center;">Товаров пока нет.</p>`;
-                return;
-            }
-
-            box.innerHTML = '';
-            data.data.forEach(item => {
-                const title = item.Title || 'Без названия';
-                const price = item.Price ? `${item.Price} ₽` : 'Бесплатно';
-                
-                let imgUrl = 'https://placehold.co/600x400/1a1d29/fff?text=3D+Model';
-                if(item.Previews && item.Previews[0]) {
-                    imgUrl = STRAPI_URL + item.Previews[0].url;
-                }
-
-                box.innerHTML += `
-                    <a href="product.html?id=${item.documentId}" class="product-card">
-                        <img src="${imgUrl}" class="product-img" alt="${title}">
-                        <div class="product-info">
-                            <h3 class="product-title">${title}</h3>
-                            <div class="product-price">${price}</div>
-                        </div>
-                    </a>
-                `;
-            });
-        } catch (err) {
-            box.innerHTML = `<div class="error-text" style="grid-column: 1/-1;">Ошибка загрузки бэкенда. Проверьте права Public в Strapi и нажмите кнопку Save!</div>`;
-        }
-    }
-
-    function handleLogout() {
-        localStorage.clear();
-        window.location.href = 'auth.html';
-    }
-
-    function openSupport() {
-        alert('Система поддержки: Бот активирован. Напишите ваш запрос в чат!');
-    }
-    // Логика работы окна Личного Кабинета
-  const lkModal = document.getElementById('lk-modal');
-  const closeModal = document.querySelector('.close-modal');
-
-  // Ловим клик по кнопке "Мой профиль (ЛК)", даже если она создана динамически
-  document.body.addEventListener('click', (e) => {
-    if (e.target && e.target.textContent.trim() === 'Мой профиль (ЛК)') {
-      e.preventDefault();
-      lkModal.style.display = 'flex'; // Показываем окно
-    }
-  });
-
-  if (closeModal) {
-    closeModal.addEventListener('click', () => { lkModal.style.display = 'none'; });
-  }
-  window.addEventListener('click', (e) => { if (e.target === lkModal) lkModal.style.display = 'none'; });
-
-  // Отправка новой 3D-модели в Strapi
-  document.getElementById('add-model-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    if (localStorage.getItem('isGuest') === 'true') {
-      alert('Гости не могут добавлять модели! Пожалуйста, войдите в аккаунт.');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    const title = document.getElementById('model-title').value;
-    const price = document.getElementById('model-price').value;
-    const modelFile = document.getElementById('model-file').files[0];
-    const imgFile = document.getElementById('model-img').files[0];
-
-    const formData = new FormData();
-    formData.append('data', JSON.stringify({ Title: title, Price: Number(price) }));
-    formData.append('files.Model', modelFile); 
-    formData.append('files.Image', imgFile); 
-
-    try {
-      const response = await fetch(`${STRAPI_URL}/api/models`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
-      });
-
-      if (response.ok) {
-        alert('Модель успешно добавлена!');
-        lkModal.style.display = 'none';
-        location.reload();
+      if (userStatus === 'logged') {
+        const firstLetter = username.charAt(0).toUpperCase();
+        zone.innerHTML = `
+          <div class="profile-area">
+            <div class="avatar-circle">${firstLetter}</div>
+            <div class="profile-dropdown">
+              <div class="dropdown-item user-name">${username}</div>
+              <a href="profile.html" class="dropdown-item">Мой профиль (ЛК)</a>
+              <a href="#" class="dropdown-item" onclick="handleLogout()">Выйти</a>
+            </div>
+          </div>
+        `;
+      } else if (userStatus === 'guest') {
+        zone.innerHTML = `
+          <div class="profile-area">
+            <div class="avatar-circle">G</div>
+            <div class="profile-dropdown">
+              <div class="dropdown-item user-name">Режим Гостя</div>
+              <a href="#" class="dropdown-item" onclick="handleLogout()">Войти в аккаунт</a>
+            </div>
+          </div>
+        `;
       } else {
-        alert('Ошибка при создании модели. Проверь права в Strapi.');
+        zone.innerHTML = `<a href="auth.html" class="auth-btn">Войти</a>`;
       }
-    } catch (error) {
-      console.error(error);
-      alert('Ошибка сети при отправке файла.');
     }
-  });
-</script>
+
+    // Загрузка всех моделей на главную витрину
+    async function loadProducts() {
+      const box = document.getElementById('products-box');
+      try {
+        const res = await fetch(`${STRAPI_URL}/api/models?populate=*`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        if (!data.data || data.data.length === 0) {
+          box.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center;">Товаров пока нет.</p>';
+          return;
+        }
+
+        box.innerHTML = '';
+        data.data.forEach(item => {
+          const title = item.Title || 'Без названия';
+          const price = item.Price ? `$${item.Price}` : 'Бесплатно';
+          
+          let imgUrl = 'https://placeholder.co/600x400/1a1d29/fff?text=3D+Model';
+          if (item.Image) {
+            imgUrl = STRAPI_URL + item.Image.url;
+          } else if (item.Previews && item.Previews[0]) {
+            imgUrl = STRAPI_URL + item.Previews[0].url;
+          }
+
+          box.innerHTML += `
+            <a href="product.html?id=${item.documentId}" class="product-card">
+              <img src="${imgUrl}" class="product-img" alt="${title}">
+              <div class="product-info">
+                <h3 class="product-title">${title}</h3>
+                <div class="product-price">${price}</div>
+              </div>
+            </a>
+          `;
+        });
+
+      } catch (err) {
+        box.innerHTML = `<div class="error-text" style="grid-column: 1/-1;">Ошибка загрузки бэкенда. Проверьте права Public в Strapi и нажмите кнопку Save!</div>`;
+      }
+    }
+
+    // Логика выхода
+    function handleLogout() {
+      localStorage.clear();
+      window.location.href = 'auth.html';
+    }
+  </script>
 </body>
 </html>
