@@ -458,6 +458,8 @@ export interface ApiModelModel extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::model.model'> &
       Schema.Attribute.Private;
+    ModelFBX: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    ModelGLB: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     Previews: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true
