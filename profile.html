@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | 3D Маркетплейс</title>
+    <title>Личный кабинет</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,21 +15,87 @@
         body {
             background-color: #0f172a;
             color: #f8fafc;
-            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .profile-container {
-            max-width: 600px;
-            margin: 0 auto;
+        .btn-main {
+            background-color: #1e293b;
+            color: #94a3b8;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn-main:hover {
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .btn-add {
+            background-color: #22c55e;
+            color: #0f172a;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add:hover {
+            background-color: #16a34a;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
             background-color: #1e293b;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            position: relative;
         }
 
-        h2, h3 {
-            color: #38bdf8;
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .close-modal:hover {
+            color: #f8fafc;
+        }
+
+        h3 {
             margin-bottom: 20px;
+            color: #38bdf8;
+            text-align: center;
         }
 
         .form-group {
@@ -58,7 +124,7 @@
             border-color: #38bdf8;
         }
 
-        button {
+        .btn-submit {
             width: 100%;
             padding: 12px;
             background-color: #38bdf8;
@@ -71,92 +137,67 @@
             transition: background-color 0.2s;
         }
 
-        button:hover {
+        .btn-submit:hover {
             background-color: #0ea5e9;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #94a3b8;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            color: #38bdf8;
-        }
-
-        /* Красивая встроенная плашка для уведомлений */
-        #status-message {
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            text-align: center;
-            margin-top: 15px;
-            display: none;
         }
     </style>
 </head>
 <body>
 
-<a href="index.html" class="back-link">← На главную</a>
+    <a href="index.html" class="btn-main">← На главную</a>
 
-<div class="profile-container">
-    <h2>Личный кабинет</h2>
-    <p style="margin-bottom: 30px; color: #94a3b8;">Вы вошли как: <strong id="user-display-name" style="color: #38bdf8;">Гость</strong></p>
+    <button class="btn-add" id="open-modal-btn">+ Добавить модель</button>
 
-    <h3>Опубликовать новую работу</h3>
-    
-    <form id="upload-form">
-        <div class="form-group">
-            <label for="model-title">Название модели</label>
-            <input type="text" id="model-title" placeholder="Например: glock" required>
+    <div class="modal-overlay" id="upload-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal-btn">×</span>
+            <h3>Опубликовать новую работу</h3>
+            
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="model-title">Название модели</label>
+                    <input type="text" id="model-title" placeholder="Например: glock" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Опубликовать</button>
+            </form>
         </div>
-
-        <button type="submit" id="submit-btn">Добавить модель</button>
-    </form>
-
-    <div id="status-message"></div>
-</div>
+    </div>
 
 <script>
-    // Проверяем авторизацию при входе в личный кабинет
-    document.addEventListener('DOMContentLoaded', () => {
-        const userStatus = localStorage.getItem('userStatus');
-        const username = localStorage.getItem('username');
+    const modal = document.getElementById('upload-modal');
+    const openBtn = document.getElementById('open-modal-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const uploadForm = document.getElementById('upload-form');
 
-        if (userStatus !== 'user' || !username) {
-            alert('Доступ запрещен! Пожалуйста, войдите в свой аккаунт.');
-            window.location.href = 'auth.html';
-            return;
-        }
-
-        // Выводим имя пользователя в интерфейс
-        document.getElementById('user-display-name').innerText = username;
+    // Логика открытия/закрытия твоего модального окна
+    openBtn.addEventListener('click', () => modal.style.display = 'flex');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    
+    // Закрытие при клике на темную область вокруг окна
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
     });
 
-    // Обработка отправки формы
-    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    // ТВОЙ ИСПРАВЛЕННЫЙ СТРОКА 196 JS-КОД ОТПРАВКИ НА СЕРВЕР RAILWAY
+    uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const modelTitle = document.getElementById('model-title').value.trim();
-        const statusMessage = document.getElementById('status-message');
         
-        // Достаем токен авторизации из памяти браузера
+        // 1. Извлекаем секретный JWT-токен авторизованного пользователя из памяти браузера
         const token = localStorage.getItem('token');
 
-        statusMessage.style.display = 'none';
-
         try {
-            // Отправляем POST запрос на твой сервер Railway
+            // 2. Отправляем POST-запрос на Railway сервер Strapi
             const response = await fetch('https://my-strapi-project-production-f85a.up.railway.app/api/models', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Передаем токен, чтобы убрать ошибку 403 Forbidden
+                    // Важнейшая строка: крепим токен, чтобы убрать ошибку 403 Forbidden
                     'Authorization': `Bearer ${token}`
                 },
-                // Заворачиваем данные в объект data (требование Strapi v4)
+                // Заворачиваем данные в объект data согласно структуре Strapi v4
                 body: JSON.stringify({
                     data: {
                         title: modelTitle
@@ -167,27 +208,17 @@
             const data = await response.json();
 
             if (response.ok) {
-                statusMessage.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
-                statusMessage.style.color = '#22c55e';
-                statusMessage.style.border = '1px solid rgba(34, 197, 94, 0.2)';
-                statusMessage.innerText = `✅ Модель "${modelTitle}" успешно опубликована в Strapi!`;
-                statusMessage.style.display = 'block';
-                
-                document.getElementById('upload-form').reset(); // Очищаем форму
+                alert(`Успешно! Работа "${modelTitle}" создана в бэкенде Strapi.`);
+                uploadForm.reset();
+                modal.style.display = 'none'; // Закрываем окно после успеха
             } else {
-                statusMessage.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                statusMessage.style.color = '#ef4444';
-                statusMessage.style.border = '1px solid rgba(239, 68, 68, 0.2)';
-                statusMessage.innerText = `❌ Ошибка: ${data.error ? data.error.message : 'Сервер отклонил запрос'}`;
-                statusMessage.style.display = 'block';
+                // Если Strapi всё равно ругается, выводим точный текст ошибки
+                alert(`Ошибка: ${data.error ? data.error.message : 'Не удалось создать запись'}`);
             }
 
         } catch (error) {
-            console.error('Ошибка при отправке:', error);
-            statusMessage.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-            statusMessage.style.color = '#ef4444';
-            statusMessage.innerText = '🤖 Не удалось связаться с бэкендом. Проверь сеть!';
-            statusMessage.style.display = 'block';
+            console.error('Ошибка запроса:', error);
+            alert('Критическая ошибка: не удалось связаться с сервером Strapi.');
         }
     });
 </script>
