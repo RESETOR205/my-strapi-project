@@ -70,7 +70,7 @@
 </head>
 <body>
 
-    <a href="index.html" class="btn">← На главную</a>
+    <a href="index.html" class="btn">— На главную</a>
     <br>
     <button class="btn" id="openModalBtn">+ Добавить модель</button>
 
@@ -90,7 +90,6 @@
     </div>
 
 <script>
-    // Твоя стандартная логика открытия модального окна
     const modal = document.getElementById("myModal");
     const btn = document.getElementById("openModalBtn");
     const span = document.getElementById("closeModalBtn");
@@ -101,13 +100,10 @@
         if (event.target == modal) { modal.style.display = "none"; }
     }
 
-    // Твой обработчик формы с исправленной авторизацией
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const modelTitle = document.getElementById('model-title').value.trim();
-        
-        // Берем именно токен авторизации Vandasik, который есть в localStorage
         const token = localStorage.getItem('token');
 
         try {
@@ -115,10 +111,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Передаем токен в заголовке, чтобы убрать ошибку 403 Forbidden
                     'Authorization': `Bearer ${token}`
                 },
-                // Упаковываем в объект data, как требует Strapi v4
                 body: JSON.stringify({
                     data: {
                         title: modelTitle
@@ -127,13 +121,11 @@
             });
 
             if (response.ok) {
-                // Возвращаем твой дефолтный алерт при успешном создании
                 alert("Успешно создано в бэкенде Strapi");
                 document.getElementById('upload-form').reset();
                 modal.style.display = "none";
             } else {
-                const errorData = await response.json();
-                alert(`Ошибка при создании записи в бэкенде Strapi: ${errorData.error ? errorData.error.message : 'Forbidden'}`);
+                alert("Ошибка при создании записи в бэкенде Strapi.");
             }
 
         } catch (error) {
