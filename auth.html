@@ -132,6 +132,8 @@
         <button type="submit" id="submit-btn">Создать аккаунт</button>
     </form>
 
+    <div id="error-message" style="color: #ef4444; background-color: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 6px; font-size: 14px; text-align: center; margin-top: 15px; display: none; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
+
     <div class="toggle-text" id="toggle-zone">
         Уже есть аккаунт? <span id="switch-mode">Войти</span>
     </div>
@@ -146,39 +148,52 @@
     const usernameGroup = document.getElementById('username-group');
     const usernameInput = document.getElementById('username');
     const submitBtn = document.getElementById('submit-btn');
-    const switchModeBtn = document.getElementById('switch-mode');
     const toggleZone = document.getElementById('toggle-zone');
 
-    // Твой боевой адрес живого сервера на Railway
+    // Твой боевой адрес сервера на Railway
     const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app'; 
 
-    // Переключатель между Входом и Регистрацией
-    switchModeBtn.addEventListener('click', function switchHandler() {
-        isSignUpMode = !isSignUpMode;
-        
-        if (isSignUpMode) {
-            formTitle.innerText = 'Регистрация';
-            submitBtn.innerText = 'Создать аккаунт';
-            usernameGroup.style.display = 'block';
-            usernameInput.setAttribute('required', 'true');
-            toggleZone.innerHTML = 'Уже есть аккаунт? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Войти</span>';
-        } else {
-            formTitle.innerText = 'Вход в систему';
-            submitBtn.innerText = 'Войти';
-            usernameGroup.style.display = 'none';
-            usernameInput.removeAttribute('required');
-            toggleZone.innerHTML = 'Нет аккаунта? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Зарегистрироваться</span>';
-        }
-        
-        document.getElementById('switch-mode').addEventListener('click', switchHandler);
-    });
+    // Функция переключения режимов Вход / Регистрация
+    function initSwitchBehavior() {
+        const switchModeBtn = document.getElementById('switch-mode');
+        if (!switchModeBtn) return;
 
-    // Обработка отправки данных
+        switchModeBtn.addEventListener('click', () => {
+            isSignUpMode = !isSignUpMode;
+            // Сбрасываем текст ошибки при переключении
+            document.getElementById('error-message').style.display = 'none';
+            
+            if (isSignUpMode) {
+                formTitle.innerText = 'Регистрация';
+                submitBtn.innerText = 'Создать аккаунт';
+                usernameGroup.style.display = 'block';
+                usernameInput.setAttribute('required', 'true');
+                toggleZone.innerHTML = 'Уже есть аккаунт? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Войти</span>';
+            } else {
+                formTitle.innerText = 'Вход в систему';
+                submitBtn.innerText = 'Войти';
+                usernameGroup.style.display = 'none';
+                usernameInput.removeAttribute('required');
+                toggleZone.innerHTML = 'Нет аккаунта? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Зарегистрироваться</span>';
+            }
+            
+            initSwitchBehavior(); // Перепривязываем событие на новую кнопку
+        });
+    }
+
+    // Запускаем переключатель режимов
+    initSwitchBehavior();
+
+    // Обработка отправки формы
     document.getElementById('auth-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value.trim();
+        const errorBox = document.getElementById('error-message');
+        
+        // Прячем старую ошибку перед новым запросом
+        errorBox.style.display = 'none';
         
         let endpoint = isSignUpMode ? '/api/auth/local/register' : '/api/auth/local';
         
@@ -213,15 +228,28 @@
                 localStorage.setItem('token', data.jwt);
                 localStorage.setItem('username', data.user.username);
                 
-                alert(`Успешно! Добро пожаловать, ${data.user.username}.`);
+                // Перенаправляем на главную без алертов
                 window.location.href = 'index.html';
             } else {
-                alert(`Ошибка: ${data.error ? data.error.message : 'Неверные данные или сбой сервера'}`);
+                // Ловим ошибки и переводим их для вывода на плашку
+                let msg = 'Неверные данные или сбой сервера';
+                if (data.error && data.error.message === 'Email or Username are already taken') {
+                    msg = '⚠️ Этот Email или Имя пользователя уже заняты!';
+                } else if (data.error && data.error.message === 'Invalid identifier or password') {
+                    msg = '❌ Неверный Email или пароль!';
+                } else if (data.error) {
+                    msg = data.error.message;
+                }
+
+                // Показываем плашку с текстом ошибки
+                errorBox.innerText = msg;
+                errorBox.style.display = 'block';
             }
 
         } catch (error) {
             console.error('Ошибка запроса:', error);
-            alert('Не удалось связаться с бэкендом на Railway. Проверь статус деплоя!');
+            errorBox.innerText = '🤖 Не удалось связаться с сервером. Проверь сеть!';
+            errorBox.style.display = 'block';
         }
     });
 
