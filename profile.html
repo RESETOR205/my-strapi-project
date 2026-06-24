@@ -5,66 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет</title>
     <style>
+        /* ТВОЁ ОРИГИНАЛЬНОЕ ОФОРМЛЕНИЕ ИЗ СКРИНШОТОВ */
         body {
-            background-color: #121212;
+            background-color: #0b0f19;
             color: #fff;
-            font-family: sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+
         .btn {
-            background-color: #242424;
-            color: #fff;
-            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            padding: 12px 24px;
             text-decoration: none;
-            border: 1px solid #444;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             display: inline-block;
             margin-bottom: 20px;
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: #38bdf8;
+        }
+
+        #openModalBtn {
+            background: #10b981;
+            color: #fff;
+            border: none;
+        }
+
+        #openModalBtn:hover {
+            background: #059669;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Твоё кастомное модальное окно */
         .modal {
             display: none; 
             position: fixed; 
-            z-index: 1; 
+            z-index: 1000; 
             left: 0;
             top: 0;
             width: 100%; 
             height: 100%; 
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
+            background-color: #111827;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
+
         .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
+            color: #6b7280;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.2s;
         }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-size: 14px;
         }
+
         .form-group input {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             box-sizing: border-box;
-            background-color: #333;
+            background-color: #1f2937;
             color: #fff;
-            border: 1px solid #555;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #38bdf8;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: #38bdf8;
+            color: #0f172a;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #0ea5e9;
         }
     </style>
 </head>
@@ -78,18 +154,18 @@
         <div class="modal-content">
             <span class="close" id="closeModalBtn">&times;</span>
             <h2>Опубликовать новую работу</h2>
-            <br>
             <form id="upload-form">
                 <div class="form-group">
                     <label for="model-title">Название модели</label>
-                    <input type="text" id="model-title" required>
+                    <input type="text" id="model-title" placeholder="Например: glock" required>
                 </div>
-                <button type="submit" class="btn">Опубликовать</button>
+                <button type="submit" class="btn-submit">Опубликовать</button>
             </form>
         </div>
     </div>
 
 <script>
+    // Твоя логика окон
     const modal = document.getElementById("myModal");
     const btn = document.getElementById("openModalBtn");
     const span = document.getElementById("closeModalBtn");
@@ -100,6 +176,7 @@
         if (event.target == modal) { modal.style.display = "none"; }
     }
 
+    // Твой исправленный скрипт (строка 196) отправки данных с токеном Vandasik
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
