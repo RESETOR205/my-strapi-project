@@ -1,171 +1,236 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Авторизация | 3D Market</title>
-  <style>
-    /* Базовые стили для темной темы */
-    body {
-      background: #0f111a;
-      color: #fff;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация | 3D Маркетплейс</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    /* Контейнер формы */
-    .auth-container {
-      background: #1a1d29;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 360px;
-    }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-    h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      text-align: center;
-    }
+        .auth-container {
+            background-color: #1e293b;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
 
-    .form-group {
-      margin-bottom: 15px;
-    }
+        h2 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #38bdf8;
+        }
 
-    label {
-      display: block;
-      margin-bottom: 5px;
-      color: #94a3b8;
-      font-size: 14px;
-    }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      background: #0f111a;
-      border: 1px solid #334155;
-      border-radius: 4px;
-      color: #fff;
-      box-sizing: border-box;
-    }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
 
-    input:focus {
-      outline: none;
-      border-color: #4f46e5;
-    }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
 
-    /* Основная кнопка Войти */
-    .submit-btn {
-      width: 100%;
-      padding: 12px;
-      background: #4f46e5;
-      border: none;
-      border-radius: 4px;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 10px;
-      transition: background 0.2s;
-    }
+        input:focus {
+            border-color: #38bdf8;
+        }
 
-    .submit-btn:hover {
-      background: #4338ca;
-    }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
 
-    /* НАША НОВАЯ КНОПКА SKIP */
-    .skip-button {
-      background: none;
-      border: none;
-      color: #888888; /* Неяркий серый цвет */
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 15px;
-      text-decoration: underline; /* Подчеркивание как у ссылки */
-      transition: color 0.2s;
-      display: block;
-      width: 100%;
-      text-align: center;
-    }
+        button:hover {
+            background-color: #0ea5e9;
+        }
 
-    .skip-button:hover {
-      color: #ffffff; /* Белеет при наведении */
-    }
-  </style>
+        .toggle-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .toggle-text span {
+            color: #38bdf8;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .guest-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .guest-link:hover {
+            color: #94a3b8;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="auth-container">
-    <h2>Вход в систему</h2>
+<div class="auth-container">
+    <h2 id="form-title">Регистрация</h2>
     
-    <form id="login-form">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" required placeholder="example@mail.com">
-      </div>
-      
-      <div class="form-group">
-        <label>Пароль</label>
-        <input type="password" id="password" required placeholder="••••••••">
-      </div>
+    <form id="auth-form">
+        <div class="form-group" id="username-group">
+            <label for="username">Имя пользователя</label>
+            <input type="text" id="username" placeholder="Придумайте никнейм" required>
+        </div>
 
-      <button type="submit" class="submit-btn">Войти</button>
+        <div class="form-group">
+            <label for="email">Электронная почта</label>
+            <input type="email" id="email" placeholder="example@mail.com" required>
+        </div>
 
-      <button type="button" id="skip-btn" class="skip-button">Пропустить регистрацию →</button>
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" placeholder="Минимум 6 символов" required>
+        </div>
+
+        <button type="submit" id="submit-btn">Создать аккаунт</button>
     </form>
-  </div>
 
-  <script>
-    // 1. Логика для кнопки "Пропустить" (Вход как гость)
-    document.getElementById('skip-btn').addEventListener('click', () => {
-      // Стираем старые токены, чтобы не было путаницы
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    <div class="toggle-text" id="toggle-zone">
+        Уже есть аккаунт? <span id="switch-mode">Войти</span>
+    </div>
 
-      // Ставим метку гостя
-      localStorage.setItem('isGuest', 'true');
+    <a href="#" class="guest-link" onclick="saveGuestAndGo()">Пропустить регистрацию →</a>
+</div>
 
-      // Перенаправляем на страницу с 3D-моделями
-      window.location.href = 'product.html'; 
-    });
+<script>
+    let isSignUpMode = true; 
+    
+    const formTitle = document.getElementById('form-title');
+    const usernameGroup = document.getElementById('username-group');
+    const usernameInput = document.getElementById('username');
+    const submitBtn = document.getElementById('submit-btn');
+    const switchModeBtn = document.getElementById('switch-mode');
+    const toggleZone = document.getElementById('toggle-zone');
 
-    // 2. Стандартная отправка формы (для зарегистрированных пользователей)
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+    // Твой боевой адрес живого сервера на Railway
+    const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app'; 
 
-      try {
-        // Меняем адрес на твой сервер Railway, когда деплой завершится
-        const response = await fetch('http://localhost:1337/api/auth/local', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: email, password: password })
-        });
-
-        const data = await response.json();
-
-        if (data.jwt) {
-          localStorage.setItem('token', data.jwt);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          localStorage.removeItem('isGuest'); // Убираем флаг гостя, так как вошел юзер
-          alert(' Успешный вход!');
-          window.location.href = 'product.html';
+    // Переключатель между Входом и Регистрацией
+    switchModeBtn.addEventListener('click', function switchHandler() {
+        isSignUpMode = !isSignUpMode;
+        
+        if (isSignUpMode) {
+            formTitle.innerText = 'Регистрация';
+            submitBtn.innerText = 'Создать аккаунт';
+            usernameGroup.style.display = 'block';
+            usernameInput.setAttribute('required', 'true');
+            toggleZone.innerHTML = 'Уже есть аккаунт? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Войти</span>';
         } else {
-          alert('Ошибка: ' + (data.error?.message || 'Неверный логин или пароль'));
+            formTitle.innerText = 'Вход в систему';
+            submitBtn.innerText = 'Войти';
+            usernameGroup.style.display = 'none';
+            usernameInput.removeAttribute('required');
+            toggleZone.innerHTML = 'Нет аккаунта? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Зарегистрироваться</span>';
         }
-      } catch (err) {
-        console.error(err);
-        alert('Не удалось связаться с сервером бэкенда.');
-      }
+        
+        document.getElementById('switch-mode').addEventListener('click', switchHandler);
     });
-  </script>
+
+    // Обработка отправки данных
+    document.getElementById('auth-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        
+        let endpoint = isSignUpMode ? '/api/auth/local/register' : '/api/auth/local';
+        
+        let requestBody = {
+            identifier: email, 
+            password: password
+        };
+
+        if (isSignUpMode) {
+            const username = document.getElementById('username').value.trim();
+            requestBody = {
+                username: username,
+                email: email,
+                password: password
+            };
+        }
+
+        try {
+            const response = await fetch(`${STRAPI_URL}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.jwt) {
+                // Сохраняем сессию успешного юзера в браузер
+                localStorage.setItem('userStatus', 'user');
+                localStorage.setItem('token', data.jwt);
+                localStorage.setItem('username', data.user.username);
+                
+                alert(`Успешно! Добро пожаловать, ${data.user.username}.`);
+                window.location.href = 'index.html';
+            } else {
+                alert(`Ошибка: ${data.error ? data.error.message : 'Неверные данные или сбой сервера'}`);
+            }
+
+        } catch (error) {
+            console.error('Ошибка запроса:', error);
+            alert('Не удалось связаться с бэкендом на Railway. Проверь статус деплоя!');
+        }
+    });
+
+    function saveGuestAndGo() {
+        localStorage.setItem('userStatus', 'guest');
+        localStorage.setItem('username', 'Гость');
+        window.location.href = 'index.html';
+    }
+</script>
 
 </body>
 </html>
