@@ -143,23 +143,25 @@
         const rawPrice = document.getElementById('model-price').value.trim();
         const numericPrice = parseFloat(rawPrice) || 0;
 
-        // Данные строго соответствуют структуре API ID в Strapi v4 со Снимка (16)
+        // Структура данных строго по схеме Strapi со Снимка (16)
         const textData = {
             Title: document.getElementById('model-title').value.trim(),
             Price: numericPrice,
             Description: document.getElementById('model-desc').value.trim()
         };
 
-        formData.append('data', JSON.stringify(textData));
+        // Ключ "data" оборачивается строго по правилам multipart-запросов Strapi
+        formData.append("data", JSON.stringify(textData));
 
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
-        // Ключи файлов также приведены в полное соответствие со Снимком экрана (16)
+        // Привязка файлов к медиа-полям базы данных
         if (fileInput) formData.append('files.ModelFBX', fileInput);
         if (imgInput) formData.append('files.Previews', imgInput);
 
         try {
+            console.log("Выполняется отправка данных формы на сервер Railway...");
             const response = await fetch('https://my-strapi-project-production-f85a.up.railway.app/api/models', {
                 method: 'POST',
                 headers: {
@@ -174,11 +176,11 @@
                 if (modal) modal.style.display = "none";
             } else {
                 const errorData = await response.json();
-                console.error("Детали ошибки сервера Strapi:", errorData);
-                alert(`Ошибка сервера Strapi: ${errorData.error ? errorData.error.message : 'Сбой запроса'}`);
+                console.error("Детали ошибки от Strapi:", errorData);
+                alert(`Ошибка: ${errorData.error ? errorData.error.message : 'Сбой запроса'}`);
             }
         } catch (error) {
-            console.error("Критическая ошибка:", error);
+            console.error("Критическая ошибка fetch:", error);
             alert('Ошибка отправки на сервер Railway.');
         }
     });
