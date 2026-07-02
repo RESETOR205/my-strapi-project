@@ -121,7 +121,6 @@
     </div>
 
 <script>
-    // Подстановка данных аккаунта
     document.addEventListener("DOMContentLoaded", () => {
         const storedUsername = localStorage.getItem('username') || "Пользователь";
         document.getElementById('user-name').textContent = storedUsername;
@@ -129,7 +128,6 @@
         document.getElementById('user-avatar').textContent = storedUsername.charAt(0);
     });
 
-    // Модалка
     const modal = document.getElementById("myModal");
     const btn = document.getElementById("openModalBtn");
     const span = document.getElementById("closeModalBtn");
@@ -142,18 +140,20 @@
         }
     }
 
-    // Отправка данных на Railway Strapi
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Проверяем наличие токена на текущем домене
         const token = localStorage.getItem('token');
-        const formData = new FormData();
+        if (!token || token === "null" || token === "undefined") {
+            alert("Ошибка: Вы не авторизованы на этом сайте! Токен отсутствует в системе. Пожалуйста, выполните вход в аккаунт на этой странице.");
+            return;
+        }
 
-        // Безопасно переводим введенную цену в формат Number для Strapi
+        const formData = new FormData();
         const rawPrice = document.getElementById('model-price').value.trim();
         const numericPrice = parseFloat(rawPrice) || 0;
 
-        // Данные строго под структуру твоей БД (с учётом регистра первой буквы)
         const textData = {
             Title: document.getElementById('model-title').value.trim(),
             Price: numericPrice,
@@ -165,7 +165,6 @@
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
-        // Привязка файлов строго к твоим именам: ModelFBX и Previews
         if (fileInput) formData.append('files.ModelFBX', fileInput);
         if (imgInput) formData.append('files.Previews', imgInput);
 
@@ -184,6 +183,7 @@
                 if (modal) modal.style.display = "none";
             } else {
                 const errorData = await response.json();
+                console.error("Детали ошибки сервера:", errorData);
                 alert(`Ошибка сервера Strapi: ${errorData.error ? errorData.error.message : 'Forbidden'}`);
             }
 
