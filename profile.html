@@ -121,7 +121,6 @@
     </div>
 
 <script>
-    // Отображение данных текущего пользователя
     document.addEventListener("DOMContentLoaded", () => {
         const storedUsername = localStorage.getItem('username') || "Пользователь";
         document.getElementById('user-name').textContent = storedUsername;
@@ -129,7 +128,6 @@
         document.getElementById('user-avatar').textContent = storedUsername.charAt(0);
     });
 
-    // Логика открытия/закрытия модального окна
     const modal = document.getElementById("myModal");
     const btn = document.getElementById("openModalBtn");
     const span = document.getElementById("closeModalBtn");
@@ -142,36 +140,34 @@
         }
     }
 
-    // Отправка формы на сервер Railway
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Строгая проверка токена авторизации
         const token = localStorage.getItem('token');
         if (!token || token === "null" || token === "undefined") {
-            alert("Ошибка: Вы не авторизованы на этом домене! Пожалуйста, перейдите на страницу входа/регистрации вашего текущего сайта и авторизуйтесь заново.");
+            alert("Ошибка: Вы не авторизованы! Пожалуйста, войдите в аккаунт заново на этой странице.");
             return;
         }
 
         const formData = new FormData();
-        
-        // Преобразуем цену в числовой формат, как требует Strapi
         const rawPrice = document.getElementById('model-price').value.trim();
         const numericPrice = parseFloat(rawPrice) || 0;
 
-        // Формируем текстовые данные согласно схеме Content-Type в Strapi
+        // Создаем чистый JSON-объект с текстовыми полями
         const textData = {
             Title: document.getElementById('model-title').value.trim(),
             Price: numericPrice,
             Description: document.getElementById('model-desc').value.trim()
         };
 
+        // ВАЖНО: Добавляем текстовые данные строго под ключом 'data'
         formData.append('data', JSON.stringify(textData));
 
-        // Прикрепляем файлы к правильным медиа-полям Strapi
+        // Получаем файлы из полей ввода
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
+        // Прикрепляем файлы к медиа-полям коллекции согласно синтаксису Strapi v4 (files.ИмяПоля)
         if (fileInput) formData.append('files.ModelFBX', fileInput);
         if (imgInput) formData.append('files.Previews', imgInput);
 
@@ -181,7 +177,7 @@
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
-                body: formData
+                body: formData // Заголовки Content-Type браузер выставит автоматически вместе с boundary!
             });
 
             if (response.ok) {
@@ -191,12 +187,12 @@
             } else {
                 const errorData = await response.json();
                 console.error("Детали ошибки сервера:", errorData);
-                alert(`Ошибка сервера Strapi: ${errorData.error ? errorData.error.message : 'Доступ запрещен (Forbidden)'}`);
+                alert(`Ошибка сервера Strapi: ${errorData.error ? errorData.error.message : 'Не удалось распознать структуру запроса.'}`);
             }
 
         } catch (error) {
-            console.error('Ошибка отправки:', error);
-            alert('Не удалось установить связь с сервером Railway.');
+            console.error('Ошибка запроса:', error);
+            alert('Не удалось связаться с сервером Railway.');
         }
     });
 </script>
