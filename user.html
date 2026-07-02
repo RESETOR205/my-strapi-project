@@ -143,7 +143,7 @@
         const rawPrice = document.getElementById('model-price').value.trim();
         const numericPrice = parseFloat(rawPrice) || 0;
 
-        // Пакуем строго по документации Strapi v4
+        // Данные строго соответствуют структуре API ID в Strapi v4 со Снимка (16)
         const textData = {
             Title: document.getElementById('model-title').value.trim(),
             Price: numericPrice,
@@ -155,6 +155,7 @@
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
+        // Ключи файлов также приведены в полное соответствие со Снимком экрана (16)
         if (fileInput) formData.append('files.ModelFBX', fileInput);
         if (imgInput) formData.append('files.Previews', imgInput);
 
@@ -173,9 +174,11 @@
                 if (modal) modal.style.display = "none";
             } else {
                 const errorData = await response.json();
-                alert(`Ошибка: ${errorData.error ? errorData.error.message : 'Сбой запроса'}`);
+                console.error("Детали ошибки сервера Strapi:", errorData);
+                alert(`Ошибка сервера Strapi: ${errorData.error ? errorData.error.message : 'Сбой запроса'}`);
             }
         } catch (error) {
+            console.error("Критическая ошибка:", error);
             alert('Ошибка отправки на сервер Railway.');
         }
     });
