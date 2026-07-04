@@ -177,7 +177,6 @@
         const imgInput = document.getElementById('model-img').files[0];
 
         try {
-            // Вспомогательная функция для изолированной отправки файлов в Strapi
             async function uploadToMediaLibrary(file) {
                 const fileData = new FormData();
                 fileData.append('files', file);
@@ -190,14 +189,13 @@
 
                 if (!res.ok) {
                     const errRes = await res.json();
-                    throw new Error(errRes.error?.message || "Не удалось загрузить один из файлов");
+                    throw new Error(errRes.error?.message || "Не удалось загрузить файл");
                 }
 
                 const uploadedFiles = await res.json();
-                return uploadedFiles[0].id; // Возвращаем ID сохраненного файла
+                return uploadedFiles[0].id;
             }
 
-            // Этап 1: Загружаем файлы по очереди и получаем их ID
             console.log("Загрузка основного файла...");
             const fbxId = await uploadToMediaLibrary(fileInput);
 
@@ -205,10 +203,9 @@
             const imgId = await uploadToMediaLibrary(imgInput);
 
             console.log("Загрузка заглушки GLB...");
-            const dummyFile = new File([""], "empty.glb", { type: "application/octet-stream" });
+            const dummyFile = new File(["placeholder_content"], "empty.glb", { type: "application/octet-stream" });
             const glbId = await uploadToMediaLibrary(dummyFile);
 
-            // Этап 2: Отправляем чистый JSON запрос с привязанными ID файлов
             submitBtn.textContent = "Создание карточки...";
             
             const rawPrice = document.getElementById('model-price').value.trim();
@@ -229,7 +226,7 @@
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json' // Отправляем как чистый JSON!
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(finalPayload)
             });
