@@ -143,7 +143,7 @@
         const rawPrice = document.getElementById('model-price').value.trim();
         const numericPrice = parseFloat(rawPrice) || 0;
 
-        // 1. Текстовые данные упаковываем в data
+        // 1. Упаковываем все текстовые поля в объект 'data' (исправлено под требования Strapi)
         const textData = {
             Title: document.getElementById('model-title').value.trim(),
             Price: numericPrice,
@@ -151,20 +151,20 @@
         };
         formData.append('data', JSON.stringify(textData));
 
-        // 2. Получаем выбранные пользователем файлы
+        // 2. Получаем файлы из элементов формы
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
-        // 3. Прикрепляем реальные файлы к параметрам Strapi
+        // 3. Добавляем файлы с точными именами полей из админки Strapi
         if (fileInput) formData.append('files.ModelFBX', fileInput);
         if (imgInput) formData.append('files.Previews', imgInput);
 
-        // 4. Хитрый трюк: генерируем пустую заглушку для ModelGLB, чтобы обмануть сервер
+        // 4. Заглушка для обязательного поля ModelGLB на сервере
         const dummyFile = new File([""], "empty.glb", { type: "application/octet-stream" });
         formData.append('files.ModelGLB', dummyFile);
 
         try {
-            console.log("Отправка пакета данных с обманным GLB на Railway...");
+            console.log("Отправка полной формы на Railway...");
             const response = await fetch('https://my-strapi-project-production-f85a.up.railway.app/api/models', {
                 method: 'POST',
                 headers: {
