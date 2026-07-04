@@ -31,7 +31,6 @@
         .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
         .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
         
-        /* Стили для модального окна */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,17,26,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
         .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; }
@@ -45,7 +44,6 @@
         .submit-btn { width: 100%; padding: 12px; background: #4f46e5; border: none; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-btn:hover { background: #4338ca; }
 
-        /* КРАСИВОЕ УВЕДОМЛЕНИЕ ВМЕСТО ALERT */
         .toast-notification {
             position: fixed;
             top: 20px;
@@ -135,16 +133,12 @@
     </div>
 
 <script>
-    // Функция показа стильного уведомления
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
-        toast.style.background = isError ? '#ef4444' : '#22c55e'; // Красный при ошибке, зеленый при успехе
+        toast.style.background = isError ? '#ef4444' : '#22c55e';
         toast.style.display = 'block';
-        
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 4000); // Исчезнет через 4 секунды автоматически
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -179,11 +173,12 @@
         submitBtn.disabled = true;
         submitBtn.textContent = "Публикация...";
 
+        // 1. Создаем ОБЪЕКТ FormData
         const formData = new FormData();
+
+        // 2. СТРОГО ПЕРВЫМ добавляем текстовый JSON payload 'data'
         const rawPrice = document.getElementById('model-price').value.trim();
         const numericPrice = parseFloat(rawPrice) || 0;
-
-        // Неуязвимый двухэтапный метод сборки данных
         const textData = {
             Title: document.getElementById('model-title').value.trim(),
             Price: numericPrice,
@@ -191,22 +186,24 @@
         };
         formData.append('data', JSON.stringify(textData));
 
+        // 3. ТОЛЬКО ПОСЛЕ ЭТОГО прикрепляем файлы
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
         if (fileInput) formData.append('files.ModelFBX', fileInput);
         if (imgInput) formData.append('files.Previews', imgInput);
 
-        // Автозаглушка для GLB
+        // 4. Обязательная автозаглушка для GLB
         const dummyFile = new File([""], "empty.glb", { type: "application/octet-stream" });
         formData.append('files.ModelGLB', dummyFile);
 
         try {
-            console.log("Связывание данных и сохранение карточки...");
+            console.log("Отправка упорядоченной FormData в Strapi...");
             const response = await fetch('https://my-strapi-project-production-f85a.up.railway.app/api/models', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
+                    // Внимание: Content-Type указывать НЕЛЬЗЯ, браузер сделает это сам!
                 },
                 body: formData
             });
