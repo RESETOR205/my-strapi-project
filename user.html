@@ -171,41 +171,67 @@
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        submitBtn.textContent = "Публикация...";
+        submitBtn.textContent = "Загрузка файлов...";
 
-        // 1. Создаем ОБЪЕКТ FormData
-        const formData = new FormData();
-
-        // 2. СТРОГО ПЕРВЫМ добавляем текстовый JSON payload 'data'
-        const rawPrice = document.getElementById('model-price').value.trim();
-        const numericPrice = parseFloat(rawPrice) || 0;
-        const textData = {
-            Title: document.getElementById('model-title').value.trim(),
-            Price: numericPrice,
-            Description: document.getElementById('model-desc').value.trim()
-        };
-        formData.append('data', JSON.stringify(textData));
-
-        // 3. ТОЛЬКО ПОСЛЕ ЭТОГО прикрепляем файлы
         const fileInput = document.getElementById('model-file').files[0];
         const imgInput = document.getElementById('model-img').files[0];
 
-        if (fileInput) formData.append('files.ModelFBX', fileInput);
-        if (imgInput) formData.append('files.Previews', imgInput);
-
-        // 4. Обязательная автозаглушка для GLB
-        const dummyFile = new File([""], "empty.glb", { type: "application/octet-stream" });
-        formData.append('files.ModelGLB', dummyFile);
-
         try {
-            console.log("Отправка упорядоченной FormData в Strapi...");
+            // Вспомогательная функция для изолированной отправки файлов в Strapi
+            async function uploadToMediaLibrary(file) {
+                const fileData = new FormData();
+                fileData.append('files', file);
+
+                const res = await fetch('https://my-strapi-project-production-f85a.up.railway.app/api/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: fileData
+                });
+
+                if (!res.ok) {
+                    const errRes = await res.json();
+                    throw new Error(errRes.error?.message || "Не удалось загрузить один из файлов");
+                }
+
+                const uploadedFiles = await res.json();
+                return uploadedFiles[0].id; // Возвращаем ID сохраненного файла
+            }
+
+            // Этап 1: Загружаем файлы по очереди и получаем их ID
+            console.log("Загрузка основного файла...");
+            const fbxId = await uploadToMediaLibrary(fileInput);
+
+            console.log("Загрузка превью...");
+            const imgId = await uploadToMediaLibrary(imgInput);
+
+            console.log("Загрузка заглушки GLB...");
+            const dummyFile = new File([""], "empty.glb", { type: "application/octet-stream" });
+            const glbId = await uploadToMediaLibrary(dummyFile);
+
+            // Этап 2: Отправляем чистый JSON запрос с привязанными ID файлов
+            submitBtn.textContent = "Создание карточки...";
+            
+            const rawPrice = document.getElementById('model-price').value.trim();
+            const numericPrice = parseFloat(rawPrice) || 0;
+
+            const finalPayload = {
+                data: {
+                    Title: document.getElementById('model-title').value.trim(),
+                    Price: numericPrice,
+                    Description: document.getElementById('model-desc').value.trim(),
+                    ModelFBX: fbxId,
+                    Previews: imgId,
+                    ModelGLB: glbId
+                }
+            };
+
             const response = await fetch('https://my-strapi-project-production-f85a.up.railway.app/api/models', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                    // Внимание: Content-Type указывать НЕЛЬЗЯ, браузер сделает это сам!
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json' // Отправляем как чистый JSON!
                 },
-                body: formData
+                body: JSON.stringify(finalPayload)
             });
 
             if (response.ok) {
@@ -217,9 +243,10 @@
                 console.error("Детали ошибки сервера:", errorData);
                 showToast(`Ошибка Strapi: ${errorData.error ? errorData.error.message : 'Неизвестная ошибка'}`, true);
             }
+
         } catch (error) {
-            console.error("Критическая ошибка:", error);
-            showToast('Произошла ошибка сети при отправке данных.', true);
+            console.error("Критический сбой:", error);
+            showToast(`Ошибка: ${error.message || 'Сбой сети при отправке'}`, true);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = "Опубликовать";
