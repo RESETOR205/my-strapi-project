@@ -137,14 +137,13 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
-    // ФУНКЦИЯ ЗАГРУЗКИ МОДЕЛЕЙ ИЗ БАЗЫ ДАННЫХ STRAPI
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫВОДА ФОТОГРАФИЙ (С ПОДДЕРЖКОЙ MULTIPLE MEDIA)
     async function loadUserModels() {
         const grid = document.getElementById('user-models-grid');
         const token = localStorage.getItem('token');
         if (!grid) return;
 
         try {
-            // Запрашиваем модели вместе со связанными медиафайлами (?populate=*)
             const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -167,28 +166,31 @@
                 return;
             }
 
-            grid.innerHTML = ''; // Полностью очищаем блок перед рендером
+            grid.innerHTML = ''; 
 
             models.forEach(item => {
-                // Поддержка структуры как Strapi v4 (с .attributes), так и Strapi v5 (напрямую)
                 const attrs = item.attributes || item;
-                
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                // Безопасное извлечение URL картинки-превью
+                // Разбор структуры списка Multiple Media картинок
                 let imgUrl = '';
-                const previewData = attrs.Previews?.data || attrs.Previews;
+                let previewData = attrs.Previews?.data || attrs.Previews;
+                
                 if (previewData) {
-                    const previewAttrs = previewData.attributes || previewData;
-                    const rawUrl = previewAttrs.url || '';
-                    if (rawUrl) {
-                        // Если url относительный, склеиваем его с доменом Railway
-                        imgUrl = rawUrl.startsWith('http') ? rawUrl : `${STRAPI_BASE_URL}${rawUrl}`;
+                    // Если вернулся массив (коллекция картинок), берем самый первый кадр
+                    if (Array.isArray(previewData)) {
+                        previewData = previewData[0];
+                    }
+                    if (previewData) {
+                        const previewAttrs = previewData.attributes || previewData;
+                        const rawUrl = previewAttrs.url || '';
+                        if (rawUrl) {
+                            imgUrl = rawUrl.startsWith('http') ? rawUrl : `${STRAPI_BASE_URL}${rawUrl}`;
+                        }
                     }
                 }
 
-                // Генерируем HTML карточки
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
@@ -213,7 +215,6 @@
         document.getElementById('user-nick').textContent = '@' + storedUsername.toLowerCase().replace(/\s+/g, '');
         document.getElementById('user-avatar').textContent = storedUsername.charAt(0);
         
-        // Загружаем карточки из БД сразу при входе на страницу
         loadUserModels();
     });
 
@@ -280,13 +281,14 @@
             const rawPrice = document.getElementById('model-price').value.trim();
             const numericPrice = parseFloat(rawPrice) || 0;
 
+            // Отправляем массив картинок [imgId] для корректной связи в Multiple Media
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
                     Price: numericPrice,
                     Description: document.getElementById('model-desc').value.trim(),
                     ModelFBX: fbxId,
-                    Previews: imgId,
+                    Previews: [imgId], 
                     ModelGLB: glbId
                 }
             };
@@ -305,7 +307,6 @@
                 document.getElementById('upload-form').reset();
                 if (modal) modal.style.display = "none";
                 
-                // ОБНОВЛЯЕМ СПИСОК МОДЕЛЕЙ НА ЭКРАНЕ БЕЗ ПЕРЕЗАГРУЗКИ СТРАНИЦЫ
                 loadUserModels();
             } else {
                 const errorData = await response.json();
