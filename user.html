@@ -24,7 +24,6 @@
         .add-product-btn { padding: 8px 16px; background: #22c55e; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; text-decoration: none; }
         .add-product-btn:hover { background: #16a34a; }
         
-        /* Сетка и карточки (добавлено position: relative для кнопки удаления) */
         .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .product-card { position: relative; background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; padding: 15px; border: 1px solid transparent; transition: transform 0.3s ease, border-color 0.3s ease; }
         .product-card:hover { transform: scale(1.03); border-color: #4f46e5; }
@@ -33,7 +32,6 @@
         .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
         .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
         
-        /* СТИЛЬ КНОПКИ УДАЛЕНИЯ КАРТОЧКИ */
         .delete-card-btn {
             position: absolute;
             top: 22px;
@@ -59,7 +57,6 @@
             transform: scale(1.1);
         }
         
-        /* Модальное окно */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,17,26,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
         .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; }
@@ -166,7 +163,6 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
-    // ФУНКЦИЯ УДАЛЕНИЯ МОДЕЛИ ИЗ БАЗЫ ДАННЫХ STRAPI
     async function deleteModel(modelId) {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -184,8 +180,8 @@
             });
 
             if (response.ok) {
-                showToast("Модель успешно удалена из базы данных!");
-                loadUserModels(); // Мгновенно обновляем сетку на экране
+                showToast("Модель успешно удалена!");
+                loadUserModels(); 
             } else {
                 const errorData = await response.json();
                 console.error("Не удалось удалить:", errorData);
@@ -228,7 +224,7 @@
             grid.innerHTML = ''; 
 
             models.forEach(item => {
-                const modelId = item.id; // Получаем ID записи для удаления
+                const modelId = item.id;
                 const attrs = item.attributes || item;
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
@@ -255,7 +251,6 @@
                 card.className = 'product-card';
                 card.innerHTML = `
                     <button class="delete-card-btn" onclick="deleteModel(${modelId})">&times;</button>
-                    
                     ${imgUrl ? `<img src="${imgUrl}" class="product-img" alt="${title}">` : '<div class="product-img" style="background: #0f111a;"></div>'}
                     <div class="product-info">
                         <div class="product-title">${title}</div>
