@@ -137,7 +137,6 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
-    // ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫВОДА ФОТОГРАФИЙ (С ПОДДЕРЖКОЙ MULTIPLE MEDIA)
     async function loadUserModels() {
         const grid = document.getElementById('user-models-grid');
         const token = localStorage.getItem('token');
@@ -173,12 +172,10 @@
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                // Разбор структуры списка Multiple Media картинок
                 let imgUrl = '';
                 let previewData = attrs.Previews?.data || attrs.Previews;
                 
                 if (previewData) {
-                    // Если вернулся массив (коллекция картинок), берем самый первый кадр
                     if (Array.isArray(previewData)) {
                         previewData = previewData[0];
                     }
@@ -190,6 +187,9 @@
                         }
                     }
                 }
+
+                // ПОЛЕЗНЫЙ ЛОГ ДЛЯ ТВОЕЙ КОНСОЛИ РАЗРАБОТЧИКА (F12)
+                console.log("Ссылка на картинку модели:", title, "->", imgUrl);
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
@@ -281,7 +281,6 @@
             const rawPrice = document.getElementById('model-price').value.trim();
             const numericPrice = parseFloat(rawPrice) || 0;
 
-            // Отправляем массив картинок [imgId] для корректной связи в Multiple Media
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
