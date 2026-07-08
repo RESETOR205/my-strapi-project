@@ -182,15 +182,18 @@
             if (response.ok) {
                 showToast("Модель успешно удалена!");
                 
-                // Мгновенное плавное удаление карточки из интерфейса
+                // ЖЁСТКОЕ И МГНОВЕННОЕ УДАЛЕНИЕ КАРТОЧКИ С ЭКРАНА
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
                     cardEl.style.transform = 'scale(0.8)';
                     setTimeout(() => {
                         cardEl.remove();
+                        
+                        // Проверяем, остались ли еще модели на экране
                         const grid = document.getElementById('user-models-grid');
-                        if (grid && grid.children.length === 0) {
+                        const remainingCards = grid.querySelectorAll('[id^="model-card-"]');
+                        if (remainingCards.length === 0) {
                             grid.innerHTML = `
                                 <div class="product-card">
                                     <div class="product-img" style="background: #1a1d29;"></div>
@@ -202,9 +205,6 @@
                         }
                     }, 400);
                 }
-
-                // Обновляем список в фоне
-                loadUserModels(); 
             } else {
                 const errorData = await response.json();
                 console.error("Не удалось удалить:", errorData);
@@ -222,7 +222,6 @@
         if (!grid) return;
 
         try {
-            // Кэш-бастер полностью убирает старый кэш браузера
             const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -269,11 +268,9 @@
                     }
                 }
 
-                console.log("Ссылка на картинку модели:", title, "->", imgUrl);
-
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                card.id = `model-card-${modelId}`; // Присваиваем уникальный ID для плавной анимации
+                card.id = `model-card-${modelId}`; // Уникальный ID карточки
                 card.innerHTML = `
                     <button class="delete-card-btn" onclick="deleteModel(${modelId})">&times;</button>
                     ${imgUrl ? `<img src="${imgUrl}" class="product-img" alt="${title}">` : '<div class="product-img" style="background: #0f111a;"></div>'}
