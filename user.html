@@ -163,7 +163,6 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
-    // МОДЕРНИЗИРОВАННАЯ ФУНКЦИЯ УДАЛЕНИЯ С ДИАГНОСТИКОЙ ОШИБОК
     async function deleteModel(modelId) {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -172,7 +171,7 @@
         }
 
         try {
-            console.log(`[УДАЛЕНИЕ] Отправка запроса на ID модели: ${modelId}`);
+            console.log(`Отправка запроса на удаление модели ID: ${modelId}`);
             const response = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}`, {
                 method: 'DELETE',
                 headers: {
@@ -180,18 +179,16 @@
                 }
             });
 
-            console.log(`[УДАЛЕНИЕ] Статус ответа сервера Railway: ${response.status}`);
-
             if (response.ok) {
                 showToast("Модель успешно удалена!");
-                loadUserModels(); // Перерисовываем сетку
+                loadUserModels(); 
             } else {
                 const errorData = await response.json();
-                console.error("[УДАЛЕНИЕ] Полный ответ об ошибке от сервера:", errorData);
-                showToast(`Ошибка удаления (Код ${response.status}): ${errorData.error ? errorData.error.message : 'Неизвестная ошибка'}`, true);
+                console.error("Не удалось удалить:", errorData);
+                showToast(`Ошибка удаления: ${errorData.error ? errorData.error.message : 'Запрещено настройками доступа'}`, true);
             }
         } catch (error) {
-            console.error("[УДАЛЕНИЕ] Критическая ошибка сети:", error);
+            console.error("Ошибка сети при удалении:", error);
             showToast("Ошибка сети при попытке удалить модель.", true);
         }
     }
