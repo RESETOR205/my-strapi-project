@@ -182,7 +182,7 @@
             if (response.ok) {
                 showToast("Модель успешно удалена!");
                 
-                // ЖЁСТКОЕ И МГНОВЕННОЕ УДАЛЕНИЕ КАРТОЧКИ С ЭКРАНА
+                // ЖЁСТКОЕ ЛОКАЛЬНОЕ УДАЛЕНИЕ КАРТОЧКИ (БЕЗ ПОВТОРНОГО ЗАПРОСА К СЕРВЕРУ)
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
@@ -190,7 +190,6 @@
                     setTimeout(() => {
                         cardEl.remove();
                         
-                        // Проверяем, остались ли еще модели на экране
                         const grid = document.getElementById('user-models-grid');
                         const remainingCards = grid.querySelectorAll('[id^="model-card-"]');
                         if (remainingCards.length === 0) {
@@ -270,7 +269,7 @@
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                card.id = `model-card-${modelId}`; // Уникальный ID карточки
+                card.id = `model-card-${modelId}`;
                 card.innerHTML = `
                     <button class="delete-card-btn" onclick="deleteModel(${modelId})">&times;</button>
                     ${imgUrl ? `<img src="${imgUrl}" class="product-img" alt="${title}">` : '<div class="product-img" style="background: #0f111a;"></div>'}
