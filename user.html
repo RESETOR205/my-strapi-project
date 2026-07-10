@@ -153,7 +153,8 @@
     </div>
 
 <script>
-    const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+    // Адрес переключен на твой локальный компьютер
+    const STRAPI_BASE_URL = 'http://localhost:1337';
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
@@ -182,7 +183,7 @@
             if (response.ok) {
                 showToast("Модель успешно удалена!");
                 
-                // ЖЁСТКОЕ ЛОКАЛЬНОЕ УДАЛЕНИЕ КАРТОЧКИ (БЕЗ ПОВТОРНОГО ЗАПРОСА К СЕРВЕРУ)
+                // Мгновенное удаление карточки из интерфейса
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
