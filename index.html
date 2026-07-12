@@ -5,110 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Витрина | 3D Маркетплейс</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            min-height: 100vh;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0f111a; color: #fff; padding: 20px; min-height: 100vh; }
+        
         /* Шапка сайта */
-        header {
-            background-color: #1e293b;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #334155;
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-            color: #38bdf8;
-            text-decoration: none;
-        }
-
-        /* Зона авторизации (Здесь магия замены) */
-        .auth-zone {
-            display: flex;
-            align-items: center;
-        }
-
-        .login-btn {
-            color: #0f172a;
-            background-color: #38bdf8;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-
-        .login-btn:hover {
-            background-color: #0ea5e9;
-        }
-
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
+        .logo { font-size: 24px; font-weight: bold; color: #38bdf8; text-decoration: none; }
+        
+        /* Зона авторизации */
+        .auth-zone { display: flex; align-items: center; }
+        .login-btn { color: #0f172a; background-color: #38bdf8; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: background-color 0.2s; }
+        .login-btn:hover { background-color: #0ea5e9; }
+        
         /* Стили для вошедшего пользователя */
-        .user-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .welcome-text {
-            color: #38bdf8;
-            font-weight: 600;
-        }
-
-        .profile-btn {
-            color: #f8fafc;
-            background-color: #334155;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
-
-        .profile-btn:hover {
-            background-color: #475569;
-        }
-
-        .logout-btn {
-            color: #94a3b8;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .logout-btn:hover {
-            color: #f1f5f9;
-        }
-
+        .user-container { display: flex; align-items: center; gap: 15px; }
+        .welcome-text { color: #38bdf8; font-weight: bold; }
+        .profile-btn { padding: 10px 20px; background: #4f46e5; border: none; border-radius: 8px; color: #fff; text-decoration: none; font-weight: bold; transition: background 0.2s; }
+        .profile-btn:hover { background: #4338ca; }
+        .logout-btn { color: #94a3b8; font-size: 14px; cursor: pointer; text-decoration: underline; }
+        .logout-btn:hover { color: #fff; }
+        
         /* Контент витрины */
-        main {
-            padding: 40px;
-            text-align: center;
-        }
+        .hero-section { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1a1d29 0%, #0f111a 100%); border-radius: 16px; margin-bottom: 40px; border: 1px solid #1e293b; }
+        .hero-section h1 { font-size: 42px; margin-bottom: 15px; letter-spacing: 1px; }
+        .hero-section p { color: #94a3b8; font-size: 18px; }
 
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        .catalog-placeholder {
-            margin-top: 40px;
-            padding: 60px;
-            border: 2px dashed #334155;
-            border-radius: 12px;
-            color: #64748b;
-        }
+        .section-title-bar { padding: 10px 0; border-bottom: 1px solid #334155; margin-bottom: 30px; }
+        .section-title { font-size: 18px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; }
+        
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; padding: 15px; border: 1px solid transparent; text-decoration: none; color: inherit; transition: transform 0.3s ease, border-color 0.3s ease; }
+        .product-card:hover { transform: scale(1.03); border-color: #4f46e5; }
+        .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; border-radius: 12px; margin-bottom: 15px; }
+        .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
+        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
+        
+        .loader { color: #94a3b8; padding: 40px; text-align: center; font-size: 16px; width: 100%; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
@@ -122,40 +55,110 @@
     </header>
 
     <main>
-        <h1>Витрина 3D Моделей</h1>
-        <p>Добро пожаловать на наш маркетплейс предметов.</p>
+        <div class="hero-section">
+            <h1>Витрина 3D Моделей</h1>
+            <p>Добро пожаловать на наш маркетплейс предметов.</p>
+        </div>
         
-        <div class="catalog-placeholder">
-            Твой каталог 3D моделей (здесь будут выводиться карточки товаров из Strapi)
+        <div class="section-title-bar">
+            <div class="section-title">Все доступные модели</div>
+        </div>
+
+        <div class="market-grid" id="global-models-grid">
+            <div class="loader">Загрузка витрины моделей...</div>
         </div>
     </main>
 
 <script>
+    const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+
+    // Функция для выхода из профиля (очищает сессию и обновляет страницу)
+    function logoutUser() {
+        localStorage.clear(); 
+        window.location.reload(); 
+    }
+
+    async function loadMarketModels() {
+        const grid = document.getElementById('global-models-grid');
+        if (!grid) return;
+
+        try {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
+                method: 'GET'
+            });
+
+            if (!res.ok) throw new Error("Не удалось загрузить модели с сервера");
+
+            const responseData = await res.json();
+            const models = responseData.data || [];
+
+            if (models.length === 0) {
+                grid.innerHTML = '<div class="loader">На витрине пока нет ни одной модели. Будьте первым, кто загрузит!</div>';
+                return;
+            }
+
+            grid.innerHTML = ''; 
+
+            models.forEach(item => {
+                const modelId = item.id;
+                const attrs = item.attributes || item;
+                const title = attrs.Title || "Без названия";
+                const price = attrs.Price !== undefined ? attrs.Price : 0;
+
+                let imgUrl = '';
+                let previewData = attrs.Previews?.data || attrs.Previews;
+                
+                if (previewData) {
+                    if (Array.isArray(previewData)) previewData = previewData[0];
+                    if (previewData) {
+                        const previewAttrs = previewData.attributes || previewData;
+                        const rawUrl = previewAttrs.url || '';
+                        if (rawUrl) {
+                            imgUrl = rawUrl.startsWith('http') ? rawUrl : `${STRAPI_BASE_URL}${rawUrl}`;
+                        }
+                    }
+                }
+
+                const card = document.createElement('a');
+                card.href = `product.html?id=${modelId}`;
+                card.className = 'product-card';
+                card.innerHTML = `
+                    ${imgUrl ? `<img src="${imgUrl}" class="product-img" alt="${title}">` : '<div class="product-img" style="background: #0f111a;"></div>'}
+                    <div class="product-info">
+                        <div class="product-title">${title}</div>
+                        <div class="product-price">${price} $</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Ошибка загрузки витрины:", error);
+            grid.innerHTML = `<div class="loader" style="color: #ef4444;">Ошибка подключения к серверу: ${error.message}</div>`;
+        }
+    }
+
+    // Инициализация страницы
     document.addEventListener('DOMContentLoaded', () => {
-        // Читаем данные авторизации из памяти браузера
+        // Восстанавливаем твою проверку авторизации
         const userStatus = localStorage.getItem('userStatus');
         const username = localStorage.getItem('username');
         const authZone = document.getElementById('auth-header-zone');
 
-        // Проверяем: если статус равен 'user' и имя записано
+        // Перерисовываем шапку на user.html, если пользователь залогинен
         if (userStatus === 'user' && username) {
-            // Перерисовываем шапку под авторизованного пользователя
             authZone.innerHTML = `
                 <div class="user-container">
                     <span class="welcome-text">👋 Привет, ${username}!</span>
-                    <a href="profile.html" class="profile-btn">В профиль</a>
+                    <a href="user.html" class="profile-btn">В профиль</a>
                     <span class="logout-btn" onclick="logoutUser()">Выйти</span>
                 </div>
             `;
         } 
-        // Если зашел гость или никто не авторизован — оставляем кнопку "Войти" по умолчанию
-    });
 
-    // Функция для выхода из профиля
-    function logoutUser() {
-        localStorage.clear(); // Полностью очищаем хранилище (сессию)
-        window.location.reload(); // Перезагружаем страницу, чтобы вернулась кнопка "Войти"
-    }
+        // Запускаем загрузку товаров
+        loadMarketModels();
+    });
 </script>
 
 </body>
