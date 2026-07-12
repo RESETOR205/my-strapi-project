@@ -183,7 +183,7 @@
             if (response.ok) {
                 showToast("Модель успешно удалена!");
                 
-                // Мгновенное удаление карточки из интерфейса
+                // Мгновенное локальное удаление карточки из интерфейса
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
