@@ -1,35 +1,25 @@
 import path from 'path';
 
 export default ({ env }) => {
-  const databaseUrl = env('DATABASE_URL');
-
-  // Если на Railway задана переменная DATABASE_URL, подключаемся к PostgreSQL
-  if (databaseUrl) {
-    // Разбираем строку подключения вручную, чтобы не устанавливать лишние плагины
-    const connectionString = new URL(databaseUrl);
-    
+  // Если сервер запущен на Railway и видит DATABASE_URL, включаем Postgres
+  if (env('DATABASE_URL')) {
     return {
       connection: {
         client: 'postgres',
         connection: {
-          host: connectionString.hostname,
-          port: connectionString.port || 5432,
-          database: connectionString.pathname.substring(1),
-          user: connectionString.username,
-          password: connectionString.password,
-          ssl: { rejectUnauthorized: false }, // Обязательно для безопасного подключения на Railway
+          connectionString: env('DATABASE_URL'),
+          ssl: { rejectUnauthorized: false }
         },
-        debug: false,
       },
     };
   }
 
-  // Если DATABASE_URL нет (локальный запуск на компьютере), используем SQLite
+  // Если запускаем локально на компьютере, работает обычный файлик SQLite
   return {
     connection: {
       client: 'sqlite',
       connection: {
-        filename: path.join(__dirname, '..', '..', env('DATABASE_FILENAME', '.tmp/data.db')),
+        filename: path.join(__dirname, '..', '..', '.tmp/data.db'),
       },
       useNullAsDefault: true,
     },
