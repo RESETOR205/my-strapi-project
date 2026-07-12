@@ -52,21 +52,16 @@
             transition: background 0.2s ease, transform 0.1s ease;
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
-        .delete-card-btn:hover {
-            background: #ef4444;
-            transform: scale(1.1);
-        }
+        .delete-card-btn:hover { background: #ef4444; transform: scale(1.1); }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,17,26,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
-        .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; }
         .close-modal:hover { color: #fff; }
         .modal h2 { margin-bottom: 20px; font-size: 22px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; font-size: 14px; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #0f111a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
-        .form-group input[type="file"] { padding: 5px; background: transparent; border: none; }
-        .form-group input:focus, .form-group textarea:focus { border-color: #4f46e5; }
         .submit-btn { width: 100%; padding: 12px; background: #4f46e5; border: none; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-btn:hover { background: #4338ca; }
 
@@ -153,7 +148,6 @@
     </div>
 
 <script>
-    // Точный и выверенный адрес твоего бэкенда на Railway
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
 
     function showToast(message, isError = false) {
@@ -164,26 +158,30 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
+    // Сохранили и анимацию, и добавили точную отладку ответов сервера
     async function deleteModel(modelId) {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
         if (!token) {
-            showToast("Ошибка: Авторизуйтесь заново.", true);
+            alert("КРИТИЧЕСКАЯ ОШИБКА: Ключ авторизации не найден. Выйдите из аккаунта на главной и зайдите заново.");
             return;
         }
 
+        if (!confirm(`Вы точно хотите удалить модель с ID: ${modelId}?`)) return;
+
         try {
-            console.log(`[УДАЛЕНИЕ] Отправка запроса на удаление модели ID: ${modelId}`);
             const response = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
 
-            if (response.ok) {
+            // Если сервер ответил успехом (200 или 204)
+            if (response.status === 200 || response.status === 204) {
                 showToast("Модель успешно удалена!");
                 
-                // Мгновенное удаление карточки из интерфейса
+                // Твоя фирменная плавная анимация исчезновения карточки
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
@@ -194,31 +192,35 @@
                         const grid = document.getElementById('user-models-grid');
                         const remainingCards = grid.querySelectorAll('[id^="model-card-"]');
                         if (remainingCards.length === 0) {
-                            grid.innerHTML = `
-                                <div class="product-card">
-                                    <div class="product-img" style="background: #1a1d29;"></div>
-                                    <div class="product-info">
-                                        <div class="product-title" style="color: #64748b;">У вас пока нет опубликованных моделей</div>
-                                        <div class="product-price">0 $</div>
-                                    </div>
-                                </div>`;
+                            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
                         }
                     }, 400);
                 }
-            } else {
-                const errorData = await response.json();
-                console.error("Не удалось удалить:", errorData);
-                showToast(`Ошибка удаления: ${errorData.error ? errorData.error.message : 'Запрещено настройками доступа'}`, true);
+                return;
+            } 
+            
+            // Если сервер вернул явную ошибку доступа
+            if (response.status === 403) {
+                alert("ОШИБКА 403 (Запрещено): Новая база Postgres отклонила запрос.\n\nРЕШЕНИЕ: В админке Strapi перейдите в Settings -> Roles -> Authenticated -> Вкладка Models -> Поставьте галочку на 'delete' и нажмите синюю кнопку SAVE!");
+                return;
             }
+
+            if (response.status === 401) {
+                alert("ОШИБКА 401 (Не авторизован): Ваш токен принадлежит старой базе SQLite.\n\nРЕШЕНИЕ: Перейдите на главную страницу, нажмите 'Выйти', зарегистрируйте НОВОГО пользователя и войдите под ним.");
+                return;
+            }
+
+            const errorText = await response.text();
+            alert(`СБОЙ СЕРВЕРА: Статус ${response.status}\nОтвет: ${errorText}`);
+
         } catch (error) {
-            console.error("Ошибка сети при удалении:", error);
-            showToast("Ошибка сети при попытке удалить модель.", true);
+            alert(`ОШИБКА СЕТИ: Не удалось связаться с бэкендом.\nДетали: ${error.message}`);
         }
     }
 
     async function loadUserModels() {
         const grid = document.getElementById('user-models-grid');
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
         if (!grid) return;
 
         try {
@@ -227,20 +229,13 @@
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!res.ok) throw new Error("Не удалось получить список моделей с сервера");
+            if (!res.ok) throw new Error("Не удалось загрузить ваши работы.");
 
             const responseData = await res.json();
             const models = responseData.data || [];
 
             if (models.length === 0) {
-                grid.innerHTML = `
-                    <div class="product-card">
-                        <div class="product-img" style="background: #1a1d29;"></div>
-                        <div class="product-info">
-                            <div class="product-title" style="color: #64748b;">У вас пока нет опубликованных моделей</div>
-                            <div class="product-price">0 $</div>
-                        </div>
-                    </div>`;
+                grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
                 return;
             }
 
@@ -256,9 +251,7 @@
                 let previewData = attrs.Previews?.data || attrs.Previews;
                 
                 if (previewData) {
-                    if (Array.isArray(previewData)) {
-                        previewData = previewData[0];
-                    }
+                    if (Array.isArray(previewData)) previewData = previewData[0];
                     if (previewData) {
                         const previewAttrs = previewData.attributes || previewData;
                         const rawUrl = previewAttrs.url || '';
@@ -283,8 +276,7 @@
             });
 
         } catch (error) {
-            console.error("Ошибка вывода контента:", error);
-            grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки моделей: ${error.message}</div>`;
+            grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки: ${error.message}</div>`;
         }
     }
 
@@ -304,19 +296,13 @@
     if (btn && modal && span) {
         btn.onclick = function() { modal.style.display = "flex"; }
         span.onclick = function() { modal.style.display = "none"; }
-        window.onclick = function(event) {
-            if (event.target == modal) { modal.style.display = "none"; }
-        }
+        window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
     }
 
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-            showToast("Ошибка: Токен отсутствует. Авторизуйтесь заново.", true);
-            return;
-        }
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        if (!token) { showToast("Ошибка авторизации!", true); return; }
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
@@ -329,41 +315,25 @@
             async function uploadToMediaLibrary(file) {
                 const fileData = new FormData();
                 fileData.append('files', file);
-
                 const res = await fetch(`${STRAPI_BASE_URL}/api/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: fileData
                 });
-
-                if (!res.ok) {
-                    const errRes = await res.json();
-                    throw new Error(errRes.error?.message || "Не удалось загрузить файл");
-                }
-
+                if (!res.ok) throw new Error("Не удалось загрузить медиафайлы");
                 const uploadedFiles = await res.json();
                 return uploadedFiles[0].id;
             }
 
-            console.log("Загрузка основного файла...");
             const fbxId = await uploadToMediaLibrary(fileInput);
-
-            console.log("Загрузка превью...");
             const imgId = await uploadToMediaLibrary(imgInput);
-
-            console.log("Загрузка заглушки GLB...");
             const dummyFile = new File(["placeholder_content"], "empty.glb", { type: "application/octet-stream" });
             const glbId = await uploadToMediaLibrary(dummyFile);
-
-            submitBtn.textContent = "Создание карточки...";
-            
-            const rawPrice = document.getElementById('model-price').value.trim();
-            const numericPrice = parseFloat(rawPrice) || 0;
 
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
-                    Price: numericPrice,
+                    Price: parseFloat(document.getElementById('model-price').value.trim()) || 0,
                     Description: document.getElementById('model-desc').value.trim(),
                     ModelFBX: fbxId,
                     Previews: [imgId], 
@@ -373,27 +343,20 @@
 
             const response = await fetch(`${STRAPI_BASE_URL}/api/models`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(finalPayload)
             });
 
             if (response.ok) {
-                showToast("УРА! Всё успешно сохранено в базе Strapi без единой ошибки!");
+                showToast("Модель успешно создана в базе Postgres!");
                 document.getElementById('upload-form').reset();
                 if (modal) modal.style.display = "none";
-                
                 loadUserModels();
             } else {
-                const errorData = await response.json();
-                showToast(`Ошибка Strapi: ${errorData.error ? errorData.error.message : 'Неизвестная ошибка'}`, true);
+                showToast("Ошибка сохранения карточки на сервере.", true);
             }
-
         } catch (error) {
-            console.error("Критический сбой:", error);
-            showToast(`Ошибка: ${error.message || 'Сбой сети при отправке'}`, true);
+            showToast(`Критический сбой: ${error.message}`, true);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = "Опубликовать";
