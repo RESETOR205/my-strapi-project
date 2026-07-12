@@ -153,7 +153,7 @@
     </div>
 
 <script>
-    // Ссылка снова ведет на твой рабочий сервер в облаке Railway
+    // Точный и выверенный адрес твоего бэкенда на Railway
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
 
     function showToast(message, isError = false) {
@@ -183,6 +183,7 @@
             if (response.ok) {
                 showToast("Модель успешно удалена!");
                 
+                // Мгновенное удаление карточки из интерфейса
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
@@ -337,7 +338,7 @@
 
                 if (!res.ok) {
                     const errRes = await res.json();
-                    throw new Error(errRes.error?.message || "Не удалось加载 файл");
+                    throw new Error(errRes.error?.message || "Не удалось загрузить файл");
                 }
 
                 const uploadedFiles = await res.json();
