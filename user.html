@@ -64,25 +64,7 @@
         .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #0f111a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
         .submit-btn { width: 100%; padding: 12px; background: #4f46e5; border: none; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-btn:hover { background: #4338ca; }
-
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 15px;
-            font-weight: bold;
-            z-index: 2000;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            display: none;
-            animation: slideIn 0.3s ease forwards;
-        }
-        @keyframes slideIn {
-            from { transform: translateX(120%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        .toast-notification { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 8px; color: #fff; font-size: 15px; font-weight: bold; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.4); display: none; }
     </style>
 </head>
 <body>
@@ -158,17 +140,17 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
-    // Сохранили и анимацию, и добавили точную отладку ответов сервера
     async function deleteModel(modelId) {
         const token = localStorage.getItem('token') || localStorage.getItem('jwt');
         if (!token) {
-            alert("КРИТИЧЕСКАЯ ОШИБКА: Ключ авторизации не найден. Выйдите из аккаунта на главной и зайдите заново.");
+            alert("КРИТИЧЕСКАЯ ОШИБКА: Ключ авторизации не найден. Выйдите из аккаунта и зайдите заново.");
             return;
         }
 
-        if (!confirm(`Вы точно хотите удалить модель с ID: ${modelId}?`)) return;
+        if (!confirm("Вы точно хотите удалить эту модель?")) return;
 
         try {
+            // Теперь запрос отправляется по правильному документному идентификатору Strapi v5
             const response = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}`, {
                 method: 'DELETE',
                 headers: {
@@ -177,21 +159,17 @@
                 }
             });
 
-            // Если сервер ответил успехом (200 или 204)
             if (response.status === 200 || response.status === 204) {
                 showToast("Модель успешно удалена!");
                 
-                // Твоя фирменная плавная анимация исчезновения карточки
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
                     cardEl.style.transform = 'scale(0.8)';
                     setTimeout(() => {
                         cardEl.remove();
-                        
                         const grid = document.getElementById('user-models-grid');
-                        const remainingCards = grid.querySelectorAll('[id^="model-card-"]');
-                        if (remainingCards.length === 0) {
+                        if (grid.querySelectorAll('[id^="model-card-"]').length === 0) {
                             grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
                         }
                     }, 400);
@@ -199,14 +177,8 @@
                 return;
             } 
             
-            // Если сервер вернул явную ошибку доступа
             if (response.status === 403) {
-                alert("ОШИБКА 403 (Запрещено): Новая база Postgres отклонила запрос.\n\nРЕШЕНИЕ: В админке Strapi перейдите в Settings -> Roles -> Authenticated -> Вкладка Models -> Поставьте галочку на 'delete' и нажмите синюю кнопку SAVE!");
-                return;
-            }
-
-            if (response.status === 401) {
-                alert("ОШИБКА 401 (Не авторизован): Ваш токен принадлежит старой базе SQLite.\n\nРЕШЕНИЕ: Перейдите на главную страницу, нажмите 'Выйти', зарегистрируйте НОВОГО пользователя и войдите под ним.");
+                alert("ОШИБКА 403: Нет прав. Проверьте галочку 'delete' для роли Authenticated в админке.");
                 return;
             }
 
@@ -214,7 +186,7 @@
             alert(`СБОЙ СЕРВЕРА: Статус ${response.status}\nОтвет: ${errorText}`);
 
         } catch (error) {
-            alert(`ОШИБКА СЕТИ: Не удалось связаться с бэкендом.\nДетали: ${error.message}`);
+            alert(`ОШИБКА СЕТИ: ${error.message}`);
         }
     }
 
@@ -242,7 +214,8 @@
             grid.innerHTML = ''; 
 
             models.forEach(item => {
-                const modelId = item.id;
+                // КЛЮЧЕВОЙ ФИКС: Приоритет отдаётся строковому documentId из Strapi v5
+                const modelId = item.documentId || item.id;
                 const attrs = item.attributes || item;
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
@@ -264,8 +237,9 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.id = `model-card-${modelId}`;
+                // Передаем текстовый ID в кавычках
                 card.innerHTML = `
-                    <button class="delete-card-btn" onclick="deleteModel(${modelId})">&times;</button>
+                    <button class="delete-card-btn" onclick="deleteModel('${modelId}')">&times;</button>
                     ${imgUrl ? `<img src="${imgUrl}" class="product-img" alt="${title}">` : '<div class="product-img" style="background: #0f111a;"></div>'}
                     <div class="product-info">
                         <div class="product-title">${title}</div>
@@ -285,7 +259,6 @@
         document.getElementById('user-name').textContent = storedUsername;
         document.getElementById('user-nick').textContent = '@' + storedUsername.toLowerCase().replace(/\s+/g, '');
         document.getElementById('user-avatar').textContent = storedUsername.charAt(0);
-        
         loadUserModels();
     });
 
