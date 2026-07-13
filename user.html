@@ -112,7 +112,6 @@
                     <label for="model-file">Файл модели (.fbx, .obj, .zip)</label>
                     <input type="file" id="model-file" accept=".fbx,.obj,.zip" required>
                 </div>
-                <!-- Фича №1: Поле Полигонов -->
                 <div class="form-group">
                     <label for="model-polygons">Количество полигонов (Polygons)</label>
                     <input type="number" id="model-polygons" required placeholder="Например: 12500">
@@ -121,7 +120,6 @@
                     <label for="model-price">Цена (только число)</label>
                     <input type="text" id="model-price" required placeholder="19">
                 </div>
-                <!-- Фича №2: Добавлен атрибут multiple для выбора нескольких фото -->
                 <div class="form-group">
                     <label for="model-img">Фото / Галерея превью (можно выбрать несколько картинок)</label>
                     <input type="file" id="model-img" accept="image/*" multiple required>
@@ -210,7 +208,6 @@
                 let imgUrl = '';
                 let previewData = attrs.Previews?.data || attrs.Previews;
                 
-                // На витрине личного кабинета берём первое фото массива как обложку карточки
                 if (previewData) {
                     if (Array.isArray(previewData)) previewData = previewData[0];
                     if (previewData) {
@@ -267,11 +264,9 @@
         submitBtn.textContent = "Загрузка файлов...";
 
         const fileInput = document.getElementById('model-file').files[0];
-        // Получаем коллекцию всех выбранных картинок
         const imgInputFiles = document.getElementById('model-img').files;
 
         try {
-            // Базовая функция загрузки ОДНОГО файла
             async function uploadToMediaLibrary(file) {
                 const fileData = new FormData();
                 fileData.append('files', file);
@@ -285,10 +280,8 @@
                 return uploadedFiles[0].id;
             }
 
-            // 1. Загружаем FBX/OBJ
             const fbxId = await uploadToMediaLibrary(fileInput);
 
-            // 2. ЦИКЛ ДЛЯ КАРТИНОК: Загружаем все выбранные фото по очереди и собираем их ID в массив
             const imgIds = [];
             for (let i = 0; i < imgInputFiles.length; i++) {
                 submitBtn.textContent = `Загрузка фото (${i + 1}/${imgInputFiles.length})...`;
@@ -296,21 +289,19 @@
                 imgIds.push(uploadedId);
             }
 
-            // 3. Загружаем заглушку GLB
             const dummyFile = new File(["placeholder_content"], "empty.glb", { type: "application/octet-stream" });
             const glbId = await uploadToMediaLibrary(dummyFile);
 
             submitBtn.textContent = "Создание карточки...";
 
-            // Собираем финальный payload, включая полигоны и массив ID картинок
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
                     Price: parseFloat(document.getElementById('model-price').value.trim()) || 0,
                     Description: document.getElementById('model-desc').value.trim(),
-                    Polygons: parseInt(document.getElementById('model-polygons').value.trim()) || 0, // Сохраняем полигоны
+                    Polygons: parseInt(document.getElementById('model-polygons').value.trim()) || 0,
                     ModelFBX: fbxId,
-                    Previews: imgIds, // Передаем весь массив загруженных картинок!
+                    Previews: imgIds, 
                     ModelGLB: glbId
                 }
             };
@@ -327,6 +318,10 @@
                 if (modal) modal.style.display = "none";
                 loadUserModels();
             } else {
+                const errJson = await response.json().catch(() => ({}));
+                const strapiErrorMessage = errJson?.error?.message || "Неизвестная ошибка валидации полей";
+                
+                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}\n\nПроверьте, создано ли поле 'Polygons' (тип Number/Integer) в админке и переключено ли поле 'Previews' в режим Multiple Media!`);
                 showToast("Ошибка сохранения карточки на сервере.", true);
             }
         } catch (error) {
