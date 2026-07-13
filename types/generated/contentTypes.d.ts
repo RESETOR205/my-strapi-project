@@ -460,6 +460,7 @@ export interface ApiModelModel extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     ModelFBX: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     ModelGLB: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    Polygons: Schema.Attribute.String;
     Previews: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true

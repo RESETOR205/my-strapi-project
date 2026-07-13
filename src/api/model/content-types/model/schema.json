@@ -49,6 +49,9 @@
         "videos",
         "audios"
       ]
+    },
+    "Polygons": {
+      "type": "string"
     }
   }
 }
