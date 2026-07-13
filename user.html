@@ -114,7 +114,7 @@
                 </div>
                 <div class="form-group">
                     <label for="model-polygons">Количество полигонов (Polygons)</label>
-                    <input type="number" id="model-polygons" required placeholder="Например: 12500">
+                    <input type="text" id="model-polygons" required placeholder="Например: 12500 или 12k">
                 </div>
                 <div class="form-group">
                     <label for="model-price">Цена (только число)</label>
@@ -294,12 +294,13 @@
 
             submitBtn.textContent = "Создание карточки...";
 
+            // КЛЮЧЕВОЙ ФИКС: Отправляем Polygons как чистую строку (.value.trim()) без parseInt
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
                     Price: parseFloat(document.getElementById('model-price').value.trim()) || 0,
                     Description: document.getElementById('model-desc').value.trim(),
-                    Polygons: parseInt(document.getElementById('model-polygons').value.trim()) || 0,
+                    Polygons: document.getElementById('model-polygons').value.trim(),
                     ModelFBX: fbxId,
                     Previews: imgIds, 
                     ModelGLB: glbId
@@ -321,7 +322,7 @@
                 const errJson = await response.json().catch(() => ({}));
                 const strapiErrorMessage = errJson?.error?.message || "Неизвестная ошибка валидации полей";
                 
-                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}\n\nПроверьте, создано ли поле 'Polygons' (тип Number/Integer) в админке и переключено ли поле 'Previews' в режим Multiple Media!`);
+                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}\n\nПроверьте, совпадает ли регистр букв поля 'Polygons' в админке!`);
                 showToast("Ошибка сохранения карточки на сервере.", true);
             }
         } catch (error) {
