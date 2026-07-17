@@ -28,9 +28,6 @@
         .product-card { position: relative; background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; padding: 15px; border: 1px solid transparent; transition: transform 0.3s ease, border-color 0.3s ease, opacity 0.4s ease, transform 0.4s ease; }
         .product-card:hover { transform: scale(1.03); border-color: #4f46e5; }
         .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; border-radius: 12px; margin-bottom: 15px; }
-        .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
-        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
         
         .delete-card-btn {
             position: absolute;
@@ -53,6 +50,9 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
         .delete-card-btn:hover { background: #ef4444; transform: scale(1.1); }
+        .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
+        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,17,26,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
         .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
@@ -205,16 +205,19 @@
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
+                // Бронебойный парсер картинок для личного кабинета
                 let imgUrl = '';
-                let previewData = attrs.Previews?.data || attrs.Previews;
-                
-                if (previewData) {
-                    if (Array.isArray(previewData)) previewData = previewData[0];
-                    if (previewData) {
-                        const previewAttrs = previewData.attributes || previewData;
-                        const rawUrl = previewAttrs.url || '';
-                        if (rawUrl) {
-                            imgUrl = rawUrl.startsWith('http') ? rawUrl : `${STRAPI_BASE_URL}${rawUrl}`;
+                let rawPreviews = attrs.Previews || item.Previews;
+                if (rawPreviews && rawPreviews.data) {
+                    rawPreviews = rawPreviews.data;
+                }
+                if (rawPreviews) {
+                    const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
+                    if (previewsArray[0]) {
+                        const target = previewsArray[0].attributes || previewsArray[0];
+                        const url = target.url || previewsArray[0].url || '';
+                        if (url) {
+                            imgUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
                         }
                     }
                 }
@@ -294,7 +297,6 @@
 
             submitBtn.textContent = "Создание карточки...";
 
-            // КЛЮЧЕВОЙ ФИКС: Отправляем Polygons как чистую строку (.value.trim()) без parseInt
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
