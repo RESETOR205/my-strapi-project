@@ -135,6 +135,7 @@
 
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+    const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
@@ -205,7 +206,6 @@
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                // Бронебойный парсер картинок для личного кабинета
                 let imgUrl = '';
                 let rawPreviews = attrs.Previews || item.Previews;
                 if (rawPreviews && rawPreviews.data) {
@@ -225,9 +225,11 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.id = `model-card-${modelId}`;
+                
+                // Защита от битых фото: onerror подменяет картинку на стильный плашка-заглушку
                 card.innerHTML = `
                     <button class="delete-card-btn" onclick="deleteModel('${modelId}')">&times;</button>
-                    ${imgUrl ? `<img src="${imgUrl}" class="product-img" alt="${title}">` : '<div class="product-img" style="background: #0f111a;"></div>'}
+                    <img src="${imgUrl || FALLBACK_IMG}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
                     <div class="product-info">
                         <div class="product-title">${title}</div>
                         <div class="product-price">${price} $</div>
