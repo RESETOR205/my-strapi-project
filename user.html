@@ -25,10 +25,74 @@
         .add-product-btn:hover { background: #16a34a; }
         
         .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .product-card { position: relative; background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; padding: 15px; border: 1px solid transparent; transition: transform 0.3s ease, border-color 0.3s ease, opacity 0.4s ease, transform 0.4s ease; }
-        .product-card:hover { transform: scale(1.03); border-color: #4f46e5; }
-        .product-img { width: 100%; height: 200px; object-fit: cover; background: #0f111a; border-radius: 12px; margin-bottom: 15px; }
         
+        /* Стили карточки товара */
+        .product-card { 
+            position: relative; 
+            background: #1a1d29; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px; 
+            border: 1px solid transparent; 
+            transition: transform 0.3s ease, border-color 0.3s ease, opacity 0.4s ease; 
+            cursor: pointer;
+        }
+        .product-card:hover { transform: translateY(-4px); border-color: #4f46e5; }
+        
+        /* Область медиа и интерактивный слайдер */
+        .card-media-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: #0f111a;
+        }
+        .product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
+        /* Полоски прогресса (Progress Bars) — СНИЗУ КАРТИНКИ */
+        .card-progress-bars {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .card-progress-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 2px;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-progress-bar.active {
+            background: #6366f1;
+            box-shadow: 0 0 6px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Невидимые интерактивные зоны наведения */
+        .card-hover-zones {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 6;
+        }
+        .card-hover-segment {
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+        }
+
         .delete-card-btn {
             position: absolute;
             top: 22px;
@@ -136,6 +200,9 @@
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
     const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
+    
+    // Хранилище галерей картинок для каждой карточки
+    const modelGalleries = {};
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
@@ -143,6 +210,32 @@
         toast.style.background = isError ? '#ef4444' : '#22c55e';
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+
+    // Переключение изображения в карточке при наведении на сегменты
+    function changeCardImage(modelId, index) {
+        const gallery = modelGalleries[modelId];
+        if (!gallery || !gallery[index]) return;
+
+        const imgEl = document.getElementById(`card-img-${modelId}`);
+        if (imgEl) {
+            imgEl.src = gallery[index];
+        }
+
+        gallery.forEach((_, idx) => {
+            const barEl = document.getElementById(`bar-${modelId}-${idx}`);
+            if (barEl) {
+                if (idx === index) {
+                    barEl.classList.add('active');
+                } else {
+                    barEl.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    function resetCardImage(modelId) {
+        changeCardImage(modelId, 0);
     }
 
     async function deleteModel(modelId) {
@@ -206,30 +299,59 @@
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                let imgUrl = '';
+                // Извлечение массива ВСЕХ ссылок на фотографии
+                let imgUrls = [];
                 let rawPreviews = attrs.Previews || item.Previews;
                 if (rawPreviews && rawPreviews.data) {
                     rawPreviews = rawPreviews.data;
                 }
                 if (rawPreviews) {
                     const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
-                    if (previewsArray[0]) {
-                        const target = previewsArray[0].attributes || previewsArray[0];
-                        const url = target.url || previewsArray[0].url || '';
+                    previewsArray.forEach(p => {
+                        const target = p.attributes || p;
+                        const url = target.url || p.url || '';
                         if (url) {
-                            imgUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                            const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                            imgUrls.push(fullUrl);
                         }
-                    }
+                    });
                 }
+
+                if (imgUrls.length === 0) {
+                    imgUrls.push(FALLBACK_IMG);
+                }
+
+                modelGalleries[modelId] = imgUrls;
+                const hasMultiple = imgUrls.length > 1;
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.id = `model-card-${modelId}`;
                 
-                // Защита от битых фото: onerror подменяет картинку на стильный плашка-заглушку
+                // Переход на страницу детального просмотра при клике на карточку
+                card.onclick = (e) => {
+                    if (e.target.closest('.delete-card-btn')) return;
+                    window.location.href = `product.html?id=${modelId}`;
+                };
+
                 card.innerHTML = `
-                    <button class="delete-card-btn" onclick="deleteModel('${modelId}')">&times;</button>
-                    <img src="${imgUrl || FALLBACK_IMG}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
+                    <button class="delete-card-btn" onclick="event.stopPropagation(); deleteModel('${modelId}')">&times;</button>
+                    
+                    <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
+                        <img id="card-img-${modelId}" src="${imgUrls[0]}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
+                        
+                        ${hasMultiple ? `
+                            <div class="card-progress-bars">
+                                ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${modelId}-${idx}"></div>`).join('')}
+                            </div>
+                            <div class="card-hover-zones">
+                                ${imgUrls.map((_, idx) => `
+                                    <div class="card-hover-segment" onmouseenter="changeCardImage('${modelId}', ${idx})" onmousemove="changeCardImage('${modelId}', ${idx})"></div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
                     <div class="product-info">
                         <div class="product-title">${title}</div>
                         <div class="product-price">${price} $</div>
