@@ -33,11 +33,12 @@
         .section-title-bar { padding: 10px 0; border-bottom: 1px solid #334155; margin-bottom: 30px; }
         .section-title { font-size: 18px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; }
         
+        /* Сетка карточек */
         .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; padding: 15px; border: 1px solid transparent; text-decoration: none; color: inherit; transition: transform 0.3s ease, border-color 0.3s ease; }
         .product-card:hover { transform: translateY(-4px); border-color: #4f46e5; }
         
-        /* --- Контейнер и стили для смены картинок при ховере --- */
+        /* Контейнер изображений */
         .product-img-wrapper { 
             position: relative; 
             width: 100%; 
@@ -55,24 +56,48 @@
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
+            opacity: 0;
             transition: opacity 0.3s ease, transform 0.3s ease; 
+            pointer-events: none;
         }
 
-        /* Вторая картинка изначально прозрачная */
-        .secondary-img { opacity: 0; }
+        .product-img.active {
+            opacity: 1;
+        }
 
-        /* Поведение при наведении мышкой */
-        .product-card:hover .secondary-img { 
-            opacity: 1; 
-            transform: scale(1.05); 
+        .product-card:hover .product-img.active { 
+            transform: scale(1.04); 
         }
-        .product-card:hover .primary-img.has-second { 
-            opacity: 0; 
+
+        /* Индикаторы (точки) */
+        .dots-container {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+            padding: 4px 8px;
+            background: rgba(15, 17, 26, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 12px;
         }
-        .product-card:hover .primary-img.single-img { 
-            transform: scale(1.05); 
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
-        
+
+        .dot:hover, .dot.active {
+            background: #38bdf8;
+            transform: scale(1.3);
+        }
+
         .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
         .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
         .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
@@ -108,13 +133,11 @@
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
 
-    // Функция для выхода из профиля
     function logoutUser() {
         localStorage.clear(); 
         window.location.reload(); 
     }
 
-    // Вспомогательная функция для получения полного URL картинки из Strapi
     function getImageUrl(item) {
         if (!item) return '';
         const previewAttrs = item.attributes || item;
@@ -150,45 +173,82 @@
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                // Получаем массив превью-картинок
+                // Извлекаем ВСЕ превью
                 let previewData = attrs.Previews?.data || attrs.Previews || [];
                 if (!Array.isArray(previewData)) {
                     previewData = previewData ? [previewData] : [];
                 }
 
-                // Извлекаем первое и второе фото
-                const img1Url = getImageUrl(previewData[0]);
-                const img2Url = getImageUrl(previewData[1]);
+                // Массив прямых ссылок на изображения
+                const imageUrls = previewData
+                    .map(imgItem => getImageUrl(imgItem))
+                    .filter(url => url !== '');
 
-                // Формируем HTML обертки с изображениями
-                let imagesHtml = '';
-                if (img1Url && img2Url) {
-                    imagesHtml = `
-                        <div class="product-img-wrapper">
-                            <img src="${img1Url}" class="product-img primary-img has-second" alt="${title}">
-                            <img src="${img2Url}" class="product-img secondary-img" alt="${title}">
-                        </div>
-                    `;
-                } else if (img1Url) {
-                    imagesHtml = `
-                        <div class="product-img-wrapper">
-                            <img src="${img1Url}" class="product-img primary-img single-img" alt="${title}">
-                        </div>
-                    `;
-                } else {
-                    imagesHtml = `<div class="product-img-wrapper"></div>`;
-                }
-
+                // Генерируем карточку
                 const card = document.createElement('a');
                 card.href = `product.html?id=${modelId}`;
                 card.className = 'product-card';
+
+                // Формируем HTML для картинок и индикаторов (точек)
+                let imagesHtml = '';
+                let dotsHtml = '';
+
+                if (imageUrls.length > 0) {
+                    imagesHtml = imageUrls.map((url, idx) => 
+                        `<img src="${url}" class="product-img ${idx === 0 ? 'active' : ''}" data-index="${idx}" alt="${title}">`
+                    ).join('');
+
+                    if (imageUrls.length > 1) {
+                        dotsHtml = `<div class="dots-container">` + 
+                            imageUrls.map((_, idx) => 
+                                `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`
+                            ).join('') + 
+                            `</div>`;
+                    }
+                } else {
+                    imagesHtml = `<div class="product-img" style="background: #0f111a;"></div>`;
+                }
+
                 card.innerHTML = `
-                    ${imagesHtml}
+                    <div class="product-img-wrapper">
+                        ${imagesHtml}
+                        ${dotsHtml}
+                    </div>
                     <div class="product-info">
                         <div class="product-title">${title}</div>
                         <div class="product-price">${price} $</div>
                     </div>
                 `;
+
+                // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ КАРТИНОК И ВОЗВРАТА К ПЕРВОЙ ---
+                if (imageUrls.length > 1) {
+                    const imgs = card.querySelectorAll('.product-img');
+                    const dots = card.querySelectorAll('.dot');
+
+                    const setActiveImage = (index) => {
+                        imgs.forEach(img => img.classList.toggle('active', img.dataset.index == index));
+                        dots.forEach(dot => dot.classList.toggle('active', dot.dataset.index == index));
+                    };
+
+                    // При наведении на конкретную точку показываем её фото
+                    dots.forEach(dot => {
+                        dot.addEventListener('mouseenter', (e) => {
+                            e.preventDefault();
+                            setActiveImage(dot.dataset.index);
+                        });
+                    });
+
+                    // При первом наведении на саму карточку включаем 2-е фото
+                    card.addEventListener('mouseenter', () => {
+                        setActiveImage(1);
+                    });
+
+                    // При сходе курсора с карточки ОБЯЗАТЕЛЬНО возвращаем 1-е фото
+                    card.addEventListener('mouseleave', () => {
+                        setActiveImage(0);
+                    });
+                }
+
                 grid.appendChild(card);
             });
 
@@ -198,7 +258,6 @@
         }
     }
 
-    // Инициализация страницы
     document.addEventListener('DOMContentLoaded', () => {
         const userStatus = localStorage.getItem('userStatus');
         const username = localStorage.getItem('username');
