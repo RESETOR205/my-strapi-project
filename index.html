@@ -3,279 +3,444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина | 3D Маркетплейс</title>
+    <title>3D Market | Главная</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #0f111a; color: #fff; padding: 20px; min-height: 100vh; }
         
-        /* Шапка сайта */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
-        .logo { font-size: 24px; font-weight: bold; color: #38bdf8; text-decoration: none; }
-        
-        /* Зона авторизации */
-        .auth-zone { display: flex; align-items: center; }
-        .login-btn { color: #0f172a; background-color: #38bdf8; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: background-color 0.2s; }
-        .login-btn:hover { background-color: #0ea5e9; }
-        
-        /* Стили для вошедшего пользователя */
-        .user-container { display: flex; align-items: center; gap: 15px; }
-        .welcome-text { color: #38bdf8; font-weight: bold; }
-        .profile-btn { padding: 10px 20px; background: #4f46e5; border: none; border-radius: 8px; color: #fff; text-decoration: none; font-weight: bold; transition: background 0.2s; }
-        .profile-btn:hover { background: #4338ca; }
-        .logout-btn { color: #94a3b8; font-size: 14px; cursor: pointer; text-decoration: underline; }
-        .logout-btn:hover { color: #fff; }
-        
-        /* Контент витрины */
-        .hero-section { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1a1d29 0%, #0f111a 100%); border-radius: 16px; margin-bottom: 40px; border: 1px solid #1e293b; }
-        .hero-section h1 { font-size: 42px; margin-bottom: 15px; letter-spacing: 1px; }
-        .hero-section p { color: #94a3b8; font-size: 18px; }
-
-        .section-title-bar { padding: 10px 0; border-bottom: 1px solid #334155; margin-bottom: 30px; }
-        .section-title { font-size: 18px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; }
-        
-        /* Сетка карточек */
-        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .product-card { background: #1a1d29; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; padding: 15px; border: 1px solid transparent; text-decoration: none; color: inherit; transition: transform 0.3s ease, border-color 0.3s ease; }
-        .product-card:hover { transform: translateY(-4px); border-color: #4f46e5; }
-        
-        /* Контейнер изображений */
-        .product-img-wrapper { 
-            position: relative; 
-            width: 100%; 
-            height: 200px; 
-            background: #0f111a; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            overflow: hidden; 
+        /* Хедер */
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            gap: 20px;
+            flex-wrap: wrap;
         }
-        
-        .product-img { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease; 
+        .logo-link { color: #fff; text-decoration: none; font-size: 28px; font-weight: bold; letter-spacing: 0.5px; }
+        .logo-accent { color: #6366f1; }
+
+        /* Поиск */
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 18px;
+            background: #1a1d29;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .search-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Кнопка личного кабинета */
+        .profile-nav-btn { 
+            padding: 10px 20px; 
+            background: #334155; 
+            border: none; 
+            border-radius: 8px; 
+            color: #fff; 
+            text-decoration: none; 
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease; 
+        }
+        .profile-nav-btn:hover { background: #475569; }
+
+        /* Категории */
+        .categories-section { margin-bottom: 35px; }
+        .categories-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 12px; font-weight: 700; }
+        .categories-bar { 
+            display: flex; 
+            gap: 10px; 
+            overflow-x: auto; 
+            padding-bottom: 8px; 
+            scrollbar-width: thin;
+        }
+        .category-btn {
+            padding: 10px 20px;
+            background: #1a1d29;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .category-btn:hover { background: #262a3d; color: #fff; border-color: #475569; }
+        .category-btn.active {
+            background: #4f46e5;
+            color: #fff;
+            border-color: #6366f1;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Заголовок витрины */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .section-title { font-size: 22px; font-weight: bold; letter-spacing: 0.5px; color: #f8fafc; }
+        .models-count { color: #64748b; font-size: 14px; }
+
+        /* Сетка товаров */
+        .products-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 25px; 
+        }
+
+        /* Карточка товара */
+        .product-card { 
+            position: relative; 
+            background: #1a1d29; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px; 
+            border: 1px solid transparent; 
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
+            cursor: pointer;
+        }
+        .product-card:hover { 
+            transform: translateY(-5px); 
+            border-color: #4f46e5; 
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.25);
+        }
+
+        /* Область медиа и интерактивный слайдер */
+        .card-media-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: #0f111a;
+        }
+        .product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* Полоски прогресса (Progress Bars) СНИЗУ */
+        .card-progress-bars {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            z-index: 5;
             pointer-events: none;
         }
-
-        .product-img.active {
-            opacity: 1;
+        .card-progress-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 2px;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-progress-bar.active {
+            background: #6366f1;
+            box-shadow: 0 0 6px rgba(99, 102, 241, 0.8);
         }
 
-        .product-card:hover .product-img.active { 
-            transform: scale(1.04); 
-        }
-
-        /* Индикаторы (точки) */
-        .dots-container {
+        /* Невидимые зоны наведения */
+        .card-hover-zones {
             position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
-            gap: 6px;
-            z-index: 10;
-            padding: 4px 8px;
-            background: rgba(15, 17, 26, 0.6);
-            backdrop-filter: blur(4px);
-            border-radius: 12px;
+            z-index: 6;
         }
-
-        .dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            transition: all 0.2s ease;
+        .card-hover-segment {
+            flex: 1;
+            height: 100%;
             cursor: pointer;
         }
 
-        .dot:hover, .dot.active {
-            background: #38bdf8;
-            transform: scale(1.3);
-        }
-
+        /* Информация о товаре */
         .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
-        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
+        .product-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #fff; }
         
-        .loader { color: #94a3b8; padding: 40px; text-align: center; font-size: 16px; width: 100%; grid-column: 1 / -1; }
+        .product-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+        .product-price { font-size: 20px; font-weight: bold; color: #10b981; }
+        .product-poly { font-size: 13px; color: #94a3b8; background: #0f111a; padding: 4px 8px; border-radius: 6px; }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            font-size: 16px;
+            background: #1a1d29;
+            border-radius: 16px;
+            border: 1px dashed #334155;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="logo">📦 3D Маркетплейс</a>
+        <a href="index.html" class="logo-link">3D <span class="logo-accent">Market</span></a>
         
-        <div class="auth-zone" id="auth-header-zone">
-            <a href="auth.html" class="login-btn">Войти</a>
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-input" placeholder="Поиск моделей (например: Glock, Ландшафт)...">
         </div>
+
+        <a href="user.html" class="profile-nav-btn" id="nav-profile-btn">
+            <span id="nav-user-label">Личный кабинет</span>
+        </a>
     </header>
 
-    <main>
-        <div class="hero-section">
-            <h1>Витрина 3D Моделей</h1>
-            <p>Добро пожаловать на наш маркетплейс предметов.</p>
+    <!-- Секция категорий -->
+    <div class="categories-section">
+        <div class="categories-title">Категории</div>
+        <div class="categories-bar" id="categories-bar">
+            <button class="category-btn active" data-category="all" onclick="filterCategory('all', this)">Все модели</button>
+            <button class="category-btn" data-category="characters" onclick="filterCategory('characters', this)">Персонажи</button>
+            <button class="category-btn" data-category="weapons" onclick="filterCategory('weapons', this)">Оружие</button>
+            <button class="category-btn" data-category="environment" onclick="filterCategory('environment', this)">Окружение</button>
+            <button class="category-btn" data-category="vehicles" onclick="filterCategory('vehicles', this)">Транспорт</button>
+            <button class="category-btn" data-category="architecture" onclick="filterCategory('architecture', this)">Архитектура</button>
+            <button class="category-btn" data-category="props" onclick="filterCategory('props', this)">Предметы</button>
         </div>
-        
-        <div class="section-title-bar">
-            <div class="section-title">Все доступные модели</div>
-        </div>
+    </div>
 
-        <div class="market-grid" id="global-models-grid">
-            <div class="loader">Загрузка витрины моделей...</div>
-        </div>
-    </main>
+    <!-- Шапка витрины -->
+    <div class="section-header">
+        <div class="section-title" id="section-title-heading">Все 3D-модели</div>
+        <div class="models-count" id="models-count">Загрузка...</div>
+    </div>
+
+    <!-- Сетка моделей -->
+    <div class="products-grid" id="products-grid">
+        <div class="empty-state">Загрузка витрины 3D-моделей...</div>
+    </div>
 
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+    const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
+    
+    // Глобальные данные
+    const modelGalleries = {};
+    let allModels = [];
+    let currentCategory = 'all';
 
-    function logoutUser() {
-        localStorage.clear(); 
-        window.location.reload(); 
+    // Функция переключения фото в карточке по наведению
+    function changeCardImage(modelId, index) {
+        const gallery = modelGalleries[modelId];
+        if (!gallery || !gallery[index]) return;
+
+        const imgEl = document.getElementById(`card-img-${modelId}`);
+        if (imgEl) {
+            imgEl.src = gallery[index];
+        }
+
+        gallery.forEach((_, idx) => {
+            const barEl = document.getElementById(`bar-${modelId}-${idx}`);
+            if (barEl) {
+                if (idx === index) {
+                    barEl.classList.add('active');
+                } else {
+                    barEl.classList.remove('active');
+                }
+            }
+        });
     }
 
-    function getImageUrl(item) {
-        if (!item) return '';
-        const previewAttrs = item.attributes || item;
-        const rawUrl = previewAttrs.url || '';
-        if (!rawUrl) return '';
-        return rawUrl.startsWith('http') ? rawUrl : `${STRAPI_BASE_URL}${rawUrl}`;
+    function resetCardImage(modelId) {
+        changeCardImage(modelId, 0);
     }
 
-    async function loadMarketModels() {
-        const grid = document.getElementById('global-models-grid');
-        if (!grid) return;
-
+    // Загрузка всех моделей из Strapi
+    async function loadAllModels() {
+        const grid = document.getElementById('products-grid');
+        const countEl = document.getElementById('models-count');
+        
         try {
-            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
-                method: 'GET'
-            });
-
-            if (!res.ok) throw new Error("Не удалось загрузить модели с сервера");
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`);
+            if (!res.ok) throw new Error("Сбой загрузки данных с сервера");
 
             const responseData = await res.json();
-            const models = responseData.data || [];
+            allModels = responseData.data || [];
 
-            if (models.length === 0) {
-                grid.innerHTML = '<div class="loader">На витрине пока нет ни одной модели. Будьте первым, кто загрузит!</div>';
-                return;
-            }
-
-            grid.innerHTML = ''; 
-
-            models.forEach(item => {
-                const modelId = item.id;
-                const attrs = item.attributes || item;
-                const title = attrs.Title || "Без названия";
-                const price = attrs.Price !== undefined ? attrs.Price : 0;
-
-                // Извлекаем ВСЕ превью
-                let previewData = attrs.Previews?.data || attrs.Previews || [];
-                if (!Array.isArray(previewData)) {
-                    previewData = previewData ? [previewData] : [];
-                }
-
-                // Массив прямых ссылок на изображения
-                const imageUrls = previewData
-                    .map(imgItem => getImageUrl(imgItem))
-                    .filter(url => url !== '');
-
-                // Генерируем карточку
-                const card = document.createElement('a');
-                card.href = `product.html?id=${modelId}`;
-                card.className = 'product-card';
-
-                // Формируем HTML для картинок и индикаторов (точек)
-                let imagesHtml = '';
-                let dotsHtml = '';
-
-                if (imageUrls.length > 0) {
-                    imagesHtml = imageUrls.map((url, idx) => 
-                        `<img src="${url}" class="product-img ${idx === 0 ? 'active' : ''}" data-index="${idx}" alt="${title}">`
-                    ).join('');
-
-                    if (imageUrls.length > 1) {
-                        dotsHtml = `<div class="dots-container">` + 
-                            imageUrls.map((_, idx) => 
-                                `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`
-                            ).join('') + 
-                            `</div>`;
-                    }
-                } else {
-                    imagesHtml = `<div class="product-img" style="background: #0f111a;"></div>`;
-                }
-
-                card.innerHTML = `
-                    <div class="product-img-wrapper">
-                        ${imagesHtml}
-                        ${dotsHtml}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${title}</div>
-                        <div class="product-price">${price} $</div>
-                    </div>
-                `;
-
-                // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ КАРТИНОК И ВОЗВРАТА К ПЕРВОЙ ---
-                if (imageUrls.length > 1) {
-                    const imgs = card.querySelectorAll('.product-img');
-                    const dots = card.querySelectorAll('.dot');
-
-                    const setActiveImage = (index) => {
-                        imgs.forEach(img => img.classList.toggle('active', img.dataset.index == index));
-                        dots.forEach(dot => dot.classList.toggle('active', dot.dataset.index == index));
-                    };
-
-                    // При наведении на конкретную точку показываем её фото
-                    dots.forEach(dot => {
-                        dot.addEventListener('mouseenter', (e) => {
-                            e.preventDefault();
-                            setActiveImage(dot.dataset.index);
-                        });
-                    });
-
-                    // При первом наведении на саму карточку включаем 2-е фото
-                    card.addEventListener('mouseenter', () => {
-                        setActiveImage(1);
-                    });
-
-                    // При сходе курсора с карточки ОБЯЗАТЕЛЬНО возвращаем 1-е фото
-                    card.addEventListener('mouseleave', () => {
-                        setActiveImage(0);
-                    });
-                }
-
-                grid.appendChild(card);
-            });
+            renderModels(allModels);
 
         } catch (error) {
-            console.error("Ошибка загрузки витрины:", error);
-            grid.innerHTML = `<div class="loader" style="color: #ef4444;">Ошибка подключения к серверу: ${error.message}</div>`;
+            if (grid) grid.innerHTML = `<div class="empty-state" style="color: #ef4444;">Ошибка подключения к серверу: ${error.message}</div>`;
+            if (countEl) countEl.textContent = "0 моделей";
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const userStatus = localStorage.getItem('userStatus');
-        const username = localStorage.getItem('username');
-        const authZone = document.getElementById('auth-header-zone');
+    // Отрисовка списка моделей
+    function renderModels(modelsList) {
+        const grid = document.getElementById('products-grid');
+        const countEl = document.getElementById('models-count');
 
-        if (userStatus === 'user' && username) {
-            authZone.innerHTML = `
-                <div class="user-container">
-                    <span class="welcome-text">👋 Привет, ${username}!</span>
-                    <a href="user.html" class="profile-btn">В профиль</a>
-                    <span class="logout-btn" onclick="logoutUser()">Выйти</span>
+        if (!grid) return;
+
+        if (modelsList.length === 0) {
+            grid.innerHTML = '<div class="empty-state">Модели по выбранным критериям не найдены</div>';
+            if (countEl) countEl.textContent = '0 моделей';
+            return;
+        }
+
+        if (countEl) {
+            countEl.textContent = `Найдено: ${modelsList.length}`;
+        }
+
+        grid.innerHTML = '';
+
+        modelsList.forEach(item => {
+            const modelId = item.documentId || item.id;
+            const attrs = item.attributes || item;
+            const title = attrs.Title || "Без названия";
+            const price = attrs.Price !== undefined ? attrs.Price : 0;
+            const poly = attrs.Polygons || attrs.polygons || "";
+            const category = (attrs.Category || attrs.category || "props").toLowerCase();
+
+            // Извлечение массива ВСЕХ ссылок на фотографии для Hover Slider
+            let imgUrls = [];
+            let rawPreviews = attrs.Previews || item.Previews;
+            if (rawPreviews && rawPreviews.data) {
+                rawPreviews = rawPreviews.data;
+            }
+            if (rawPreviews) {
+                const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
+                previewsArray.forEach(p => {
+                    const target = p.attributes || p;
+                    const url = target.url || p.url || '';
+                    if (url) {
+                        const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                        imgUrls.push(fullUrl);
+                    }
+                });
+            }
+
+            if (imgUrls.length === 0) {
+                imgUrls.push(FALLBACK_IMG);
+            }
+
+            modelGalleries[modelId] = imgUrls;
+            const hasMultiple = imgUrls.length > 1;
+
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.dataset.category = category;
+            card.id = `model-card-${modelId}`;
+            
+            // Клик по карточке ведет на детальную страницу товара
+            card.onclick = () => {
+                window.location.href = `product.html?id=${modelId}`;
+            };
+
+            card.innerHTML = `
+                <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
+                    <img id="card-img-${modelId}" src="${imgUrls[0]}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
+                    
+                    ${hasMultiple ? `
+                        <div class="card-progress-bars">
+                            ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${modelId}-${idx}"></div>`).join('')}
+                        </div>
+                        <div class="card-hover-zones">
+                            ${imgUrls.map((_, idx) => `
+                                <div class="card-hover-segment" onmouseenter="changeCardImage('${modelId}', ${idx})" onmousemove="changeCardImage('${modelId}', ${idx})"></div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="product-info">
+                    <div class="product-title">${title}</div>
+                    <div class="product-details">
+                        <div class="product-price">${price} $</div>
+                        ${poly ? `<div class="product-poly">Poly: ${poly}</div>` : ''}
+                    </div>
                 </div>
             `;
-        } 
+            grid.appendChild(card);
+        });
+    }
 
-        loadMarketModels();
+    // Фильтрация по категориям
+    function filterCategory(categoryName, btnElement) {
+        currentCategory = categoryName;
+
+        // Обновление активного стиля кнопок
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+
+        // Обновление заголовка
+        const heading = document.getElementById('section-title-heading');
+        if (heading && btnElement) {
+            heading.textContent = categoryName === 'all' ? 'Все 3D-модели' : btnElement.textContent;
+        }
+
+        applyFilters();
+    }
+
+    // Применение категорий и живого поиска
+    function applyFilters() {
+        const searchQuery = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+
+        const filtered = allModels.filter(item => {
+            const attrs = item.attributes || item;
+            const title = (attrs.Title || '').toLowerCase();
+            const desc = (attrs.Description || '').toLowerCase();
+            const cat = (attrs.Category || attrs.category || 'props').toLowerCase();
+
+            const matchesCategory = (currentCategory === 'all') || (cat.includes(currentCategory) || currentCategory.includes(cat));
+            const matchesSearch = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery);
+
+            return matchesCategory && matchesSearch;
+        });
+
+        renderModels(filtered);
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener("DOMContentLoaded", () => {
+        // Проверка авторизации для личной кнопки
+        const storedUsername = localStorage.getItem('username');
+        const navLabel = document.getElementById('nav-user-label');
+        if (storedUsername && navLabel) {
+            navLabel.textContent = `👤 ${storedUsername}`;
+        }
+
+        // Поиск в реальном времени
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
+
+        loadAllModels();
     });
 </script>
-
 </body>
 </html>
