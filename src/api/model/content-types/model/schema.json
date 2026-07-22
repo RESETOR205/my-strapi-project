@@ -52,6 +52,9 @@
     },
     "Polygons": {
       "type": "string"
+    },
+    "Category": {
+      "type": "string"
     }
   }
 }
