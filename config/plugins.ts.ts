@@ -3,20 +3,17 @@ export default ({ env }) => ({
     config: {
       provider: 'nodemailer',
       providerOptions: {
-        host: env('SMTP_HOST'),
-        port: env('SMTP_PORT'),
-        secure: false,
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
-          user: env('SMTP_USERNAME'),
-          pass: env('SMTP_PASSWORD'),
+          user: 'твой_email@gmail.com',        // Твоя почта Gmail
+          pass: 'xxxx xxxx xxxx xxxx',          // 16-значный пароль приложения Google
         },
-        tls: {
-          rejectUnauthorized: false
-        }
       },
       settings: {
-        defaultFrom: env('SMTP_FROM'),
-        defaultReplyTo: env('SMTP_FROM'),
+        defaultFrom: 'твой_email@gmail.com',
+        defaultReplyTo: 'твой_email@gmail.com',
       },
     },
   },
