@@ -1,446 +1,641 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Market | Главная</title>
+    <title>3D Market — Маркетплейс 3D-моделей</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0f111a; color: #fff; padding: 20px; min-height: 100vh; }
-        
-        /* Хедер */
-        header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 30px; 
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .logo-link { color: #fff; text-decoration: none; font-size: 28px; font-weight: bold; letter-spacing: 0.5px; }
-        .logo-accent { color: #6366f1; }
-
-        /* Поиск */
-        .search-container {
-            flex: 1;
-            max-width: 500px;
-            position: relative;
-        }
-        .search-input {
-            width: 100%;
-            padding: 12px 18px;
-            background: #1a1d29;
-            border: 1px solid #334155;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .search-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        /* Сброс стилей и базовые настройки */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Кнопка личного кабинета */
-        .profile-nav-btn { 
-            padding: 10px 20px; 
-            background: #334155; 
-            border: none; 
-            border-radius: 8px; 
-            color: #fff; 
-            text-decoration: none; 
-            font-weight: 600;
+        body {
+            background-color: #0d0f12;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Шапка сайта */
+        header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: background 0.2s ease; 
+            justify-content: space-between;
+            padding: 15px 40px;
+            background-color: #161a23;
+            border-bottom: 1px solid #232936;
+            gap: 20px;
         }
-        .profile-nav-btn:hover { background: #475569; }
 
-        /* Категории */
-        .categories-section { margin-bottom: 35px; }
-        .categories-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 12px; font-weight: 700; }
-        .categories-bar { 
-            display: flex; 
-            gap: 10px; 
-            overflow-x: auto; 
-            padding-bottom: 8px; 
-            scrollbar-width: thin;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-decoration: none;
         }
-        .category-btn {
-            padding: 10px 20px;
-            background: #1a1d29;
-            border: 1px solid #334155;
-            border-radius: 20px;
-            color: #94a3b8;
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #2d3748;
+            background-color: #1a202c;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: #3b82f6;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            white-space: nowrap;
+            border: none;
             transition: all 0.2s ease;
-        }
-        .category-btn:hover { background: #262a3d; color: #fff; border-color: #475569; }
-        .category-btn.active {
-            background: #4f46e5;
-            color: #fff;
-            border-color: #6366f1;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            text-decoration: none;
+            display: inline-block;
         }
 
-        /* Заголовок витрины */
+        .btn-primary {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background-color: #4a5568;
+        }
+
+        /* Главный контент */
+        main {
+            flex: 1;
+            padding: 30px 40px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Категории */
+        .categories-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: #1a202c;
+            color: #a0aec0;
+            border: 1px solid #2d3748;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .category-btn.active, .category-btn:hover {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border-color: #3b82f6;
+        }
+
+        /* Заголовок каталога */
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #1e293b;
-        }
-        .section-title { font-size: 22px; font-weight: bold; letter-spacing: 0.5px; color: #f8fafc; }
-        .models-count { color: #64748b; font-size: 14px; }
-
-        /* Сетка товаров */
-        .products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 25px; 
+            margin-bottom: 20px;
         }
 
-        /* Карточка товара */
-        .product-card { 
-            position: relative; 
-            background: #1a1d29; 
-            border-radius: 16px; 
-            overflow: hidden; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 15px; 
-            border: 1px solid transparent; 
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
-            cursor: pointer;
-        }
-        .product-card:hover { 
-            transform: translateY(-5px); 
-            border-color: #4f46e5; 
-            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.25);
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
         }
 
-        /* Область медиа и интерактивный слайдер */
-        .card-media-wrapper {
-            position: relative;
-            width: 100%;
-            height: 200px;
+        .model-count {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        /* Сетка моделей */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            background-color: #161a23;
+            border-radius: 12px;
+            border: 1px dashed #2d3748;
+            color: #a0aec0;
+        }
+
+        .model-card {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
             border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 15px;
-            background: #0f111a;
-        }
-        .product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-        /* Полоски прогресса (Progress Bars) СНИЗУ */
-        .card-progress-bars {
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            right: 8px;
             display: flex;
-            gap: 4px;
-            z-index: 5;
-            pointer-events: none;
-        }
-        .card-progress-bar {
-            flex: 1;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.35);
-            border-radius: 2px;
-            transition: background 0.2s ease, box-shadow 0.2s ease;
-        }
-        .card-progress-bar.active {
-            background: #6366f1;
-            box-shadow: 0 0 6px rgba(99, 102, 241, 0.8);
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* Невидимые зоны наведения */
-        .card-hover-zones {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .model-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            border-color: #3b82f6;
+        }
+
+        .model-preview {
             width: 100%;
-            height: 100%;
-            display: flex;
-            z-index: 6;
-        }
-        .card-hover-segment {
-            flex: 1;
-            height: 100%;
-            cursor: pointer;
+            height: 180px;
+            object-fit: cover;
+            background-color: #1a202c;
         }
 
-        /* Информация о товаре */
-        .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #fff; }
-        
-        .product-details {
+        .model-info {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .model-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .model-author {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        .model-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: auto;
             padding-top: 10px;
         }
-        .product-price { font-size: 20px; font-weight: bold; color: #10b981; }
-        .product-poly { font-size: 13px; color: #94a3b8; background: #0f111a; padding: 4px 8px; border-radius: 6px; }
 
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-            font-size: 16px;
-            background: #1a1d29;
+        .model-price {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        /* Модальное окно Входа / Регистрации */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #161a23;
+            border: 1px solid #2d3748;
             border-radius: 16px;
-            border: 1px dashed #334155;
+            width: 100%;
+            max-width: 420px;
+            padding: 28px;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #2d3748;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 12px;
+        }
+
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #a0aec0;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #2d3748;
+            background-color: #1a202c;
+            color: #fff;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #3b82f6;
+        }
+
+        .form-submit {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Уведомления Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background-color: #10b981;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 2000;
+        }
+        .toast.error {
+            background-color: #ef4444;
         }
     </style>
 </head>
 <body>
 
+    <!-- Шапка -->
     <header>
-        <a href="index.html" class="logo-link">3D <span class="logo-accent">Market</span></a>
+        <a href="index.html" class="logo">3D <span>Market</span></a>
         
-        <div class="search-container">
-            <input type="text" id="search-input" class="search-input" placeholder="Поиск моделей (например: Glock, Ландшафт)...">
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Поиск моделей (например: Glock, Ландшафт)...">
         </div>
 
-        <a href="user.html" class="profile-nav-btn" id="nav-profile-btn">
-            <span id="nav-user-label">Личный кабинет</span>
-        </a>
+        <div class="nav-actions">
+            <button class="btn btn-primary" id="cabinet-btn">Личный кабинет</button>
+        </div>
     </header>
 
-    <!-- Секция категорий -->
-    <div class="categories-section">
+    <!-- Основное содержимое -->
+    <main>
         <div class="categories-title">Категории</div>
-        <div class="categories-bar" id="categories-bar">
-            <button class="category-btn active" data-category="all" onclick="filterCategory('all', this)">Все модели</button>
-            <button class="category-btn" data-category="characters" onclick="filterCategory('characters', this)">Персонажи</button>
-            <button class="category-btn" data-category="weapons" onclick="filterCategory('weapons', this)">Оружие</button>
-            <button class="category-btn" data-category="environment" onclick="filterCategory('environment', this)">Окружение</button>
-            <button class="category-btn" data-category="vehicles" onclick="filterCategory('vehicles', this)">Транспорт</button>
-            <button class="category-btn" data-category="architecture" onclick="filterCategory('architecture', this)">Архитектура</button>
-            <button class="category-btn" data-category="props" onclick="filterCategory('props', this)">Предметы</button>
+        <div class="categories" id="categories-container">
+            <button class="category-btn active" data-category="all">Все модели</button>
+            <button class="category-btn" data-category="Персонажи">Персонажи</button>
+            <button class="category-btn" data-category="Оружие">Оружие</button>
+            <button class="category-btn" data-category="Окружение">Окружение</button>
+            <button class="category-btn" data-category="Транспорт">Транспорт</button>
+            <button class="category-btn" data-category="Архитектура">Архитектура</button>
+            <button class="category-btn" data-category="Предметы">Предметы</button>
+        </div>
+
+        <div class="section-header">
+            <h1 class="section-title">Все 3D-модели</h1>
+            <span class="model-count" id="model-count">0 моделей</span>
+        </div>
+
+        <div class="models-grid" id="models-grid">
+            <div class="empty-state">
+                Модели по выбранным критериям не найдены
+            </div>
+        </div>
+    </main>
+
+    <!-- Всплывающее окно Входа и Регистрации -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" id="tab-login-btn">Вход</button>
+                <button class="tab-btn" id="tab-register-btn">Регистрация</button>
+            </div>
+
+            <!-- Форма входа -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Имя пользователя или Email</label>
+                    <input type="text" id="login-identifier" required placeholder="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary form-submit">Войти</button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label>Имя пользователя</label>
+                    <input type="text" id="reg-username" required placeholder="User123">
+                </div>
+                <div class="form-group">
+                    <label>Email (для подтверждения)</label>
+                    <input type="email" id="reg-email" required placeholder="your-email@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="reg-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary form-submit">Зарегистрироваться</button>
+            </form>
         </div>
     </div>
 
-    <!-- Шапка витрины -->
-    <div class="section-header">
-        <div class="section-title" id="section-title-heading">Все 3D-модели</div>
-        <div class="models-count" id="models-count">Загрузка...</div>
-    </div>
+    <!-- Уведомление -->
+    <div class="toast" id="toast"></div>
 
-    <!-- Сетка моделей -->
-    <div class="products-grid" id="products-grid">
-        <div class="empty-state">Загрузка витрины 3D-моделей...</div>
-    </div>
-
-<script>
-    const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
-    const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
-    
-    // Глобальные данные
-    const modelGalleries = {};
-    let allModels = [];
-    let currentCategory = 'all';
-
-    // Функция переключения фото в карточке по наведению
-    function changeCardImage(modelId, index) {
-        const gallery = modelGalleries[modelId];
-        if (!gallery || !gallery[index]) return;
-
-        const imgEl = document.getElementById(`card-img-${modelId}`);
-        if (imgEl) {
-            imgEl.src = gallery[index];
-        }
-
-        gallery.forEach((_, idx) => {
-            const barEl = document.getElementById(`bar-${modelId}-${idx}`);
-            if (barEl) {
-                if (idx === index) {
-                    barEl.classList.add('active');
-                } else {
-                    barEl.classList.remove('active');
-                }
-            }
-        });
-    }
-
-    function resetCardImage(modelId) {
-        changeCardImage(modelId, 0);
-    }
-
-    // Загрузка всех моделей из Strapi
-    async function loadAllModels() {
-        const grid = document.getElementById('products-grid');
-        const countEl = document.getElementById('models-count');
+    <!-- Логика взаимодействия с бэкендом -->
+    <script>
+        // Твой бэкенд на Railway
+        const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
         
-        try {
-            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`);
-            if (!res.ok) throw new Error("Сбой загрузки данных с сервера");
+        let allModels = [];
+        let activeCategory = 'all';
 
-            const responseData = await res.json();
-            allModels = responseData.data || [];
-
-            renderModels(allModels);
-
-        } catch (error) {
-            if (grid) grid.innerHTML = `<div class="empty-state" style="color: #ef4444;">Ошибка подключения к серверу: ${error.message}</div>`;
-            if (countEl) countEl.textContent = "0 моделей";
-        }
-    }
-
-    // Отрисовка списка моделей
-    function renderModels(modelsList) {
-        const grid = document.getElementById('products-grid');
-        const countEl = document.getElementById('models-count');
-
-        if (!grid) return;
-
-        if (modelsList.length === 0) {
-            grid.innerHTML = '<div class="empty-state">Модели по выбранным критериям не найдены</div>';
-            if (countEl) countEl.textContent = '0 моделей';
-            return;
-        }
-
-        if (countEl) {
-            countEl.textContent = `Найдено: ${modelsList.length}`;
-        }
-
-        grid.innerHTML = '';
-
-        modelsList.forEach(item => {
-            const modelId = item.documentId || item.id;
-            const attrs = item.attributes || item;
-            const title = attrs.Title || "Без названия";
-            const price = attrs.Price !== undefined ? attrs.Price : 0;
-            const poly = attrs.Polygons || attrs.polygons || "";
-            const category = (attrs.Category || attrs.category || "props").toLowerCase();
-
-            // Извлечение массива ВСЕХ ссылок на фотографии для Hover Slider
-            let imgUrls = [];
-            let rawPreviews = attrs.Previews || item.Previews;
-            if (rawPreviews && rawPreviews.data) {
-                rawPreviews = rawPreviews.data;
-            }
-            if (rawPreviews) {
-                const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
-                previewsArray.forEach(p => {
-                    const target = p.attributes || p;
-                    const url = target.url || p.url || '';
-                    if (url) {
-                        const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
-                        imgUrls.push(fullUrl);
-                    }
-                });
-            }
-
-            if (imgUrls.length === 0) {
-                imgUrls.push(FALLBACK_IMG);
-            }
-
-            modelGalleries[modelId] = imgUrls;
-            const hasMultiple = imgUrls.length > 1;
-
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.dataset.category = category;
-            card.id = `model-card-${modelId}`;
-            
-            // Клик по карточке ведет на детальную страницу товара
-            card.onclick = () => {
-                window.location.href = `product.html?id=${modelId}`;
-            };
-
-            card.innerHTML = `
-                <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
-                    <img id="card-img-${modelId}" src="${imgUrls[0]}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
-                    
-                    ${hasMultiple ? `
-                        <div class="card-progress-bars">
-                            ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${modelId}-${idx}"></div>`).join('')}
-                        </div>
-                        <div class="card-hover-zones">
-                            ${imgUrls.map((_, idx) => `
-                                <div class="card-hover-segment" onmouseenter="changeCardImage('${modelId}', ${idx})" onmousemove="changeCardImage('${modelId}', ${idx})"></div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-
-                <div class="product-info">
-                    <div class="product-title">${title}</div>
-                    <div class="product-details">
-                        <div class="product-price">${price} $</div>
-                        ${poly ? `<div class="product-poly">Poly: ${poly}</div>` : ''}
-                    </div>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    // Фильтрация по категориям
-    function filterCategory(categoryName, btnElement) {
-        currentCategory = categoryName;
-
-        // Обновление активного стиля кнопок
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        if (btnElement) btnElement.classList.add('active');
-
-        // Обновление заголовка
-        const heading = document.getElementById('section-title-heading');
-        if (heading && btnElement) {
-            heading.textContent = categoryName === 'all' ? 'Все 3D-модели' : btnElement.textContent;
-        }
-
-        applyFilters();
-    }
-
-    // Применение категорий и живого поиска
-    function applyFilters() {
-        const searchQuery = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
-
-        const filtered = allModels.filter(item => {
-            const attrs = item.attributes || item;
-            const title = (attrs.Title || '').toLowerCase();
-            const desc = (attrs.Description || '').toLowerCase();
-            const cat = (attrs.Category || attrs.category || 'props').toLowerCase();
-
-            const matchesCategory = (currentCategory === 'all') || (cat.includes(currentCategory) || currentCategory.includes(cat));
-            const matchesSearch = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery);
-
-            return matchesCategory && matchesSearch;
-        });
-
-        renderModels(filtered);
-    }
-
-    // Инициализация при загрузке страницы
-    document.addEventListener("DOMContentLoaded", () => {
-        // Проверка авторизации для личной кнопки
-        const storedUsername = localStorage.getItem('username');
-        const navLabel = document.getElementById('nav-user-label');
-        if (storedUsername && navLabel) {
-            navLabel.textContent = `👤 ${storedUsername}`;
-        }
-
-        // Поиск в реальном времени
+        // Элементы
+        const cabinetBtn = document.getElementById('cabinet-btn');
+        const authModal = document.getElementById('auth-modal');
+        const modalClose = document.getElementById('modal-close');
+        const tabLoginBtn = document.getElementById('tab-login-btn');
+        const tabRegisterBtn = document.getElementById('tab-register-btn');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const toastEl = document.getElementById('toast');
         const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', applyFilters);
+
+        // Всплывающее уведомление
+        function showToast(message, isError = false) {
+            toastEl.textContent = message;
+            toastEl.className = 'toast' + (isError ? ' error' : '');
+            toastEl.style.display = 'block';
+            setTimeout(() => {
+                toastEl.style.display = 'none';
+            }, 5000);
         }
 
-        loadAllModels();
-    });
-</script>
+        // Обновление состояния кнопки авторизации
+        function updateAuthUI() {
+            const userStr = localStorage.getItem('user');
+            const token = localStorage.getItem('jwt');
+
+            if (token && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    cabinetBtn.textContent = user.username || 'Профиль';
+                } catch(e) {
+                    cabinetBtn.textContent = 'Личный кабинет';
+                }
+            } else {
+                cabinetBtn.textContent = 'Личный кабинет';
+            }
+        }
+
+        // Клик по «Личный кабинет»
+        cabinetBtn.addEventListener('click', () => {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+                // Если вошёл — ведём на страницу профиля
+                window.location.href = 'user.html';
+            } else {
+                // Если не вошёл — открываем окно регистрации/входа
+                authModal.classList.add('active');
+            }
+        });
+
+        // Закрытие модального окна
+        modalClose.addEventListener('click', () => authModal.classList.remove('active'));
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) authModal.classList.remove('active');
+        });
+
+        // Переключение между Входом и Регистрацией
+        tabLoginBtn.addEventListener('click', () => {
+            tabLoginBtn.classList.add('active');
+            tabRegisterBtn.classList.remove('active');
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        });
+
+        tabRegisterBtn.addEventListener('click', () => {
+            tabRegisterBtn.classList.add('active');
+            tabLoginBtn.classList.remove('active');
+            registerForm.style.display = 'block';
+            loginForm.style.display = 'none';
+        });
+
+        // Обработка ВХОДА
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/auth/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('jwt', data.jwt);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showToast('Вы успешно вошли!');
+                    authModal.classList.remove('active');
+                    updateAuthUI();
+                } else {
+                    const msg = data.error?.message || 'Ошибка входа (проверьте данные или подтверждение почты)';
+                    showToast(msg, true);
+                }
+            } catch (err) {
+                showToast('Ошибка подключения к серверу', true);
+            }
+        });
+
+        // Обработка РЕГИСТРАЦИИ
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/auth/local/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast('Регистрация успешна! На вашу почту отправлено письмо для подтверждения.');
+                    authModal.classList.remove('active');
+                    registerForm.reset();
+                } else {
+                    const msg = data.error?.message || 'Ошибка при регистрации';
+                    showToast(msg, true);
+                }
+            } catch (err) {
+                showToast('Ошибка связи с сервером', true);
+            }
+        });
+
+        // Загрузка моделей из Strapi
+        async function loadModels() {
+            try {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
+                if (!res.ok) throw new Error('Не удалось получить данные');
+                
+                const responseData = await res.json();
+                allModels = responseData.data || [];
+                renderModels();
+            } catch (err) {
+                console.error('Ошибка загрузки моделей:', err);
+                renderModels();
+            }
+        }
+
+        // Отрисовка каталога
+        function renderModels() {
+            const grid = document.getElementById('models-grid');
+            const countEl = document.getElementById('model-count');
+            const searchQuery = searchInput.value.toLowerCase().trim();
+
+            let filtered = allModels.filter(item => {
+                const attrs = item.attributes || item;
+                const matchesCategory = activeCategory === 'all' || attrs.category === activeCategory;
+                const matchesSearch = (attrs.title || attrs.name || '').toLowerCase().includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+
+            countEl.textContent = `${filtered.length} моделей`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Модели по выбранным критериям не найдены</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const m = item.attributes || item;
+                const previewUrl = m.previewImg?.data?.attributes?.url 
+                    ? (m.previewImg.data.attributes.url.startsWith('http') ? m.previewImg.data.attributes.url : STRAPI_BASE_URL + m.previewImg.data.attributes.url)
+                    : 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
+
+                return `
+                    <div class="model-card">
+                        <img src="${previewUrl}" class="model-preview" alt="${m.title || '3D Model'}">
+                        <div class="model-info">
+                            <div class="model-title">${m.title || 'Без названия'}</div>
+                            <div class="model-author">Автор: ${m.author || 'Аноним'}</div>
+                            <div class="model-footer">
+                                <span class="model-price">${m.price ? m.price + ' ₽' : 'Бесплатно'}</span>
+                                <a href="product.html?id=${item.id}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Подробнее</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Фильтр категорий
+        document.getElementById('categories-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-btn')) {
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                activeCategory = e.target.dataset.category;
+                renderModels();
+            }
+        });
+
+        // Живой поиск
+        searchInput.addEventListener('input', renderModels);
+
+        // Старт
+        updateAuthUI();
+        loadModels();
+    </script>
 </body>
 </html>
