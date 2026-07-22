@@ -54,7 +54,7 @@
         }
         .product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
-        /* Полоски прогресса (Progress Bars) — СНИЗУ КАРТИНКИ */
+        /* Полоски прогресса (Progress Bars) СНИЗУ */
         .card-progress-bars {
             position: absolute;
             bottom: 8px;
@@ -125,7 +125,8 @@
         .modal h2 { margin-bottom: 20px; font-size: 22px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; font-size: 14px; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #0f111a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background: #0f111a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
+        .form-group select option { background: #1a1d29; color: #fff; }
         .submit-btn { width: 100%; padding: 12px; background: #4f46e5; border: none; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-btn:hover { background: #4338ca; }
         .toast-notification { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 8px; color: #fff; font-size: 15px; font-weight: bold; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.4); display: none; }
@@ -172,6 +173,20 @@
                     <label for="model-title">Название модели</label>
                     <input type="text" id="model-title" required placeholder="Например: Glock 17">
                 </div>
+                
+                <!-- CGTrader-style селектор категорий -->
+                <div class="form-group">
+                    <label for="model-category">Категория модели</label>
+                    <select id="model-category" required>
+                        <option value="characters">Персонажи (Characters)</option>
+                        <option value="weapons">Оружие (Weapons)</option>
+                        <option value="environment">Окружение (Environment)</option>
+                        <option value="vehicles">Транспорт (Vehicles)</option>
+                        <option value="architecture">Архитектура (Architecture)</option>
+                        <option value="props" selected>Предметы / Прочее (Props)</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="model-file">Файл модели (.fbx, .obj, .zip)</label>
                     <input type="file" id="model-file" accept=".fbx,.obj,.zip" required>
@@ -201,7 +216,6 @@
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
     const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
     
-    // Хранилище галерей картинок для каждой карточки
     const modelGalleries = {};
 
     function showToast(message, isError = false) {
@@ -212,7 +226,6 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
-    // Переключение изображения в карточке при наведении на сегменты
     function changeCardImage(modelId, index) {
         const gallery = modelGalleries[modelId];
         if (!gallery || !gallery[index]) return;
@@ -299,7 +312,6 @@
                 const title = attrs.Title || "Без названия";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                // Извлечение массива ВСЕХ ссылок на фотографии
                 let imgUrls = [];
                 let rawPreviews = attrs.Previews || item.Previews;
                 if (rawPreviews && rawPreviews.data) {
@@ -328,7 +340,6 @@
                 card.className = 'product-card';
                 card.id = `model-card-${modelId}`;
                 
-                // Переход на страницу детального просмотра при клике на карточку
                 card.onclick = (e) => {
                     if (e.target.closest('.delete-card-btn')) return;
                     window.location.href = `product.html?id=${modelId}`;
@@ -421,12 +432,14 @@
 
             submitBtn.textContent = "Создание карточки...";
 
+            // Передаем поле Category в Strapi
             const finalPayload = {
                 data: {
                     Title: document.getElementById('model-title').value.trim(),
                     Price: parseFloat(document.getElementById('model-price').value.trim()) || 0,
                     Description: document.getElementById('model-desc').value.trim(),
                     Polygons: document.getElementById('model-polygons').value.trim(),
+                    Category: document.getElementById('model-category').value,
                     ModelFBX: fbxId,
                     Previews: imgIds, 
                     ModelGLB: glbId
@@ -440,7 +453,7 @@
             });
 
             if (response.ok) {
-                showToast("Модель успешно создана в базе Postgres!");
+                showToast("Модель успешно создана с выбранной категорией!");
                 document.getElementById('upload-form').reset();
                 if (modal) modal.style.display = "none";
                 loadUserModels();
@@ -448,7 +461,7 @@
                 const errJson = await response.json().catch(() => ({}));
                 const strapiErrorMessage = errJson?.error?.message || "Неизвестная ошибка валидации полей";
                 
-                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}\n\nПроверьте, совпадает ли регистр букв поля 'Polygons' в админке!`);
+                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}\n\nУбедитесь, что в админке Strapi создано текстовое поле 'Category' или 'category'!`);
                 showToast("Ошибка сохранения карточки на сервере.", true);
             }
         } catch (error) {
