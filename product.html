@@ -4,235 +4,386 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Детали модели | 3D Market</title>
+    
+    <!-- Подключаем 3D-движок Google <model-viewer> -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #0f111a; color: #fff; padding: 20px; min-height: 100vh; }
-
-        header { width: 100%; max-width: 1200px; margin: 0 auto 30px auto; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 20px; }
-        .logo-link { color: #38bdf8; text-decoration: none; font-size: 24px; font-weight: bold; }
+        body { background: #0f111a; color: #fff; padding: 20px; }
         
-        .back-btn { display: inline-block; color: #38bdf8; text-decoration: none; font-weight: 600; transition: color 0.2s; }
-        .back-btn:hover { color: #0ea5e9; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .logo-link { color: #fff; text-decoration: none; font-size: 28px; font-weight: bold; }
+        .back-btn { padding: 10px 20px; background: #334155; border: none; border-radius: 8px; color: #fff; text-decoration: none; font-weight: bold; }
+        .back-btn:hover { background: #475569; }
 
-        /* Двухколоночный контейнер */
-        .product-container { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
-        .main-content { flex: 2; min-width: 300px; }
+        .product-container { display: grid; grid-template-columns: 1fr 380px; gap: 30px; max-width: 1200px; margin: 0 auto; }
+        @media (max-width: 900px) { .product-container { grid-template-columns: 1fr; } }
 
-        /* Контейнер интерактивного слайдера */
-        .slider-wrapper { position: relative; width: 100%; height: 480px; background: #0d0f17; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #334155; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .slider-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; display: block; }
+        /* Левая часть: просмотрщик и галерея */
+        .viewer-section { display: flex; flex-direction: column; gap: 15px; }
         
-        /* Прозрачные интерактивные зоны наведения по краям */
-        .hover-zone { position: absolute; top: 0; height: 100%; width: 35%; z-index: 10; }
-        .hover-zone.left { left: 0; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>'), w-resize; }
-        .hover-zone.right { right: 0; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>'), e-resize; }
+        .main-media-box { 
+            background: #1a1d29; 
+            border-radius: 16px; 
+            padding: 10px; 
+            border: 1px solid #334155; 
+            position: relative; 
+            height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Главное изображение-картинка */
+        .main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
+
+        /* 3D-плеер */
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            background-color: #0f111a;
+            border-radius: 12px;
+            display: none; /* Включается по клику */
+        }
+
+        /* Кнопка "Загрузить 3D" поверх картинки (стиль CGTrader) */
+        .btn-load-3d {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(79, 70, 229, 0.9);
+            color: #fff;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            transition: all 0.2s ease;
+            z-index: 10;
+            display: none; /* Показывается если есть 3D файл */
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-load-3d:hover { background: #4338ca; transform: translate(-50%, -50%) scale(1.05); }
+
+        .viewer-controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(15, 17, 26, 0.85);
+            backdrop-filter: blur(4px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            z-index: 11;
+        }
+
+        /* Лента миниатюр (Thumbnails) */
+        .thumbnails-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .thumb-item {
+            width: 80px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: #1a1d29;
+            transition: border-color 0.2s ease;
+            flex-shrink: 0;
+        }
+        .thumb-item:hover, .thumb-item.active {
+            border-color: #6366f1;
+        }
+
+        .thumb-3d-btn {
+            width: 80px;
+            height: 60px;
+            border-radius: 8px;
+            background: #312e81;
+            color: #818cf8;
+            border: 2px solid #4f46e5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            flex-shrink: 0;
+            gap: 2px;
+            transition: all 0.2s ease;
+        }
+        .thumb-3d-btn:hover, .thumb-3d-btn.active {
+            background: #4338ca;
+            color: #fff;
+            border-color: #6366f1;
+        }
+
+        /* Правая колонка: Описание и Покупка */
+        .details-card { background: #1a1d29; border-radius: 16px; padding: 25px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 20px; height: fit-content; }
+        .product-title { font-size: 26px; font-weight: bold; line-height: 1.2; }
+        .product-price { font-size: 32px; font-weight: bold; color: #10b981; }
         
-        /* Плавная подсветка краев при наведении */
-        .hover-zone.left:hover { background: linear-gradient(to right, rgba(255,255,255,0.02), transparent); }
-        .hover-zone.right:hover { background: linear-gradient(to left, rgba(255,255,255,0.02), transparent); }
+        .buy-btn {
+            width: 100%;
+            padding: 16px;
+            background: #4f46e5;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .buy-btn:hover { background: #4338ca; }
 
-        /* Полоски-индикаторы снизу картинки */
-        .slider-indicators { position: absolute; bottom: 20px; display: flex; gap: 8px; z-index: 15; background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(3px); border: 1px solid #233142; }
-        .indicator-line { width: 25px; height: 3px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; transition: all 0.3s ease; }
-        .indicator-line.active { background: #38bdf8; width: 40px; }
+        .specs-list { background: #0f111a; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+        .spec-item { display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
+        .spec-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .spec-label { color: #94a3b8; }
+        .spec-value { color: #fff; font-weight: bold; }
 
-        .formats-container { margin: 20px 0; }
-        .format-badge { display: inline-block; background: #1e293b; color: #94a3b8; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; margin-right: 8px; text-transform: uppercase; border: 1px solid #334155; }
-
-        .description-box { background: #1a1d29; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-top: 20px; }
-        .description-box h3 { margin-bottom: 10px; color: #38bdf8; font-size: 1.2rem; }
-        .description-box p { color: #cbd5e1; line-height: 1.6; white-space: pre-line; }
-
-        /* Правая колонка — Панель покупки */
-        .sidebar { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 20px; }
-        .action-card, .author-card { background: #1a1d29; padding: 25px; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-
-        .product-title { font-size: 1.8rem; margin: 0 0 10px 0; font-weight: 700; color: #fff; }
-        .product-price { font-size: 2.2rem; color: #10b981; font-weight: 700; margin: 0 0 15px 0; }
-        
-        .product-spec-row { margin-bottom: 20px; color: #94a3b8; font-size: 0.95rem; }
-        .product-spec-row strong { color: #38bdf8; }
-
-        .checkout-btn { background: #4f46e5; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s; }
-        .checkout-btn:hover { background: #4338ca; }
-
-        .author-info { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .author-avatar { width: 50px; height: 50px; border-radius: 50%; background: #4f46e5; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
-        .author-name { font-weight: 600; font-size: 1.1rem; color: #fff; }
-
-        .loading { text-align: center; padding: 100px; font-size: 1.2rem; color: #94a3b8; width: 100%; }
+        .description-box { color: #cbd5e1; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="logo-link">📦 3D Market</a>
-        <a href="index.html" class="back-btn">← Вернуться к витрине</a>
+        <a href="index.html" class="logo-link">3D Market</a>
+        <a href="index.html" class="back-btn">← На главную</a>
     </header>
 
-    <div id="product-page" style="width: 100%;">
-        <div class="loading">Загрузка спецификаций модели...</div>
+    <div class="product-container">
+        <!-- Левая колонка: Просмотрщик + Галерея миниатюр -->
+        <div class="viewer-section">
+            <div class="main-media-box">
+                <!-- Картинка превью -->
+                <img id="main-image" class="main-image" src="" alt="Превью модели">
+                
+                <!-- Кнопка поверх картинки в стиле CGTrader -->
+                <button id="btn-load-3d" class="btn-load-3d">
+                    <span>🎲</span> Click to load 3D View
+                </button>
+
+                <!-- 3D Интерактивный плеер -->
+                <model-viewer 
+                    id="3d-viewer" 
+                    alt="3D Предосмотр модели" 
+                    camera-controls 
+                    auto-rotate 
+                    shadow-intensity="1.5"
+                    exposure="1">
+                </model-viewer>
+
+                <div id="viewer-hint" class="viewer-controls-hint">🖱️ Зажмите ЛКМ для вращения • Колесико для зума</div>
+            </div>
+
+            <!-- Нижняя лента миниатюр -->
+            <div class="thumbnails-list" id="thumbnails-container">
+                <!-- Сюда динамически добавятся картинки и кнопка 3D -->
+            </div>
+        </div>
+
+        <!-- Правая колонка: Информация о товаре -->
+        <div class="details-card">
+            <h1 class="product-title" id="p-title">Загрузка...</h1>
+            <div class="product-price" id="p-price">0 $</div>
+            
+            <button class="buy-btn" id="p-buy-btn">Скачать / Купить</button>
+
+            <div class="specs-list">
+                <div class="spec-item">
+                    <span class="spec-label">Категория:</span>
+                    <span class="spec-value" id="p-category">—</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Полигоны:</span>
+                    <span class="spec-value" id="p-polygons">—</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Формат файлов:</span>
+                    <span class="spec-value">FBX / GLB</span>
+                </div>
+            </div>
+
+            <div class="description-box" id="p-desc">
+                Загрузка описания...
+            </div>
+        </div>
     </div>
 
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
-    let images = [];       
-    let currentIndex = 0;  
+    const FALLBACK_IMG = 'https://placehold.co/800x600/1a1d29/94a3b8?text=Нет+превью';
 
-    document.addEventListener('DOMContentLoaded', () => {
+    let currentGlbUrl = "";
+    let imageGallery = [];
+
+    const mainImgEl = document.getElementById('main-image');
+    const viewerEl = document.getElementById('3d-viewer');
+    const btn3d = document.getElementById('btn-load-3d');
+    const hintEl = document.getElementById('viewer-hint');
+    const thumbsContainer = document.getElementById('thumbnails-container');
+
+    // Функция переключения в 3D режим
+    function activate3DView() {
+        if (!currentGlbUrl) return;
+        
+        mainImgEl.style.display = 'none';
+        btn3d.style.display = 'none';
+        
+        viewerEl.style.display = 'block';
+        if (!viewerEl.getAttribute('src')) {
+            viewerEl.setAttribute('src', currentGlbUrl);
+        }
+        hintEl.style.display = 'block';
+
+        // Обновляем выделение в миниатюрах
+        document.querySelectorAll('.thumb-item, .thumb-3d-btn').forEach(el => el.classList.remove('active'));
+        const active3dThumb = document.getElementById('thumb-3d-icon');
+        if (active3dThumb) active3dThumb.classList.add('active');
+    }
+
+    // Функция переключения на картинку
+    function activateImageView(imgUrl, index) {
+        viewerEl.style.display = 'none';
+        hintEl.style.display = 'none';
+        
+        mainImgEl.src = imgUrl;
+        mainImgEl.style.display = 'block';
+
+        if (currentGlbUrl) {
+            btn3d.style.display = 'flex';
+        }
+
+        // Обновляем активную миниатюру
+        document.querySelectorAll('.thumb-item, .thumb-3d-btn').forEach(el => el.classList.remove('active'));
+        const targetThumb = document.getElementById(`thumb-img-${index}`);
+        if (targetThumb) targetThumb.classList.add('active');
+    }
+
+    async function loadProductDetails() {
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
+        const modelId = urlParams.get('id');
 
-        if (!productId) {
-            document.getElementById('product-page').innerHTML = '<div class="loading" style="color: #ef4444;">Товар не указан в ссылке.</div>';
+        if (!modelId) {
+            alert("Модель не найдена!");
+            window.location.href = "index.html";
             return;
         }
 
-        const apiUrl = `${STRAPI_BASE_URL}/api/models/${productId}?populate=*&_t=${Date.now()}`;
+        try {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}?populate=*`);
+            if (!res.ok) throw new Error("Не удалось загрузить данные модели");
 
-        fetch(apiUrl)
-            .then(r => {
-                if(!r.ok) throw new Error('Модель не найдена на сервере Postgres');
-                return r.json();
-            })
-            .then(res => {
-                const item = res.data;
-                if (!item) {
-                    document.getElementById('product-page').innerHTML = '<div class="loading" style="color: #ef4444;">Модель не найдена</div>';
-                    return;
-                }
+            const responseData = await res.json();
+            const item = responseData.data;
+            const attrs = item.attributes || item;
 
-                const attrs = item.attributes || item;
-                const title = attrs.Title || 'Без названия';
-                const price = attrs.Price || '0';
-                const description = attrs.Description || 'Описание для данной 3D модели еще не заполнено автором.';
-                const formats = attrs.Formats ? attrs.Formats.split(',') : ['FBX', 'OBJ', 'ZIP'];
-                const polygons = attrs.Polygons !== undefined ? attrs.Polygons : "Не указано";
+            // Заполняем текстовую информацию
+            document.getElementById('p-title').textContent = attrs.Title || "Без названия";
+            document.getElementById('p-price').textContent = `${attrs.Price !== undefined ? attrs.Price : 0} $`;
+            document.getElementById('p-polygons').textContent = attrs.Polygons || "Не указано";
+            
+            const categoryValue = attrs.Category || attrs.category || "props";
+            document.getElementById('p-category').textContent = categoryValue.toUpperCase();
+            document.getElementById('p-desc').textContent = attrs.Description || "Описание отсутствует.";
 
-                // Тройной бронебойный парсинг картинок для любых версий Strapi v4/v5
-                images = [];
-                let rawPreviews = attrs.Previews || item.Previews;
-                if (rawPreviews && rawPreviews.data) {
-                    rawPreviews = rawPreviews.data;
-                }
+            // 1. Извлекаем изображения превью
+            let rawPreviews = attrs.Previews || item.Previews;
+            if (rawPreviews && rawPreviews.data) rawPreviews = rawPreviews.data;
+            
+            imageGallery = [];
+            if (rawPreviews) {
+                const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
+                previewsArray.forEach(p => {
+                    const target = p.attributes || p;
+                    const url = target.url || p.url || '';
+                    if (url) {
+                        const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                        imageGallery.push(fullUrl);
+                    }
+                });
+            }
 
-                if (rawPreviews) {
-                    const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
-                    previewsArray.forEach(img => {
-                        if (img) {
-                            const target = img.attributes || img;
-                            const url = target.url || '';
-                            if (url) {
-                                const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
-                                images.push(fullUrl);
-                            }
-                        }
-                    });
-                }
+            if (imageGallery.length === 0) {
+                imageGallery.push(FALLBACK_IMG);
+            }
 
-                // Если фото нет, ставим красивую темную заглушку маркетплейса
-                if (images.length === 0) {
-                    images.push('https://placehold.co/600x400/1a1d29/94a3b8?text=No+Preview');
-                }
+            // Устанавливаем главное первое изображение
+            mainImgEl.src = imageGallery[0];
 
-                // Избавляемся от вложенных бэктиков: собираем зоны управления заранее
-                let hoverZonesHtml = '';
-                if (images.length > 1) {
-                    hoverZonesHtml = `
-                        <div class="hover-zone left" onmouseenter="prevSlide()" onclick="prevSlide()"></div>
-                        <div class="hover-zone right" onmouseenter="nextSlide()" onclick="nextSlide()"></div>
-                    `;
-                }
-
-                // Собираем полоски-индикаторы снизу
-                let indicatorsHtml = '';
-                if (images.length > 1) {
-                    indicatorsHtml = '<div class="slider-indicators">';
-                    images.forEach((_, idx) => {
-                        indicatorsHtml += `<div class="indicator-line ${idx === 0 ? 'active' : ''}" id="line-ind-${idx}"></div>`;
-                    });
-                    indicatorsHtml += '</div>';
-                }
-
-                // Отрисовка страницы маркетплейса без конфликтов строк
-                document.getElementById('product-page').innerHTML = `
-                    <div class="product-container">
-                        
-                        <div class="main-content">
-                            <div class="slider-wrapper">
-                                ${hoverZonesHtml}
-                                
-                                <img id="slider-main-img" src="${images[0]}" class="slider-img" alt="${title}">
-                                
-                                ${indicatorsHtml}
-                            </div>
-                            
-                            <div class="formats-container">
-                                ${formats.map(f => `<span class="format-badge">${f.trim()}</span>`).join('')}
-                            </div>
-                            
-                            <div class="description-box">
-                                <h3>Описание товара</h3>
-                                <p>${description}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="sidebar">
-                            <div class="action-card">
-                                <h1 class="product-title">${title}</h1>
-                                <div class="product-spec-row">Полигоны (Polygons): <strong>${polygons}</strong></div>
-                                <p class="product-price">${price} $</p>
-                                <button class="checkout-btn" onclick="alert('Перенаправление на платежный шлюз...')">Купить сейчас</button>
-                            </div>
-                            
-                            <div class="author-card">
-                                <div class="author-info">
-                                    <div class="author-avatar">R</div>
-                                    <div>
-                                        <div class="author-name">Resperator</div>
-                                        <span style="color: #94a3b8; font-size: 0.85rem;">3D Моделлер</span>
-                                    </div>
-                                </div>
-                                <p style="font-size: 0.9rem; color: #94a3b8; line-height: 1.4;">Другие работы автора всегда доступны в его профиле.</p>
-                            </div>
-                        </div>
-                        
-                    </div>
-                `;
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('product-page').innerHTML = `<div class="loading" style="color: #ef4444;">Не удалось загрузить карточку товара. Причина: ${err.message}</div>`;
-            });
-    });
-
-    function updateSliderView() {
-        const imgEl = document.getElementById('slider-main-img');
-        if (imgEl) imgEl.src = images[currentIndex];
-        
-        images.forEach((_, idx) => {
-            const line = document.getElementById(`line-ind-${idx}`);
-            if (line) {
-                if (idx === currentIndex) {
-                    line.classList.add('active');
-                } else {
-                    line.classList.remove('active');
+            // 2. Извлекаем 3D файл (.GLB)
+            const rawGlb = attrs.ModelGLB || item.ModelGLB;
+            if (rawGlb) {
+                const target = rawGlb.data ? rawGlb.data.attributes : (rawGlb.attributes || rawGlb);
+                const url = target?.url || "";
+                const size = target?.size || 0;
+                
+                // Проверяем, что это не пустая заглушка (размер больше 1 КБ)
+                if (url && (size > 1 || !url.includes('empty.glb'))) {
+                    currentGlbUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
                 }
             }
-        });
+
+            // Показываем кнопку 3D поверх изображения, если GLB загружен
+            if (currentGlbUrl) {
+                btn3d.style.display = 'flex';
+                btn3d.onclick = activate3DView;
+            }
+
+            // 3. Рендерим нижнюю ленту миниатюр
+            thumbsContainer.innerHTML = '';
+
+            // Кнопка 3D в миниатюрах (если есть файл)
+            if (currentGlbUrl) {
+                const btn3dThumb = document.createElement('div');
+                btn3dThumb.className = 'thumb-3d-btn';
+                btn3dThumb.id = 'thumb-3d-icon';
+                btn3dThumb.innerHTML = '<span>🎲</span> 3D VIEW';
+                btn3dThumb.onclick = activate3DView;
+                thumbsContainer.appendChild(btn3dThumb);
+            }
+
+            // Миниатюры картинок
+            imageGallery.forEach((url, index) => {
+                const imgThumb = document.createElement('img');
+                imgThumb.className = `thumb-item ${index === 0 ? 'active' : ''}`;
+                imgThumb.id = `thumb-img-${index}`;
+                imgThumb.src = url;
+                imgThumb.onclick = () => activateImageView(url, index);
+                thumbsContainer.appendChild(imgThumb);
+            });
+
+        } catch (error) {
+            console.error("Ошибка:", error);
+            document.getElementById('p-title').textContent = "Ошибка загрузки карточки";
+        }
     }
 
-    function nextSlide() {
-        if (images.length <= 1) return;
-        currentIndex = (currentIndex + 1) % images.length;
-        updateSliderView();
-    }
-
-    function prevSlide() {
-        if (images.length <= 1) return;
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        updateSliderView();
-    }
+    document.addEventListener("DOMContentLoaded", loadProductDetails);
 </script>
 </body>
 </html>
