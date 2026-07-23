@@ -5,496 +5,523 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет | 3D Market</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #0b0e14;
-            color: #e2e8f0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Шапка */
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 40px;
-            background-color: #121721;
-            border-bottom: 1px solid #1e2638;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffffff;
-            text-decoration: none;
-        }
-        .logo span {
-            color: #3b82f6;
-        }
-
-        .btn-back {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            background-color: #1e2638;
-            color: #cbd5e1;
-            text-decoration: none;
-            border: 1px solid #2d3748;
-            transition: background 0.2s;
-        }
-        .btn-back:hover {
-            background-color: #2d3748;
-            color: #fff;
-        }
-
-        /* Главная секция */
-        main {
-            flex: 1;
-            padding: 30px 40px;
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        /* Карточка профиля */
-        .profile-card {
-            background-color: #121721;
-            border: 1px solid #1e2638;
-            border-radius: 12px;
-            padding: 28px 32px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            margin-bottom: 36px;
-        }
-
-        .profile-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background-color: #4f46e5;
-            color: #ffffff;
-            font-size: 32px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-transform: uppercase;
-            flex-shrink: 0;
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .profile-header-row {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .profile-name {
-            font-size: 26px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .profile-handle {
-            font-size: 15px;
-            color: #64748b;
-            font-weight: 400;
-        }
-
-        .profile-rating {
-            font-size: 14px;
-            color: #f59e0b;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .profile-rating span {
-            color: #64748b;
-        }
-
-        /* Заголовок Лучшие работы */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #ffffff;
-        }
-
-        .btn-add-model {
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            background-color: #10b981;
-            color: #ffffff;
-            border: none;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0f111a; color: #fff; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .logo-link { color: #fff; text-decoration: none; font-size: 28px; font-weight: bold; }
+        .back-btn { padding: 10px 20px; background: #334155; border: none; border-radius: 8px; color: #fff; text-decoration: none; }
+        .back-btn:hover { background: #475569; }
+        .profile-container { display: flex; align-items: center; gap: 25px; background: #1a1d29; padding: 30px; border-radius: 16px; margin-bottom: 40px; }
+        .profile-avatar { width: 100px; height: 100px; background: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; text-transform: uppercase; }
+        .profile-info { display: flex; flex-direction: column; gap: 8px; }
+        .profile-header-row { display: flex; align-items: center; gap: 15px; }
+        .profile-nick { font-size: 20px; color: #94a3b8; font-weight: normal; text-transform: lowercase; }
+        .profile-rating { display: flex; align-items: center; gap: 5px; color: #f59e0b; font-size: 18px; font-weight: bold; }
+        .profile-reviews { color: #64748b; font-size: 14px; }
+        .profile-username { font-size: 32px; font-weight: bold; letter-spacing: 1px; }
+        .section-title-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; margin-bottom: 30px; }
+        .section-title { font-size: 18px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; }
+        .add-product-btn { padding: 8px 16px; background: #22c55e; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; text-decoration: none; }
+        .add-product-btn:hover { background: #16a34a; }
+        
+        .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        
+        /* Стили карточки товара */
+        .product-card { 
+            position: relative; 
+            background: #1a1d29; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px; 
+            border: 1px solid transparent; 
+            transition: transform 0.3s ease, border-color 0.3s ease, opacity 0.4s ease; 
             cursor: pointer;
-            transition: background 0.2s;
         }
-        .btn-add-model:hover {
-            background-color: #059669;
-        }
-
-        /* Сетка работ / Пустое состояние */
-        .models-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .empty-state {
-            grid-column: 1 / -1;
-            color: #64748b;
-            font-size: 14px;
-            padding-top: 10px;
-        }
-
-        .model-card {
-            background-color: #121721;
-            border: 1px solid #1e2638;
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .model-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .model-price {
-            color: #10b981;
-            font-weight: bold;
-        }
-
-        /* Модальное окно добавления */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: #121721;
-            border: 1px solid #1e2638;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 480px;
-            padding: 28px;
+        .product-card:hover { transform: translateY(-4px); border-color: #4f46e5; }
+        
+        /* Область медиа и интерактивный слайдер */
+        .card-media-wrapper {
             position: relative;
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: #0f111a;
         }
-
-        .modal-close {
+        .product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
+        /* Полоски прогресса (Progress Bars) СНИЗУ */
+        .card-progress-bars {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: none;
-            border: none;
-            color: #64748b;
-            font-size: 22px;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .card-progress-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 2px;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-progress-bar.active {
+            background: #6366f1;
+            box-shadow: 0 0 6px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Невидимые интерактивные зоны наведения */
+        .card-hover-zones {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 6;
+        }
+        .card-hover-segment {
+            flex: 1;
+            height: 100%;
             cursor: pointer;
         }
 
-        .modal-title {
+        .delete-card-btn {
+            position: absolute;
+            top: 22px;
+            right: 22px;
+            background: rgba(239, 68, 68, 0.85);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
             font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: #94a3b8;
-            margin-bottom: 6px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid #1e2638;
-            background-color: #0b0e14;
-            color: #fff;
-            outline: none;
-        }
-
-        /* Уведомление Toast */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            background-color: #10b981;
-            color: #fff;
-            font-size: 14px;
-            display: none;
-            z-index: 2000;
-        }
-        .toast.error {
-            background-color: #ef4444;
-        }
+        .delete-card-btn:hover { background: #ef4444; transform: scale(1.1); }
+        .product-info { padding: 5px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
+        .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,17,26,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
+        .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; }
+        .close-modal:hover { color: #fff; }
+        .modal h2 { margin-bottom: 20px; font-size: 22px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background: #0f111a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
+        .form-group select option { background: #1a1d29; color: #fff; }
+        .submit-btn { width: 100%; padding: 12px; background: #4f46e5; border: none; border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .submit-btn:hover { background: #4338ca; }
+        .toast-notification { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 8px; color: #fff; font-size: 15px; font-weight: bold; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.4); display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Шапка -->
+    <div id="toast" class="toast-notification"></div>
+
     <header>
-        <a href="index.html" class="logo">3D <span>Market</span></a>
-        <a href="index.html" class="btn-back">— На главную</a>
+        <a href="index.html" class="logo-link">3D Market</a>
+        <a href="index.html" class="back-btn">— На главную</a>
     </header>
 
-    <!-- Основное содержимое -->
-    <main>
-        <!-- Карточка профиля -->
-        <div class="profile-card">
-            <div class="profile-avatar" id="user-avatar">П</div>
-            <div class="profile-info">
-                <div class="profile-header-row">
-                    <h1 class="profile-name" id="user-name">Пользователь</h1>
-                    <span class="profile-handle" id="user-handle">@пользователь</span>
-                </div>
-                <div class="profile-rating">
-                    ★ 5.0 <span>(0 отзывов)</span>
-                </div>
+    <div class="profile-container">
+        <div class="profile-avatar" id="user-avatar">?</div>
+        <div class="profile-info">
+            <div class="profile-header-row">
+                <div class="profile-username" id="user-name">Загрузка...</div>
+                <div class="profile-nick" id="user-nick">@username</div>
+            </div>
+            <div class="profile-header-row">
+                <div class="profile-rating">★ 5.0</div>
+                <div class="profile-reviews">(0 отзывов)</div>
             </div>
         </div>
+    </div>
 
-        <!-- Секция лучших работ -->
-        <div class="section-header">
-            <h2 class="section-title">ЛУЧШИЕ РАБОТЫ</h2>
-            <button class="btn-add-model" id="open-upload-btn">+ Добавить модель</button>
-        </div>
+    <div class="section-title-bar">
+        <div class="section-title">Лучшие работы</div>
+        <button class="add-product-btn" id="openModalBtn">+ Добавить модель</button>
+    </div>
 
-        <div class="models-grid" id="user-models-grid">
-            <div class="empty-state">
-                У вас пока нет опубликованных моделей
-            </div>
-        </div>
-    </main>
+    <div class="works-grid" id="user-models-grid">
+        <div style="color: #94a3b8; padding: 20px;">Загрузка ваших моделей...</div>
+    </div>
 
-    <!-- Модальное окно создания модели -->
-    <div class="modal-overlay" id="upload-modal">
+    <div id="myModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" id="close-upload-btn">&times;</button>
-            <h3 class="modal-title">Добавить 3D-модель</h3>
-
+            <span class="close-modal" id="closeModalBtn">&times;</span>
+            <h2>Опубликовать новую работу</h2>
             <form id="upload-form">
                 <div class="form-group">
-                    <label>Название модели</label>
+                    <label for="model-title">Название модели</label>
                     <input type="text" id="model-title" required placeholder="Например: Glock 17">
                 </div>
-
+                
                 <div class="form-group">
-                    <label>Категория</label>
+                    <label for="model-category">Категория модели</label>
                     <select id="model-category" required>
-                        <option value="Персонажи">Персонажи</option>
-                        <option value="Оружие">Оружие</option>
-                        <option value="Окружение">Окружение</option>
-                        <option value="Транспорт">Транспорт</option>
-                        <option value="Архитектура">Архитектура</option>
-                        <option value="Предметы">Предметы</option>
+                        <option value="characters">Персонажи (Characters)</option>
+                        <option value="weapons">Оружие (Weapons)</option>
+                        <option value="environment">Окружение (Environment)</option>
+                        <option value="vehicles">Транспорт (Vehicles)</option>
+                        <option value="architecture">Архитектура (Architecture)</option>
+                        <option value="props" selected>Предметы / Прочее (Props)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Цена (в ₽, 0 — бесплатно)</label>
-                    <input type="number" id="model-price" required placeholder="0" min="0">
+                    <label for="model-file">Основной файл модели (.fbx, .obj, .zip)</label>
+                    <input type="file" id="model-file" accept=".fbx,.obj,.zip" required>
                 </div>
 
-                <button type="submit" class="btn-add-model" id="submit-btn" style="width: 100%; margin-top: 10px;">Опубликовать</button>
+                <!-- Поле для интерактивного 3D просмотра -->
+                <div class="form-group">
+                    <label for="model-glb">Файл для 3D просмотра (.glb) <span style="color:#64748b;">(Необязательно)</span></label>
+                    <input type="file" id="model-glb" accept=".glb,.gltf">
+                </div>
+
+                <div class="form-group">
+                    <label for="model-polygons">Количество полигонов (Polygons)</label>
+                    <input type="text" id="model-polygons" required placeholder="Например: 12500 или 12k">
+                </div>
+                <div class="form-group">
+                    <label for="model-price">Цена (только число)</label>
+                    <input type="text" id="model-price" required placeholder="19">
+                </div>
+                <div class="form-group">
+                    <label for="model-img">Фото / Галерея превью (несколько картинок)</label>
+                    <input type="file" id="model-img" accept="image/*" multiple required>
+                </div>
+                <div class="form-group">
+                    <label for="model-desc">Описание модели</label>
+                    <textarea id="model-desc" rows="3" placeholder="Опишите вашу 3D-модель..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">Опубликовать</button>
             </form>
         </div>
     </div>
 
-    <!-- Уведомления -->
-    <div class="toast" id="toast"></div>
+<script>
+    const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+    const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
+    
+    const modelGalleries = {};
 
-    <script>
-        const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
-        let currentUser = null;
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.background = isError ? '#ef4444' : '#22c55e';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
 
-        const userNameEl = document.getElementById('user-name');
-        const userHandleEl = document.getElementById('user-handle');
-        const userAvatarEl = document.getElementById('user-avatar');
+    function changeCardImage(modelId, index) {
+        const gallery = modelGalleries[modelId];
+        if (!gallery || !gallery[index]) return;
 
-        const uploadModal = document.getElementById('upload-modal');
-        const openUploadBtn = document.getElementById('open-upload-btn');
-        const closeUploadBtn = document.getElementById('close-upload-btn');
-        const uploadForm = document.getElementById('upload-form');
-        const submitBtn = document.getElementById('submit-btn');
-        const toastEl = document.getElementById('toast');
-
-        function showToast(message, isError = false) {
-            toastEl.textContent = message;
-            toastEl.className = 'toast' + (isError ? ' error' : '');
-            toastEl.style.display = 'block';
-            setTimeout(() => { toastEl.style.display = 'none'; }, 4000);
+        const imgEl = document.getElementById(`card-img-${modelId}`);
+        if (imgEl) {
+            imgEl.src = gallery[index];
         }
 
-        // Загрузка данных текущего пользователя
-        async function loadUserProfile() {
-            const token = localStorage.getItem('jwt');
-            if (!token) {
-                window.location.href = 'index.html';
+        gallery.forEach((_, idx) => {
+            const barEl = document.getElementById(`bar-${modelId}-${idx}`);
+            if (barEl) {
+                if (idx === index) {
+                    barEl.classList.add('active');
+                } else {
+                    barEl.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    function resetCardImage(modelId) {
+        changeCardImage(modelId, 0);
+    }
+
+    async function deleteModel(modelId) {
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        if (!token) { alert("КРИТИЧЕСКАЯ ОШИБКА: Ключ авторизации не найден."); return; }
+        if (!confirm("Вы точно хотите удалить эту модель?")) return;
+
+        try {
+            const response = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+
+            if (response.status === 200 || response.status === 204) {
+                showToast("Модель успешно удалена!");
+                const cardEl = document.getElementById(`model-card-${modelId}`);
+                if (cardEl) {
+                    cardEl.style.opacity = '0';
+                    cardEl.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        cardEl.remove();
+                        const grid = document.getElementById('user-models-grid');
+                        if (grid.querySelectorAll('[id^="model-card-"]').length === 0) {
+                            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
+                        }
+                    }, 400);
+                }
+                return;
+            } 
+            const errorText = await response.text();
+            alert(`СБОЙ СЕРВЕРА: Статус ${response.status}\nОтвет: ${errorText}`);
+        } catch (error) { alert(`ОШИБКА СЕТИ: ${error.message}`); }
+    }
+
+    async function loadUserModels() {
+        const grid = document.getElementById('user-models-grid');
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        if (!grid) return;
+
+        try {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error("Не удалось загрузить ваши работы.");
+
+            const responseData = await res.json();
+            const models = responseData.data || [];
+
+            if (models.length === 0) {
+                grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
                 return;
             }
 
-            try {
-                const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+            grid.innerHTML = ''; 
 
-                if (!res.ok) throw new Error('Сессия недействительна');
+            models.forEach(item => {
+                const modelId = item.documentId || item.id;
+                const attrs = item.attributes || item;
+                const title = attrs.Title || "Без названия";
+                const price = attrs.Price !== undefined ? attrs.Price : 0;
 
-                currentUser = await res.json();
-
-                // Подставляем данные вошедшего пользователя
-                const username = currentUser.username || 'Пользователь';
-                userNameEl.textContent = username;
-                userHandleEl.textContent = `@${username.toLowerCase()}`;
-                userAvatarEl.textContent = username.charAt(0).toUpperCase();
-
-                loadUserModels();
-            } catch (err) {
-                console.error(err);
-                localStorage.removeItem('jwt');
-                localStorage.removeItem('user');
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Загрузка моделей текущего пользователя
-        async function loadUserModels() {
-            const grid = document.getElementById('user-models-grid');
-            if (!currentUser) return;
-
-            try {
-                const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
-                if (!res.ok) return;
-
-                const responseData = await res.json();
-                const allModels = responseData.data || [];
-
-                const userModels = allModels.filter(item => {
-                    const m = item.attributes || item;
-                    return m.author === currentUser.username;
-                });
-
-                if (userModels.length === 0) {
-                    grid.innerHTML = '<div class="empty-state">У вас пока нет опубликованных моделей</div>';
-                    return;
+                let imgUrls = [];
+                let rawPreviews = attrs.Previews || item.Previews;
+                if (rawPreviews && rawPreviews.data) {
+                    rawPreviews = rawPreviews.data;
                 }
-
-                grid.innerHTML = userModels.map(item => {
-                    const m = item.attributes || item;
-                    return `
-                        <div class="model-card">
-                            <div class="model-title">${m.title || 'Без названия'}</div>
-                            <div class="model-price">${m.price ? m.price + ' ₽' : 'Бесплатно'}</div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (err) {
-                console.error('Ошибка загрузки моделей:', err);
-            }
-        }
-
-        // Добавление новой модели
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const token = localStorage.getItem('jwt');
-            
-            const title = document.getElementById('model-title').value;
-            const category = document.getElementById('model-category').value;
-            const price = Number(document.getElementById('model-price').value);
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Публикация...';
-
-            try {
-                const response = await fetch(`${STRAPI_BASE_URL}/api/models`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        data: {
-                            title: title,
-                            category: category,
-                            price: price,
-                            author: currentUser.username
+                if (rawPreviews) {
+                    const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
+                    previewsArray.forEach(p => {
+                        const target = p.attributes || p;
+                        const url = target.url || p.url || '';
+                        if (url) {
+                            const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                            imgUrls.push(fullUrl);
                         }
-                    })
-                });
-
-                if (response.ok) {
-                    showToast('Модель успешно создана!');
-                    uploadForm.reset();
-                    uploadModal.classList.remove('active');
-                    loadUserModels();
-                } else {
-                    const errJson = await response.json().catch(() => ({}));
-                    const strapiErrorMessage = errJson?.error?.message || 'Ошибка сохранения';
-                    showToast(`Ошибка: ${strapiErrorMessage}`, true);
+                    });
                 }
-            } catch (error) {
-                showToast(`Сбой: ${error.message}`, true);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Опубликовать';
+
+                if (imgUrls.length === 0) {
+                    imgUrls.push(FALLBACK_IMG);
+                }
+
+                modelGalleries[modelId] = imgUrls;
+                const hasMultiple = imgUrls.length > 1;
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.id = `model-card-${modelId}`;
+                
+                card.onclick = (e) => {
+                    if (e.target.closest('.delete-card-btn')) return;
+                    window.location.href = `product.html?id=${modelId}`;
+                };
+
+                card.innerHTML = `
+                    <button class="delete-card-btn" onclick="event.stopPropagation(); deleteModel('${modelId}')">&times;</button>
+                    
+                    <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
+                        <img id="card-img-${modelId}" src="${imgUrls[0]}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
+                        
+                        ${hasMultiple ? `
+                            <div class="card-progress-bars">
+                                ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${modelId}-${idx}"></div>`).join('')}
+                            </div>
+                            <div class="card-hover-zones">
+                                ${imgUrls.map((_, idx) => `
+                                    <div class="card-hover-segment" onmouseenter="changeCardImage('${modelId}', ${idx})" onmousemove="changeCardImage('${modelId}', ${idx})"></div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-title">${title}</div>
+                        <div class="product-price">${price} $</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+        } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки: ${error.message}</div>`; }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const storedUsername = localStorage.getItem('username') || "Пользователь";
+        document.getElementById('user-name').textContent = storedUsername;
+        document.getElementById('user-nick').textContent = '@' + storedUsername.toLowerCase().replace(/\s+/g, '');
+        document.getElementById('user-avatar').textContent = storedUsername.charAt(0);
+        loadUserModels();
+    });
+
+    const modal = document.getElementById("myModal");
+    const btn = document.getElementById("openModalBtn");
+    const span = document.getElementById("closeModalBtn");
+
+    if (btn && modal && span) {
+        btn.onclick = function() { modal.style.display = "flex"; }
+        span.onclick = function() { modal.style.display = "none"; }
+        window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
+    }
+
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        if (!token) { showToast("Ошибка авторизации!", true); return; }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Загрузка файлов...";
+
+        const fileInput = document.getElementById('model-file').files[0];
+        const glbFileInput = document.getElementById('model-glb').files[0];
+        const imgInputFiles = document.getElementById('model-img').files;
+
+        try {
+            async function uploadToMediaLibrary(file) {
+                const fileData = new FormData();
+                fileData.append('files', file);
+                const res = await fetch(`${STRAPI_BASE_URL}/api/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: fileData
+                });
+                if (!res.ok) throw new Error(`Не удалось загрузить файл ${file.name}`);
+                const uploadedFiles = await res.json();
+                return uploadedFiles[0].id;
+            }
+
+            const fbxId = await uploadToMediaLibrary(fileInput);
+
+            const imgIds = [];
+            for (let i = 0; i < imgInputFiles.length; i++) {
+                submitBtn.textContent = `Загрузка фото (${i + 1}/${imgInputFiles.length})...`;
+                const uploadedId = await uploadToMediaLibrary(imgInputFiles[i]);
+                imgIds.push(uploadedId);
+            }
+
+            // Если пользователь выбрал .glb файл — загружаем его, иначе заменяем заглушкой
+            let glbId;
+            if (glbFileInput) {
+                submitBtn.textContent = "Загрузка 3D GLB плеера...";
+                glbId = await uploadToMediaLibrary(glbFileInput);
+            } else {
+                const dummyFile = new File(["placeholder_content"], "empty.glb", { type: "application/octet-stream" });
+                glbId = await uploadToMediaLibrary(dummyFile);
+            }
+
+            submitBtn.textContent = "Создание карточки...";
+
+            const finalPayload = {
+                data: {
+                    Title: document.getElementById('model-title').value.trim(),
+                    Price: parseFloat(document.getElementById('model-price').value.trim()) || 0,
+                    Description: document.getElementById('model-desc').value.trim(),
+                    Polygons: document.getElementById('model-polygons').value.trim(),
+                    Category: document.getElementById('model-category').value,
+                    ModelFBX: fbxId,
+                    Previews: imgIds, 
+                    ModelGLB: glbId
+                }
+            };
+
+            const response = await fetch(`${STRAPI_BASE_URL}/api/models`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(finalPayload)
+            });
+
+            if (response.ok) {
+                showToast("Модель успешно создана!");
+                document.getElementById('upload-form').reset();
+                if (modal) modal.style.display = "none";
+                loadUserModels();
+            } else {
+                const errJson = await response.json().catch(() => ({}));
+                const strapiErrorMessage = errJson?.error?.message || "Неизвестная ошибка валидации полей";
+                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}`);
+                showToast("Ошибка сохранения карточки на сервере.", true);
+            }
+        } catch (error) {
+            showToast(`Критический сбой: ${error.message}`, true);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Опубликовать";
+        }
+    });
+// Автоматическая подстановка твоего ника и аватарки из Strapi
+async function loadRealUserData() {
+    const token = localStorage.getItem('jwt');
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+
+        const user = await res.json();
+        const username = user.username;
+
+        // Находим элементы со старого интерфейса и меняем текст
+        document.querySelectorAll('*').forEach(el => {
+            if (el.children.length === 0) {
+                const text = el.textContent.trim();
+                // Заменяем заголовок "Пользователь"
+                if (text === 'Пользователь') {
+                    el.textContent = username;
+                }
+                // Заменяем бейджик "@пользователь"
+                if (text === '@пользователь') {
+                    el.textContent = `@${username.toLowerCase()}`;
+                }
+                // Заменяем букву "П" в аватарке
+                if (text === 'П' && el.offsetWidth === el.offsetHeight && el.offsetWidth > 0) {
+                    el.textContent = username.charAt(0).toUpperCase();
+                }
             }
         });
+    } catch (e) {
+        console.error('Ошибка подгрузки ника:', e);
+    }
+}
 
-        openUploadBtn.addEventListener('click', () => uploadModal.classList.add('active'));
-        closeUploadBtn.addEventListener('click', () => uploadModal.classList.remove('active'));
-        uploadModal.addEventListener('click', (e) => {
-            if (e.target === uploadModal) uploadModal.classList.remove('active');
-        });
-
-        document.addEventListener('DOMContentLoaded', loadUserProfile);
-    </script>
+// Запускаем при открытии страницы
+document.addEventListener('DOMContentLoaded', loadRealUserData);
+</script>
 </body>
 </html>
