@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет | 3D Market</title>
     <style>
-        /* Сброс стилей и базовые настройки */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -14,21 +13,21 @@
         }
 
         body {
-            background-color: #0d0f12;
+            background-color: #0b0e14;
             color: #e2e8f0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Шапка сайта */
+        /* Шапка */
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 40px;
-            background-color: #161a23;
-            border-bottom: 1px solid #232936;
+            padding: 16px 40px;
+            background-color: #121721;
+            border-bottom: 1px solid #1e2638;
         }
 
         .logo {
@@ -41,46 +40,23 @@
             color: #3b82f6;
         }
 
-        .btn {
-            padding: 10px 18px;
+        .btn-back {
+            padding: 8px 16px;
             border-radius: 8px;
             font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            background-color: #1e2638;
+            color: #cbd5e1;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            border: 1px solid #2d3748;
+            transition: background 0.2s;
         }
-
-        .btn-secondary {
+        .btn-back:hover {
             background-color: #2d3748;
-            color: #e2e8f0;
-        }
-        .btn-secondary:hover {
-            background-color: #4a5568;
+            color: #fff;
         }
 
-        .btn-success {
-            background-color: #10b981;
-            color: #ffffff;
-        }
-        .btn-success:hover {
-            background-color: #059669;
-        }
-
-        .btn-danger {
-            background-color: #ef4444;
-            color: #ffffff;
-        }
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        /* Основной контент */
+        /* Главная секция */
         main {
             flex: 1;
             padding: 30px 40px;
@@ -91,23 +67,23 @@
 
         /* Карточка профиля */
         .profile-card {
-            background-color: #161a23;
-            border: 1px solid #2d3748;
-            border-radius: 16px;
-            padding: 30px;
+            background-color: #121721;
+            border: 1px solid #1e2638;
+            border-radius: 12px;
+            padding: 28px 32px;
             display: flex;
             align-items: center;
             gap: 24px;
-            margin-bottom: 40px;
+            margin-bottom: 36px;
         }
 
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background-color: #4f46e5;
             color: #ffffff;
-            font-size: 36px;
+            font-size: 32px;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -117,52 +93,73 @@
         }
 
         .profile-info {
-            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .profile-header-row {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
         }
 
         .profile-name {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 4px;
         }
 
         .profile-handle {
-            font-size: 14px;
-            color: #718096;
-            margin-bottom: 8px;
+            font-size: 15px;
+            color: #64748b;
+            font-weight: 400;
         }
 
         .profile-rating {
             font-size: 14px;
-            color: #fbbf24;
+            color: #f59e0b;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .profile-actions {
-            display: flex;
-            gap: 12px;
+        .profile-rating span {
+            color: #64748b;
         }
 
-        /* Заголовок секции */
+        /* Заголовок Лучшие работы */
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #e2e8f0;
+            letter-spacing: 0.5px;
+            color: #ffffff;
         }
 
-        /* Сетка моделей */
+        .btn-add-model {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: #10b981;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-add-model:hover {
+            background-color: #059669;
+        }
+
+        /* Сетка работ / Пустое состояние */
         .models-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -171,28 +168,15 @@
 
         .empty-state {
             grid-column: 1 / -1;
-            padding: 40px 0;
-            color: #718096;
-            font-size: 15px;
+            color: #64748b;
+            font-size: 14px;
+            padding-top: 10px;
         }
 
         .model-card {
-            background-color: #161a23;
-            border: 1px solid #2d3748;
+            background-color: #121721;
+            border: 1px solid #1e2638;
             border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .model-preview {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background-color: #1a202c;
-        }
-
-        .model-info {
             padding: 16px;
             display: flex;
             flex-direction: column;
@@ -206,16 +190,16 @@
         }
 
         .model-price {
-            font-weight: bold;
             color: #10b981;
+            font-weight: bold;
         }
 
-        /* Модальное окно добавления модели */
+        /* Модальное окно добавления */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(4px);
             z-index: 1000;
             align-items: center;
@@ -227,11 +211,11 @@
         }
 
         .modal-content {
-            background-color: #161a23;
-            border: 1px solid #2d3748;
+            background-color: #121721;
+            border: 1px solid #1e2638;
             border-radius: 16px;
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             padding: 28px;
             position: relative;
         }
@@ -242,7 +226,7 @@
             right: 16px;
             background: none;
             border: none;
-            color: #a0aec0;
+            color: #64748b;
             font-size: 22px;
             cursor: pointer;
         }
@@ -261,22 +245,18 @@
         .form-group label {
             display: block;
             font-size: 13px;
-            color: #a0aec0;
+            color: #94a3b8;
             margin-bottom: 6px;
         }
 
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px 14px;
             border-radius: 8px;
-            border: 1px solid #2d3748;
-            background-color: #1a202c;
+            border: 1px solid #1e2638;
+            background-color: #0b0e14;
             color: #fff;
             outline: none;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: #3b82f6;
         }
 
         /* Уведомление Toast */
@@ -289,11 +269,9 @@
             background-color: #10b981;
             color: #fff;
             font-size: 14px;
-            font-weight: 500;
             display: none;
             z-index: 2000;
         }
-
         .toast.error {
             background-color: #ef4444;
         }
@@ -304,30 +282,29 @@
     <!-- Шапка -->
     <header>
         <a href="index.html" class="logo">3D <span>Market</span></a>
-        <a href="index.html" class="btn btn-secondary">— На главную</a>
+        <a href="index.html" class="btn-back">— На главную</a>
     </header>
 
-    <!-- Главный контент -->
+    <!-- Основное содержимое -->
     <main>
         <!-- Карточка профиля -->
         <div class="profile-card">
             <div class="profile-avatar" id="user-avatar">П</div>
             <div class="profile-info">
-                <h1 class="profile-name" id="user-name">Загрузка...</h1>
-                <div class="profile-handle" id="user-handle">@загрузка</div>
+                <div class="profile-header-row">
+                    <h1 class="profile-name" id="user-name">Пользователь</h1>
+                    <span class="profile-handle" id="user-handle">@пользователь</span>
+                </div>
                 <div class="profile-rating">
                     ★ 5.0 <span>(0 отзывов)</span>
                 </div>
             </div>
-            <div class="profile-actions">
-                <button class="btn btn-danger" id="logout-btn">Выйти</button>
-            </div>
         </div>
 
-        <!-- Работы пользователя -->
+        <!-- Секция лучших работ -->
         <div class="section-header">
             <h2 class="section-title">ЛУЧШИЕ РАБОТЫ</h2>
-            <button class="btn btn-success" id="open-upload-modal">+ Добавить модель</button>
+            <button class="btn-add-model" id="open-upload-btn">+ Добавить модель</button>
         </div>
 
         <div class="models-grid" id="user-models-grid">
@@ -340,7 +317,7 @@
     <!-- Модальное окно создания модели -->
     <div class="modal-overlay" id="upload-modal">
         <div class="modal-content">
-            <button class="modal-close" id="upload-modal-close">&times;</button>
+            <button class="modal-close" id="close-upload-btn">&times;</button>
             <h3 class="modal-title">Добавить 3D-модель</h3>
 
             <form id="upload-form">
@@ -362,11 +339,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Цена (в ₽, 0 — если бесплатно)</label>
+                    <label>Цена (в ₽, 0 — бесплатно)</label>
                     <input type="number" id="model-price" required placeholder="0" min="0">
                 </div>
 
-                <button type="submit" class="btn btn-success" id="submit-btn" style="width: 100%; margin-top: 10px;">Опубликовать</button>
+                <button type="submit" class="btn-add-model" id="submit-btn" style="width: 100%; margin-top: 10px;">Опубликовать</button>
             </form>
         </div>
     </div>
@@ -381,26 +358,22 @@
         const userNameEl = document.getElementById('user-name');
         const userHandleEl = document.getElementById('user-handle');
         const userAvatarEl = document.getElementById('user-avatar');
-        const logoutBtn = document.getElementById('logout-btn');
-        
+
         const uploadModal = document.getElementById('upload-modal');
-        const openUploadBtn = document.getElementById('open-upload-modal');
-        const closeUploadBtn = document.getElementById('upload-modal-close');
+        const openUploadBtn = document.getElementById('open-upload-btn');
+        const closeUploadBtn = document.getElementById('close-upload-btn');
         const uploadForm = document.getElementById('upload-form');
         const submitBtn = document.getElementById('submit-btn');
         const toastEl = document.getElementById('toast');
 
-        // Показ тоаста
         function showToast(message, isError = false) {
             toastEl.textContent = message;
             toastEl.className = 'toast' + (isError ? ' error' : '');
             toastEl.style.display = 'block';
-            setTimeout(() => {
-                toastEl.style.display = 'none';
-            }, 4000);
+            setTimeout(() => { toastEl.style.display = 'none'; }, 4000);
         }
 
-        // Загрузка профиля текущего пользователя
+        // Загрузка данных текущего пользователя
         async function loadUserProfile() {
             const token = localStorage.getItem('jwt');
             if (!token) {
@@ -416,15 +389,13 @@
                 if (!res.ok) throw new Error('Сессия недействительна');
 
                 currentUser = await res.json();
-                localStorage.setItem('user', JSON.stringify(currentUser));
 
-                // Обновляем данные на странице
+                // Подставляем данные вошедшего пользователя
                 const username = currentUser.username || 'Пользователь';
                 userNameEl.textContent = username;
                 userHandleEl.textContent = `@${username.toLowerCase()}`;
                 userAvatarEl.textContent = username.charAt(0).toUpperCase();
 
-                // Загружаем созданные пользователем модели
                 loadUserModels();
             } catch (err) {
                 console.error(err);
@@ -434,7 +405,7 @@
             }
         }
 
-        // Загрузка публикаций пользователя
+        // Загрузка моделей текущего пользователя
         async function loadUserModels() {
             const grid = document.getElementById('user-models-grid');
             if (!currentUser) return;
@@ -446,7 +417,6 @@
                 const responseData = await res.json();
                 const allModels = responseData.data || [];
 
-                // Фильтруем модели по автору
                 const userModels = allModels.filter(item => {
                     const m = item.attributes || item;
                     return m.author === currentUser.username;
@@ -461,19 +431,17 @@
                     const m = item.attributes || item;
                     return `
                         <div class="model-card">
-                            <div class="model-info">
-                                <div class="model-title">${m.title || 'Без названия'}</div>
-                                <div class="model-price">${m.price ? m.price + ' ₽' : 'Бесплатно'}</div>
-                            </div>
+                            <div class="model-title">${m.title || 'Без названия'}</div>
+                            <div class="model-price">${m.price ? m.price + ' ₽' : 'Бесплатно'}</div>
                         </div>
                     `;
                 }).join('');
             } catch (err) {
-                console.error('Ошибка при загрузке моделей:', err);
+                console.error('Ошибка загрузки моделей:', err);
             }
         }
 
-        // Публикация новой модели
+        // Добавление новой модели
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const token = localStorage.getItem('jwt');
@@ -509,32 +477,23 @@
                     loadUserModels();
                 } else {
                     const errJson = await response.json().catch(() => ({}));
-                    const strapiErrorMessage = errJson?.error?.message || 'Неизвестная ошибка валидации полей';
-                    showToast(`Ошибка сохранения: ${strapiErrorMessage}`, true);
+                    const strapiErrorMessage = errJson?.error?.message || 'Ошибка сохранения';
+                    showToast(`Ошибка: ${strapiErrorMessage}`, true);
                 }
             } catch (error) {
-                showToast(`Критический сбой: ${error.message}`, true);
+                showToast(`Сбой: ${error.message}`, true);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Опубликовать';
             }
         });
 
-        // Открытие / закрытие модалки
         openUploadBtn.addEventListener('click', () => uploadModal.classList.add('active'));
         closeUploadBtn.addEventListener('click', () => uploadModal.classList.remove('active'));
         uploadModal.addEventListener('click', (e) => {
             if (e.target === uploadModal) uploadModal.classList.remove('active');
         });
 
-        // Выход из аккаунта
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('jwt');
-            localStorage.removeItem('user');
-            window.location.href = 'index.html';
-        });
-
-        // Старт
         document.addEventListener('DOMContentLoaded', loadUserProfile);
     </script>
 </body>
