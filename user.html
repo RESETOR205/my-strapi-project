@@ -380,11 +380,42 @@
         } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки: ${error.message}</div>`; }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const storedUsername = localStorage.getItem('username') || "Пользователь";
-        document.getElementById('user-name').textContent = storedUsername;
-        document.getElementById('user-nick').textContent = '@' + storedUsername.toLowerCase().replace(/\s+/g, '');
-        document.getElementById('user-avatar').textContent = storedUsername.charAt(0);
+    // Вспомогательная функция для заполнения UI именем
+    function updateUserUI(username) {
+        const cleanName = username || "Пользователь";
+        document.getElementById('user-name').textContent = cleanName;
+        document.getElementById('user-nick').textContent = '@' + cleanName.toLowerCase().replace(/\s+/g, '');
+        document.getElementById('user-avatar').textContent = cleanName.charAt(0).toUpperCase();
+    }
+
+    // Загрузка ника из Strapi и запуск отрисовки
+    document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+
+        if (token) {
+            try {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const user = await res.json();
+                    if (user && user.username) {
+                        localStorage.setItem('username', user.username);
+                        updateUserUI(user.username);
+                    } else {
+                        updateUserUI(localStorage.getItem('username'));
+                    }
+                } else {
+                    updateUserUI(localStorage.getItem('username'));
+                }
+            } catch (err) {
+                console.error("Ошибка при получении профиля:", err);
+                updateUserUI(localStorage.getItem('username'));
+            }
+        } else {
+            updateUserUI(localStorage.getItem('username'));
+        }
+
         loadUserModels();
     });
 
@@ -483,45 +514,6 @@
             submitBtn.textContent = "Опубликовать";
         }
     });
-// Автоматическая подстановка твоего ника и аватарки из Strapi
-async function loadRealUserData() {
-    const token = localStorage.getItem('jwt');
-    if (!token) return;
-
-    try {
-        const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) return;
-
-        const user = await res.json();
-        const username = user.username;
-
-        // Находим элементы со старого интерфейса и меняем текст
-        document.querySelectorAll('*').forEach(el => {
-            if (el.children.length === 0) {
-                const text = el.textContent.trim();
-                // Заменяем заголовок "Пользователь"
-                if (text === 'Пользователь') {
-                    el.textContent = username;
-                }
-                // Заменяем бейджик "@пользователь"
-                if (text === '@пользователь') {
-                    el.textContent = `@${username.toLowerCase()}`;
-                }
-                // Заменяем букву "П" в аватарке
-                if (text === 'П' && el.offsetWidth === el.offsetHeight && el.offsetWidth > 0) {
-                    el.textContent = username.charAt(0).toUpperCase();
-                }
-            }
-        });
-    } catch (e) {
-        console.error('Ошибка подгрузки ника:', e);
-    }
-}
-
-// Запускаем при открытии страницы
-document.addEventListener('DOMContentLoaded', loadRealUserData);
 </script>
 </body>
 </html>
