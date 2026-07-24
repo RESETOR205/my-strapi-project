@@ -360,7 +360,7 @@
         document.getElementById('auth-tabs-header').style.display = 'flex';
     }
 
-    // 1. Логин с автоматическим определением неподтвержденных аккаунтов
+    // 1. Логин с обработкой неподтвержденных пользователей
     async function handleLogin(e) {
         e.preventDefault();
         const identifier = document.getElementById('login-identifier').value.trim();
@@ -377,9 +377,8 @@
 
             if (!res.ok) {
                 const errMsg = data.error?.message || 'Ошибка входа';
-                // Если аккаунт не подтверждён — переключаем пользователя в Регистрацию для генерации нового кода
                 if (errMsg.toLowerCase().includes('confirmed') || errMsg.toLowerCase().includes('подтвержден')) {
-                    showToast("Аккаунт еще не подтвержден. Перейдите в Регистрацию для получения нового кода", true);
+                    showToast("Аккаунт еще не подтвержден. Заполните регистрацию повторно для высылки кода", true);
                     document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
                     switchAuthTab('register');
                     return;
@@ -399,7 +398,7 @@
         }
     }
 
-    // 2. Шаг 1 Регистрации (Отправка кода)
+    // 2. Шаг 1 Регистрации (Отправка кода через кастомный эндпоинт custom-register)
     async function handleRegisterStep1(e) {
         e.preventDefault();
         const username = document.getElementById('reg-username').value.trim();
@@ -411,7 +410,7 @@
         btn.textContent = "Отправка кода...";
 
         try {
-            const res = await fetch(`${STRAPI_BASE_URL}/api/auth/local/register`, {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/auth/custom-register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })

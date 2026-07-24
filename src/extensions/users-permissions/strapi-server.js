@@ -1,6 +1,6 @@
 module.exports = (plugin) => {
-  // 1. Полностью кастомный контроллер регистрации
-  plugin.controllers.auth.register = async (ctx) => {
+  // 1. Кастомная регистрация с полной очисткой неподтвержденных аккаунтов
+  plugin.controllers.auth.customRegister = async (ctx) => {
     const { email, username, password } = ctx.request.body;
 
     if (!email || !username || !password) {
@@ -10,7 +10,7 @@ module.exports = (plugin) => {
     const cleanEmail = email.toLowerCase().trim();
     const cleanUsername = username.trim();
 
-    // Поиск существующих записей
+    // Поиск существующих записей в БД
     const existingEmailUser = await strapi.query('plugin::users-permissions.user').findOne({
       where: { email: cleanEmail }
     });
@@ -19,19 +19,26 @@ module.exports = (plugin) => {
       where: { username: cleanUsername }
     });
 
-    // Если аккаунт существует И он уже ПОДТВЕРЖДЁН (confirmed: true)
-    if ((existingEmailUser && existingEmailUser.confirmed) || (existingUsernameUser && existingUsernameUser.confirmed)) {
-      return ctx.badRequest('Пользователь с таким email или логином уже зарегистрирован');
+    // Если аккаунт есть И он уже ПОДТВЕРЖДЁН — блокируем
+    if (
+      (existingEmailUser && existingEmailUser.confirmed) ||
+      (existingUsernameUser && existingUsernameUser.confirmed)
+    ) {
+      return ctx.badRequest('Пользователь с таким email или именем уже зарегистрирован');
     }
 
-    // Если аккаунт существует, но НЕ ПОДТВЕРЖДЁН -> Удаляем его из БД полностью
+    // Если аккаунт есть, но НЕ ПОДТВЕРЖДЁН — удаляем из базы без лишних вопросов
     if (existingEmailUser && !existingEmailUser.confirmed) {
       await strapi.query('plugin::users-permissions.user').delete({
         where: { id: existingEmailUser.id }
       });
     }
 
-    if (existingUsernameUser && !existingUsernameUser.confirmed && existingUsernameUser.id !== existingEmailUser?.id) {
+    if (
+      existingUsernameUser &&
+      !existingUsernameUser.confirmed &&
+      existingUsernameUser.id !== existingEmailUser?.id
+    ) {
       await strapi.query('plugin::users-permissions.user').delete({
         where: { id: existingUsernameUser.id }
       });
@@ -40,22 +47,26 @@ module.exports = (plugin) => {
     // Генерация нового 6-значного кода
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Получаем роль по умолчанию ("Authenticated")
+    // Получаем роль по умолчанию (Authenticated)
     const defaultRole = await strapi.query('plugin::users-permissions.role').findOne({
       where: { type: 'authenticated' }
     });
 
-    // Создаем пользователя через встроенный сервис Strapi
-    await strapi.plugin('users-permissions').service('user').add({
-      username: cleanUsername,
-      email: cleanEmail,
-      password: password,
-      role: defaultRole ? defaultRole.id : null,
-      confirmed: false,
-      verificationCode: code
-    });
+    // Создаем свежую запись пользователя
+    try {
+      await strapi.plugin('users-permissions').service('user').add({
+        username: cleanUsername,
+        email: cleanEmail,
+        password: password,
+        role: defaultRole ? defaultRole.id : null,
+        confirmed: false,
+        verificationCode: code
+      });
+    } catch (err) {
+      return ctx.badRequest(`Ошибка создания пользователя: ${err.message}`);
+    }
 
-    // Отправка письма с кодом
+    // Отправляем письмо с кодом
     try {
       await strapi.plugins['email'].services.email.send({
         to: cleanEmail,
@@ -109,7 +120,7 @@ module.exports = (plugin) => {
       }
     });
 
-    // Выпускаем JWT токен
+    // Выпускаем токен авторизации
     const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
       id: updatedUser.id,
     });
@@ -124,16 +135,27 @@ module.exports = (plugin) => {
     });
   };
 
-  // 3. Маршрут подтверждения кода
-  plugin.routes['content-api'].routes.push({
-    method: 'POST',
-    path: '/auth/verify-code',
-    handler: 'auth.verifyCode',
-    config: {
-      auth: false,
-      prefix: '',
+  // 3. Открываем маршруты для фронтенда
+  plugin.routes['content-api'].routes.push(
+    {
+      method: 'POST',
+      path: '/auth/custom-register',
+      handler: 'auth.customRegister',
+      config: {
+        auth: false,
+        prefix: '',
+      },
     },
-  });
+    {
+      method: 'POST',
+      path: '/auth/verify-code',
+      handler: 'auth.verifyCode',
+      config: {
+        auth: false,
+        prefix: '',
+      },
+    }
+  );
 
   return plugin;
 };
