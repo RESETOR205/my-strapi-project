@@ -389,7 +389,7 @@
         }
     }
 
-    // Нажатие на «Зарегистрироваться» -> переключение на ввод 6-значного кода
+    // Нажатие на «Зарегистрироваться» -> МГНОВЕННО ПЕРЕКЛЮЧАЕТ на окно ввода 6-значного кода
     async function handleRegisterStep1(e) {
         e.preventDefault();
         const username = document.getElementById('reg-username').value.trim();
@@ -400,9 +400,16 @@
         btn.disabled = true;
         btn.textContent = "Отправка кода...";
 
-        try {
-            console.log("Запрос на кастомную регистрацию...", { username, email });
+        // 1. МГНОВЕННО ПЕРЕКЛЮЧАЕМ ИНТЕРФЕЙС НА ВВОД КОДА
+        pendingRegisterEmail = email;
+        document.getElementById('target-email-display').textContent = email;
+        
+        document.getElementById('auth-register-form').style.display = 'none';
+        document.getElementById('auth-verify-form').style.display = 'block';
+        document.getElementById('auth-tabs-header').style.display = 'none';
 
+        // 2. Отправляем запрос на бэкенд
+        try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/auth/custom-register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -410,26 +417,16 @@
             });
 
             const data = await res.json();
-            console.log("Ответ от сервера:", data);
 
             if (!res.ok) {
-                const errorMsg = data.error?.message || data.message || "Неизвестная ошибка сервера";
-                throw new Error(errorMsg);
+                const errorMsg = data.error?.message || data.message || "Ошибка на сервере";
+                alert("Ошибка сервера: " + errorMsg);
+            } else {
+                showToast("Код успешно отправлен вам на почту!");
             }
-
-            // ПРИНУДИТЕЛЬНО ПЕРЕКЛЮЧАЕМ НА ВВОД КОДА
-            pendingRegisterEmail = email;
-            document.getElementById('target-email-display').textContent = email;
-            
-            document.getElementById('auth-register-form').style.display = 'none';
-            document.getElementById('auth-verify-form').style.display = 'block';
-            document.getElementById('auth-tabs-header').style.display = 'none';
-            
-            showToast("Код отправлен вам на почту!");
-
         } catch (err) {
-            console.error("Ошибка при регистрации:", err);
-            alert("ОШИБКА РЕГИСТРАЦИИ: " + err.message);
+            console.error("Ошибка запроса:", err);
+            alert("Ошибка подключения к серверу: " + err.message);
         } finally {
             btn.disabled = false;
             btn.textContent = "Зарегистрироваться";
