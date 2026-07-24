@@ -11,7 +11,7 @@
         .logo-link { color: #fff; text-decoration: none; font-size: 28px; font-weight: bold; }
         .back-btn { padding: 10px 20px; background: #334155; border: none; border-radius: 8px; color: #fff; text-decoration: none; }
         .back-btn:hover { background: #475569; }
-        .profile-container { display: flex; align-items: center; gap: 25px; background: #1a1d29; padding: 30px; border-radius: 16px; margin-bottom: 40px; }
+        .profile-container { display: flex; align-items: center; gap: 25px; background: #1a1d29; padding: 30px; border-radius: 16px; margin-bottom: 40px; position: relative; }
         .profile-avatar { width: 100px; height: 100px; background: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; text-transform: uppercase; }
         .profile-info { display: flex; flex-direction: column; gap: 8px; }
         .profile-header-row { display: flex; align-items: center; gap: 15px; }
@@ -19,6 +19,13 @@
         .profile-rating { display: flex; align-items: center; gap: 5px; color: #f59e0b; font-size: 18px; font-weight: bold; }
         .profile-reviews { color: #64748b; font-size: 14px; }
         .profile-username { font-size: 32px; font-weight: bold; letter-spacing: 1px; }
+        
+        /* Кнопки авторизации и выхода */
+        .logout-btn { padding: 8px 16px; background: #ef4444; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; margin-left: auto; transition: background 0.2s; }
+        .logout-btn:hover { background: #dc2626; }
+        .login-btn-profile { padding: 10px 20px; background: #4f46e5; border: none; border-radius: 8px; color: #fff; font-weight: bold; text-decoration: none; margin-left: auto; display: inline-block; transition: background 0.2s; }
+        .login-btn-profile:hover { background: #4338ca; }
+
         .section-title-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; margin-bottom: 30px; }
         .section-title { font-size: 18px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; }
         .add-product-btn { padding: 8px 16px; background: #22c55e; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; text-decoration: none; }
@@ -153,6 +160,8 @@
                 <div class="profile-reviews">(0 отзывов)</div>
             </div>
         </div>
+        <button class="logout-btn" id="logoutBtn" style="display: none;" onclick="logoutUser()">Выйти</button>
+        <a href="index.html" class="login-btn-profile" id="loginBtn" style="display: none;">Войти / Регистрация</a>
     </div>
 
     <div class="section-title-bar">
@@ -230,6 +239,39 @@
         toast.style.background = isError ? '#ef4444' : '#22c55e';
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('jwt');
+        localStorage.removeItem('username');
+        localStorage.removeItem('user');
+        showToast("Вы вышли из аккаунта");
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    }
+
+    function renderUnauthenticatedUI() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('jwt');
+        localStorage.removeItem('username');
+        localStorage.removeItem('user');
+
+        document.getElementById('user-name').textContent = "Вы не авторизованы";
+        document.getElementById('user-nick').textContent = "";
+        document.getElementById('user-avatar').textContent = "?";
+        
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'inline-block';
+        
+        const openBtn = document.getElementById('openModalBtn');
+        if (openBtn) openBtn.style.display = 'none';
+
+        const grid = document.getElementById('user-models-grid');
+        if (grid) {
+            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">Пожалуйста, войдите в аккаунт, чтобы управлять моделями.</div>';
+        }
     }
 
     function changeCardImage(modelId, index) {
@@ -380,43 +422,45 @@
         } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки: ${error.message}</div>`; }
     }
 
-    // Вспомогательная функция для заполнения UI именем
-    function updateUserUI(username) {
-        const cleanName = username || "Пользователь";
-        document.getElementById('user-name').textContent = cleanName;
-        document.getElementById('user-nick').textContent = '@' + cleanName.toLowerCase().replace(/\s+/g, '');
-        document.getElementById('user-avatar').textContent = cleanName.charAt(0).toUpperCase();
-    }
-
-    // Загрузка ника из Strapi и запуск отрисовки
+    // Загрузка пользователя и проверка наличия профиля в БД
     document.addEventListener("DOMContentLoaded", async () => {
         const token = localStorage.getItem('token') || localStorage.getItem('jwt');
 
-        if (token) {
-            try {
-                const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const user = await res.json();
-                    if (user && user.username) {
-                        localStorage.setItem('username', user.username);
-                        updateUserUI(user.username);
-                    } else {
-                        updateUserUI(localStorage.getItem('username'));
-                    }
-                } else {
-                    updateUserUI(localStorage.getItem('username'));
-                }
-            } catch (err) {
-                console.error("Ошибка при получении профиля:", err);
-                updateUserUI(localStorage.getItem('username'));
-            }
-        } else {
-            updateUserUI(localStorage.getItem('username'));
+        if (!token) {
+            renderUnauthenticatedUI();
+            return;
         }
 
-        loadUserModels();
+        try {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+                if (user && user.username) {
+                    localStorage.setItem('username', user.username);
+                    
+                    document.getElementById('user-name').textContent = user.username;
+                    document.getElementById('user-nick').textContent = '@' + user.username.toLowerCase().replace(/\s+/g, '');
+                    document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
+                    
+                    document.getElementById('logoutBtn').style.display = 'inline-block';
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('openModalBtn').style.display = 'inline-block';
+
+                    loadUserModels();
+                } else {
+                    renderUnauthenticatedUI();
+                }
+            } else {
+                // Если пользователь был удален из базы Страпи (возвращается 401 Unauthorized)
+                renderUnauthenticatedUI();
+            }
+        } catch (err) {
+            console.error("Ошибка при получении профиля:", err);
+            renderUnauthenticatedUI();
+        }
     });
 
     const modal = document.getElementById("myModal");
@@ -465,7 +509,6 @@
                 imgIds.push(uploadedId);
             }
 
-            // Если пользователь выбрал .glb файл — загружаем его, иначе заменяем заглушкой
             let glbId;
             if (glbFileInput) {
                 submitBtn.textContent = "Загрузка 3D GLB плеера...";
