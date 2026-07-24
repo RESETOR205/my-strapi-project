@@ -369,7 +369,7 @@
             if (!res.ok) {
                 const errMsg = data.error?.message || 'Ошибка входа';
                 if (errMsg.toLowerCase().includes('confirmed') || errMsg.toLowerCase().includes('подтвержден')) {
-                    showToast("Email не подтвержден! Перейдите в Регистрацию и введите данные снова для получения кода.", true);
+                    alert("Ваш Email ещё не подтвержден! Введите данные на вкладке 'Регистрация', чтобы получить 6-значный код.");
                     document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
                     switchAuthTab('register');
                     return;
@@ -385,11 +385,11 @@
             closeAuthModal();
             window.location.reload();
         } catch (err) {
-            showToast(err.message, true);
+            alert("ОШИБКА ВХОДА: " + err.message);
         }
     }
 
-    // Нажатие на «Зарегистрироваться» -> отправляем код и переключаем на окно ввода кода
+    // Нажатие на «Зарегистрироваться» -> переключение на ввод 6-значного кода
     async function handleRegisterStep1(e) {
         e.preventDefault();
         const username = document.getElementById('reg-username').value.trim();
@@ -401,6 +401,8 @@
         btn.textContent = "Отправка кода...";
 
         try {
+            console.log("Запрос на кастомную регистрацию...", { username, email });
+
             const res = await fetch(`${STRAPI_BASE_URL}/api/auth/custom-register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -408,20 +410,26 @@
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error?.message || 'Ошибка регистрации');
+            console.log("Ответ от сервера:", data);
 
-            if (data.status === 'CODE_SENT') {
-                pendingRegisterEmail = email;
-                document.getElementById('target-email-display').textContent = email;
-                
-                // Переключаем формы
-                document.getElementById('auth-register-form').style.display = 'none';
-                document.getElementById('auth-verify-form').style.display = 'block';
-                document.getElementById('auth-tabs-header').style.display = 'none';
-                showToast("Код отправлен вам на почту!");
+            if (!res.ok) {
+                const errorMsg = data.error?.message || data.message || "Неизвестная ошибка сервера";
+                throw new Error(errorMsg);
             }
+
+            // ПРИНУДИТЕЛЬНО ПЕРЕКЛЮЧАЕМ НА ВВОД КОДА
+            pendingRegisterEmail = email;
+            document.getElementById('target-email-display').textContent = email;
+            
+            document.getElementById('auth-register-form').style.display = 'none';
+            document.getElementById('auth-verify-form').style.display = 'block';
+            document.getElementById('auth-tabs-header').style.display = 'none';
+            
+            showToast("Код отправлен вам на почту!");
+
         } catch (err) {
-            showToast(err.message, true);
+            console.error("Ошибка при регистрации:", err);
+            alert("ОШИБКА РЕГИСТРАЦИИ: " + err.message);
         } finally {
             btn.disabled = false;
             btn.textContent = "Зарегистрироваться";
@@ -455,7 +463,7 @@
             closeAuthModal();
             window.location.reload();
         } catch (err) {
-            showToast(err.message, true);
+            alert("ОШИБКА ПРОВЕРКИ КОДА: " + err.message);
         } finally {
             btn.disabled = false;
             btn.textContent = "Подтвердить код";
