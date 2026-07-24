@@ -1,60 +1,61 @@
 module.exports = (plugin) => {
-  const defaultRegister = plugin.controllers.auth.register;
-
-  // 1. Модифицированная регистрация
+  // 1. Полностью кастомный контроллер регистрации
   plugin.controllers.auth.register = async (ctx) => {
-    const { email, username } = ctx.request.body;
+    const { email, username, password } = ctx.request.body;
 
-    if (!email || !username) {
-      return ctx.badRequest('Укажите email и имя пользователя');
+    if (!email || !username || !password) {
+      return ctx.badRequest('Заполните все поля (email, username, password)');
     }
 
     const cleanEmail = email.toLowerCase().trim();
     const cleanUsername = username.trim();
 
-    // Ищем, есть ли уже такой пользователь в базе
-    const existingUserByEmail = await strapi.query('plugin::users-permissions.user').findOne({
+    // Поиск существующих записей
+    const existingEmailUser = await strapi.query('plugin::users-permissions.user').findOne({
       where: { email: cleanEmail }
     });
 
-    const existingUserByUsername = await strapi.query('plugin::users-permissions.user').findOne({
+    const existingUsernameUser = await strapi.query('plugin::users-permissions.user').findOne({
       where: { username: cleanUsername }
     });
 
-    // Если пользователь есть И он ПОДТВЕРЖДЁН (confirmed: true) -> Ошибка
-    if (
-      (existingUserByEmail && existingUserByEmail.confirmed) ||
-      (existingUserByUsername && existingUserByUsername.confirmed)
-    ) {
-      return ctx.badRequest('Пользователь с таким email или именем уже зарегистрирован');
+    // Если аккаунт существует И он уже ПОДТВЕРЖДЁН (confirmed: true)
+    if ((existingEmailUser && existingEmailUser.confirmed) || (existingUsernameUser && existingUsernameUser.confirmed)) {
+      return ctx.badRequest('Пользователь с таким email или логином уже зарегистрирован');
     }
 
-    // Если аккаунт есть, но НЕ ПОДТВЕРЖДЁН -> Удаляем старую незавершенную запись
-    if (existingUserByEmail && !existingUserByEmail.confirmed) {
+    // Если аккаунт существует, но НЕ ПОДТВЕРЖДЁН -> Удаляем его из БД полностью
+    if (existingEmailUser && !existingEmailUser.confirmed) {
       await strapi.query('plugin::users-permissions.user').delete({
-        where: { id: existingUserByEmail.id }
+        where: { id: existingEmailUser.id }
       });
     }
 
-    if (
-      existingUserByUsername &&
-      !existingUserByUsername.confirmed &&
-      existingUserByUsername.id !== existingUserByEmail?.id
-    ) {
+    if (existingUsernameUser && !existingUsernameUser.confirmed && existingUsernameUser.id !== existingEmailUser?.id) {
       await strapi.query('plugin::users-permissions.user').delete({
-        where: { id: existingUserByUsername.id }
+        where: { id: existingUsernameUser.id }
       });
     }
 
-    // Генерируем новый 6-значный код
+    // Генерация нового 6-значного кода
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    ctx.request.body.verificationCode = code;
-    ctx.request.body.email = cleanEmail;
 
-    // Вызываем стандартную регистрацию Strapi (создаем свежую запись)
-    await defaultRegister(ctx);
+    // Получаем роль по умолчанию ("Authenticated")
+    const defaultRole = await strapi.query('plugin::users-permissions.role').findOne({
+      where: { type: 'authenticated' }
+    });
 
-    // Отправляем письмо с новым кодом
+    // Создаем пользователя через встроенный сервис Strapi
+    await strapi.plugin('users-permissions').service('user').add({
+      username: cleanUsername,
+      email: cleanEmail,
+      password: password,
+      role: defaultRole ? defaultRole.id : null,
+      confirmed: false,
+      verificationCode: code
+    });
+
+    // Отправка письма с кодом
     try {
       await strapi.plugins['email'].services.email.send({
         to: cleanEmail,
@@ -62,7 +63,7 @@ module.exports = (plugin) => {
         subject: 'Код подтверждения | 3D Market',
         html: `<div style="padding: 20px; font-family: sans-serif;">
                  <h2>Добро пожаловать в 3D Market!</h2>
-                 <p>Ваш новый 6-значный код для подтверждения аккаунта:</p>
+                 <p>Ваш код для подтверждения аккаунта:</p>
                  <h1 style="color: #4f46e5; letter-spacing: 4px;">${code}</h1>
                </div>`,
       });
@@ -70,11 +71,11 @@ module.exports = (plugin) => {
       console.error('Ошибка отправки Email:', err);
     }
 
-    ctx.body = {
+    return ctx.send({
       status: 'CODE_SENT',
       message: 'Код подтверждения отправлен на вашу почту',
       email: cleanEmail
-    };
+    });
   };
 
   // 2. Контроллер проверки кода
@@ -85,8 +86,10 @@ module.exports = (plugin) => {
       return ctx.badRequest('Укажите email и 6-значный код');
     }
 
+    const cleanEmail = email.toLowerCase().trim();
+
     const user = await strapi.query('plugin::users-permissions.user').findOne({
-      where: { email: email.toLowerCase().trim() }
+      where: { email: cleanEmail }
     });
 
     if (!user) {
@@ -97,6 +100,7 @@ module.exports = (plugin) => {
       return ctx.badRequest('Неверный код подтверждения!');
     }
 
+    // Подтверждаем пользователя
     const updatedUser = await strapi.query('plugin::users-permissions.user').update({
       where: { id: user.id },
       data: {
@@ -105,6 +109,7 @@ module.exports = (plugin) => {
       }
     });
 
+    // Выпускаем JWT токен
     const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
       id: updatedUser.id,
     });
@@ -119,7 +124,7 @@ module.exports = (plugin) => {
     });
   };
 
-  // 3. Открытый маршрут
+  // 3. Маршрут подтверждения кода
   plugin.routes['content-api'].routes.push({
     method: 'POST',
     path: '/auth/verify-code',
