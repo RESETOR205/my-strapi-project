@@ -360,7 +360,7 @@
         document.getElementById('auth-tabs-header').style.display = 'flex';
     }
 
-    // 1. Логин
+    // 1. Логин с автоматическим определением неподтвержденных аккаунтов
     async function handleLogin(e) {
         e.preventDefault();
         const identifier = document.getElementById('login-identifier').value.trim();
@@ -374,9 +374,19 @@
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error?.message || 'Ошибка входа');
 
-            // Сохраняем в обе переменные для 100% совместимости
+            if (!res.ok) {
+                const errMsg = data.error?.message || 'Ошибка входа';
+                // Если аккаунт не подтверждён — переключаем пользователя в Регистрацию для генерации нового кода
+                if (errMsg.toLowerCase().includes('confirmed') || errMsg.toLowerCase().includes('подтвержден')) {
+                    showToast("Аккаунт еще не подтвержден. Перейдите в Регистрацию для получения нового кода", true);
+                    document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
+                    switchAuthTab('register');
+                    return;
+                }
+                throw new Error(errMsg);
+            }
+
             localStorage.setItem('jwt', data.jwt);
             localStorage.setItem('token', data.jwt);
             localStorage.setItem('user', JSON.stringify(data.user));
