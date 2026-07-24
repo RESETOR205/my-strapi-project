@@ -20,7 +20,6 @@
         .profile-reviews { color: #64748b; font-size: 14px; }
         .profile-username { font-size: 32px; font-weight: bold; letter-spacing: 1px; }
         
-        /* Кнопки авторизации и выхода */
         .logout-btn { padding: 8px 16px; background: #ef4444; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; margin-left: auto; transition: background 0.2s; }
         .logout-btn:hover { background: #dc2626; }
         .login-btn-profile { padding: 10px 20px; background: #4f46e5; border: none; border-radius: 8px; color: #fff; font-weight: bold; text-decoration: none; margin-left: auto; display: inline-block; transition: background 0.2s; cursor: pointer; }
@@ -33,7 +32,6 @@
         
         .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         
-        /* Стили карточки товара */
         .product-card { 
             position: relative; 
             background: #1a1d29; 
@@ -49,7 +47,6 @@
         }
         .product-card:hover { transform: translateY(-4px); border-color: #4f46e5; }
         
-        /* Область медиа и интерактивный слайдер */
         .card-media-wrapper {
             position: relative;
             width: 100%;
@@ -61,7 +58,6 @@
         }
         .product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
-        /* Полоски прогресса (Progress Bars) СНИЗУ */
         .card-progress-bars {
             position: absolute;
             bottom: 8px;
@@ -84,7 +80,6 @@
             box-shadow: 0 0 6px rgba(99, 102, 241, 0.8);
         }
         
-        /* Невидимые интерактивные зоны наведения */
         .card-hover-zones {
             position: absolute;
             top: 0;
@@ -125,7 +120,6 @@
         .product-title { font-size: 18px; margin-bottom: 8px; color: #fff; }
         .product-price { font-size: 20px; font-weight: bold; color: #10b981; margin-top: auto; }
         
-        /* Модальные окна */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,17,26,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
         .modal-content { background: #1a1d29; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; }
@@ -140,7 +134,6 @@
         .btn-secondary { background: #334155; margin-top: 10px; }
         .btn-secondary:hover { background: #475569; }
         
-        /* Стили вкладок входа/регистрации */
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
         .auth-tab-btn { flex: 1; background: none; border: none; color: #94a3b8; font-size: 16px; font-weight: bold; padding: 8px; cursor: pointer; }
         .auth-tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
@@ -183,7 +176,7 @@
         <div style="color: #94a3b8; padding: 20px;">Загрузка ваших моделей...</div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ЗАГРУЗКИ МОДЕЛИ -->
+    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МОДЕЛИ -->
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeModalBtn">&times;</span>
@@ -237,7 +230,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И ДВУХЭТАПНОЙ РЕГИСТРАЦИИ -->
+    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И РЕГИСТРАЦИИ С ВВОДОМ КОДА -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthModal()">&times;</span>
@@ -260,7 +253,7 @@
                 <button type="submit" class="submit-btn">Войти</button>
             </form>
 
-            <!-- Шаг 1: Форма Регистрации -->
+            <!-- Шаг 1: Форма ввода данных для Регистрации -->
             <form id="auth-register-form" style="display: none;" onsubmit="handleRegisterStep1(event)">
                 <div class="form-group">
                     <label>Имя пользователя</label>
@@ -279,14 +272,14 @@
 
             <!-- Шаг 2: Форма Ввода 6-значного Кода -->
             <form id="auth-verify-form" style="display: none;" onsubmit="handleVerifyCode(event)">
-                <h2>Подтверждение Email</h2>
-                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px; text-align: center;">
-                    Код отправлен на: <br><b id="target-email-display" style="color: #fff;"></b>
+                <h2 style="text-align: center;">Подтверждение Email</h2>
+                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px; text-align: center;">
+                    Мы отправили 6-значный код на почту:<br><b id="target-email-display" style="color: #6366f1;"></b>
                 </p>
                 <div class="form-group">
                     <input type="text" id="verify-code-input" class="code-input-field" maxlength="6" required placeholder="123456" autocomplete="off">
                 </div>
-                <button type="submit" class="submit-btn">Подтвердить код</button>
+                <button type="submit" class="submit-btn" id="verify-btn">Подтвердить код</button>
                 <button type="button" class="submit-btn btn-secondary" onclick="resetRegisterStep()">Назад</button>
             </form>
         </div>
@@ -313,9 +306,7 @@
         localStorage.removeItem('username');
         localStorage.removeItem('user');
         showToast("Вы вышли из аккаунта");
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
+        setTimeout(() => { window.location.reload(); }, 500);
     }
 
     function renderUnauthenticatedUI() {
@@ -340,7 +331,7 @@
         }
     }
 
-    /* --- ЛОГИКА ОКНА АВТОРИЗАЦИИ / 2-ЭТАПНОЙ РЕГИСТРАЦИИ --- */
+    /* --- ОКНО АВТОРИЗАЦИИ / РЕГИСТРАЦИИ --- */
     function openAuthModal() {
         document.getElementById('authModal').style.display = 'flex';
         switchAuthTab('login');
@@ -360,7 +351,7 @@
         document.getElementById('auth-tabs-header').style.display = 'flex';
     }
 
-    // 1. Логин с обработкой неподтвержденных пользователей
+    // Вход
     async function handleLogin(e) {
         e.preventDefault();
         const identifier = document.getElementById('login-identifier').value.trim();
@@ -378,7 +369,7 @@
             if (!res.ok) {
                 const errMsg = data.error?.message || 'Ошибка входа';
                 if (errMsg.toLowerCase().includes('confirmed') || errMsg.toLowerCase().includes('подтвержден')) {
-                    showToast("Аккаунт еще не подтвержден. Заполните регистрацию повторно для высылки кода", true);
+                    showToast("Email не подтвержден! Перейдите в Регистрацию и введите данные снова для получения кода.", true);
                     document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
                     switchAuthTab('register');
                     return;
@@ -398,7 +389,7 @@
         }
     }
 
-    // 2. Шаг 1 Регистрации (Отправка кода через кастомный эндпоинт custom-register)
+    // Нажатие на «Зарегистрироваться» -> отправляем код и переключаем на окно ввода кода
     async function handleRegisterStep1(e) {
         e.preventDefault();
         const username = document.getElementById('reg-username').value.trim();
@@ -423,6 +414,7 @@
                 pendingRegisterEmail = email;
                 document.getElementById('target-email-display').textContent = email;
                 
+                // Переключаем формы
                 document.getElementById('auth-register-form').style.display = 'none';
                 document.getElementById('auth-verify-form').style.display = 'block';
                 document.getElementById('auth-tabs-header').style.display = 'none';
@@ -436,10 +428,14 @@
         }
     }
 
-    // 3. Шаг 2 Регистрации (Проверка кода)
+    // Ввод 6-значного кода
     async function handleVerifyCode(e) {
         e.preventDefault();
         const code = document.getElementById('verify-code-input').value.trim();
+
+        const btn = document.getElementById('verify-btn');
+        btn.disabled = true;
+        btn.textContent = "Проверка...";
 
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/auth/verify-code`, {
@@ -460,6 +456,9 @@
             window.location.reload();
         } catch (err) {
             showToast(err.message, true);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Подтвердить код";
         }
     }
 
@@ -475,29 +474,22 @@
         if (!gallery || !gallery[index]) return;
 
         const imgEl = document.getElementById(`card-img-${modelId}`);
-        if (imgEl) {
-            imgEl.src = gallery[index];
-        }
+        if (imgEl) imgEl.src = gallery[index];
 
         gallery.forEach((_, idx) => {
             const barEl = document.getElementById(`bar-${modelId}-${idx}`);
             if (barEl) {
-                if (idx === index) {
-                    barEl.classList.add('active');
-                } else {
-                    barEl.classList.remove('active');
-                }
+                if (idx === index) barEl.classList.add('active');
+                else barEl.classList.remove('active');
             }
         });
     }
 
-    function resetCardImage(modelId) {
-        changeCardImage(modelId, 0);
-    }
+    function resetCardImage(modelId) { changeCardImage(modelId, 0); }
 
     async function deleteModel(modelId) {
         const token = localStorage.getItem('token') || localStorage.getItem('jwt');
-        if (!token) { alert("КРИТИЧЕСКАЯ ОШИБКА: Ключ авторизации не найден."); return; }
+        if (!token) { alert("Ошибка авторизации."); return; }
         if (!confirm("Вы точно хотите удалить эту модель?")) return;
 
         try {
@@ -523,8 +515,8 @@
                 return;
             } 
             const errorText = await response.text();
-            alert(`СБОЙ СЕРВЕРА: Статус ${response.status}\nОтвет: ${errorText}`);
-        } catch (error) { alert(`ОШИБКА СЕТИ: ${error.message}`); }
+            alert(`Ошибка: ${errorText}`);
+        } catch (error) { alert(`Ошибка сети: ${error.message}`); }
     }
 
     async function loadUserModels() {
@@ -558,9 +550,7 @@
 
                 let imgUrls = [];
                 let rawPreviews = attrs.Previews || item.Previews;
-                if (rawPreviews && rawPreviews.data) {
-                    rawPreviews = rawPreviews.data;
-                }
+                if (rawPreviews && rawPreviews.data) rawPreviews = rawPreviews.data;
                 if (rawPreviews) {
                     const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
                     previewsArray.forEach(p => {
@@ -573,9 +563,7 @@
                     });
                 }
 
-                if (imgUrls.length === 0) {
-                    imgUrls.push(FALLBACK_IMG);
-                }
+                if (imgUrls.length === 0) imgUrls.push(FALLBACK_IMG);
 
                 modelGalleries[modelId] = imgUrls;
                 const hasMultiple = imgUrls.length > 1;
@@ -591,10 +579,8 @@
 
                 card.innerHTML = `
                     <button class="delete-card-btn" onclick="event.stopPropagation(); deleteModel('${modelId}')">&times;</button>
-                    
                     <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
                         <img id="card-img-${modelId}" src="${imgUrls[0]}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
-                        
                         ${hasMultiple ? `
                             <div class="card-progress-bars">
                                 ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${modelId}-${idx}"></div>`).join('')}
@@ -606,7 +592,6 @@
                             </div>
                         ` : ''}
                     </div>
-
                     <div class="product-info">
                         <div class="product-title">${title}</div>
                         <div class="product-price">${price} $</div>
@@ -618,14 +603,9 @@
         } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки: ${error.message}</div>`; }
     }
 
-    // Загрузка профиля пользователя
     document.addEventListener("DOMContentLoaded", async () => {
         const token = localStorage.getItem('token') || localStorage.getItem('jwt');
-
-        if (!token) {
-            renderUnauthenticatedUI();
-            return;
-        }
+        if (!token) { renderUnauthenticatedUI(); return; }
 
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
@@ -636,7 +616,6 @@
                 const user = await res.json();
                 if (user && user.username) {
                     localStorage.setItem('username', user.username);
-                    
                     document.getElementById('user-name').textContent = user.username;
                     document.getElementById('user-nick').textContent = '@' + user.username.toLowerCase().replace(/\s+/g, '');
                     document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
@@ -644,21 +623,15 @@
                     document.getElementById('logoutBtn').style.display = 'inline-block';
                     document.getElementById('loginBtn').style.display = 'none';
                     document.getElementById('openModalBtn').style.display = 'inline-block';
-
                     loadUserModels();
-                } else {
-                    renderUnauthenticatedUI();
-                }
-            } else {
-                renderUnauthenticatedUI();
-            }
+                } else { renderUnauthenticatedUI(); }
+            } else { renderUnauthenticatedUI(); }
         } catch (err) {
             console.error("Ошибка при получении профиля:", err);
             renderUnauthenticatedUI();
         }
     });
 
-    /* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МОДЕЛИ */
     const modal = document.getElementById("myModal");
     const btn = document.getElementById("openModalBtn");
     const span = document.getElementById("closeModalBtn");
@@ -745,12 +718,11 @@
                 loadUserModels();
             } else {
                 const errJson = await response.json().catch(() => ({}));
-                const strapiErrorMessage = errJson?.error?.message || "Неизвестная ошибка валидации полей";
-                alert(`ОШИБКА CЕРВЕРА STRAPI:\n\nТекст ошибки: ${strapiErrorMessage}`);
-                showToast("Ошибка сохранения карточки на сервере.", true);
+                const strapiErrorMessage = errJson?.error?.message || "Ошибка сохранения карточки";
+                showToast(strapiErrorMessage, true);
             }
         } catch (error) {
-            showToast(`Критический сбой: ${error.message}`, true);
+            showToast(`Ошибка: ${error.message}`, true);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = "Опубликовать";
