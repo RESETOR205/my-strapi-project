@@ -177,6 +177,7 @@
         <div style="color: #94a3b8; padding: 20px;">Загрузка ваших моделей...</div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МОДЕЛИ -->
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeModalBtn">&times;</span>
@@ -230,16 +231,18 @@
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И РЕГИСТРАЦИИ -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthModal()">&times;</span>
-            <span class="version-badge">v3.2 CUSTOM-REGISTER</span>
+            <span class="version-badge">v4.0 100% SWITCH</span>
             
             <div class="auth-tabs" id="auth-tabs-header">
                 <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Вход</button>
                 <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Регистрация</button>
             </div>
 
+            <!-- Форма Входа -->
             <form id="auth-login-form" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>Логин или Email</label>
@@ -252,6 +255,7 @@
                 <button type="submit" class="submit-btn">Войти</button>
             </form>
 
+            <!-- БЛОК РЕГИСТРАЦИИ -->
             <div id="auth-register-form" style="display: none;">
                 <div class="form-group">
                     <label>Имя пользователя</label>
@@ -269,6 +273,7 @@
                 <button type="button" class="submit-btn" id="reg-step1-btn" onclick="goToStep2()">Зарегистрироваться</button>
             </div>
 
+            <!-- БЛОК ВВОДА 6-ЗНАЧНОГО КОДА -->
             <div id="auth-verify-form" style="display: none;">
                 <h2 style="text-align: center;">Подтверждение Email</h2>
                 <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px; text-align: center;">
@@ -386,24 +391,26 @@
         }
     }
 
-    // МГНОВЕННЫЙ ПЕРЕХОД НА ШАГ 2 С ОТПРАВКОЙ КОДА ЧЕРЕЗ custom-register
+    // БЕЗУСЛОВНОЕ, МГНОВЕННОЕ ПЕРЕКЛЮЧЕНИЕ НА ШАГ 2
     function goToStep2() {
-        const email = document.getElementById('reg-email').value.trim();
+        // 1. САМЫМ ПЕРВЫМ ДЕЛОМ - МЕНЯЕМ ИНТЕРФЕЙС! НИКАКИЕ ОШИБКИ И ПРОВЕРКИ ЭТО НЕ ОСТАНОВЯТ!
+        document.getElementById('auth-register-form').style.display = 'none';
+        document.getElementById('auth-verify-form').style.display = 'block';
+        document.getElementById('auth-tabs-header').style.display = 'none';
+
+        const emailInput = document.getElementById('reg-email');
+        const email = emailInput ? emailInput.value.trim() : '';
+        document.getElementById('target-email-display').textContent = email || 'вашу почту';
+
+        // 2. Только теперь считываем остальные данные и пробуем отправить запрос на сервер
         const username = document.getElementById('reg-username').value.trim();
         const password = document.getElementById('reg-password').value;
 
         if (!username || !email || !password) {
-            alert("Пожалуйста, заполните все поля: Имя пользователя, Email и Пароль!");
+            alert("Внимание: Заполните все поля, чтобы код пришёл на почту!");
             return;
         }
 
-        // 1. Сразу скрываем форму ввода и открываем ввод кода
-        document.getElementById('auth-register-form').style.display = 'none';
-        document.getElementById('auth-verify-form').style.display = 'block';
-        document.getElementById('auth-tabs-header').style.display = 'none';
-        document.getElementById('target-email-display').textContent = email;
-
-        // 2. Вызываем наш кастомный эндпоинт на бэкенде
         sendRegisterCodeInBackground(username, email, password);
     }
 
@@ -418,13 +425,13 @@
 
             const data = await res.json();
             if (!res.ok) {
-                alert("Ошибка бэкенда: " + (data.error?.message || data.message || "Ошибка"));
+                alert("Ошибка бэкенда: " + (data.error?.message || data.message || "Неизвестная ошибка"));
             } else {
-                showToast("Код отправлен вам на почту!");
+                showToast("Код успешно отправлен вам на почту!");
             }
         } catch (err) {
             console.error("Ошибка сети:", err);
-            alert("Ошибка подключения к серверу: " + err.message);
+            alert("Ошибка связи с сервером: " + err.message);
         }
     }
 
