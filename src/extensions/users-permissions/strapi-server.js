@@ -1,155 +1,118 @@
 module.exports = (plugin) => {
-  // 1. Кастомная регистрация с автоматической очисткой неподтверждённых профилей
+  // 1. Контроллер для генерации кода и регистрации
   plugin.controllers.auth.customRegister = async (ctx) => {
+    const { username, email, password } = ctx.request.body;
+
+    if (!username || !email || !password) {
+      return ctx.badRequest('Пожалуйста, заполните все поля');
+    }
+
     try {
-      const { email, username, password } = ctx.request.body;
-
-      if (!email || !username || !password) {
-        return ctx.badRequest('Заполните все поля (email, username, password)');
-      }
-
-      const cleanEmail = email.toLowerCase().trim();
-      const cleanUsername = username.trim();
-
-      // Проверяем существующего пользователя по EMAIL
-      const existingEmailUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { email: cleanEmail }
+      // Ищем, есть ли уже юзер с такой почтой
+      const existingUser = await strapi.query('plugin::users-permissions.user').findOne({
+        where: { email: email.toLowerCase() }
       });
 
-      if (existingEmailUser) {
-        if (existingEmailUser.confirmed) {
-          return ctx.badRequest('Пользователь с таким email уже зарегистрирован');
+      if (existingUser) {
+        if (existingUser.confirmed) {
+          return ctx.badRequest('Этот Email уже зарегистрирован и подтвержден.');
         }
-        // Если не подтвержден — удаляем старую запись из БД
-        await strapi.db.query('plugin::users-permissions.user').delete({
-          where: { id: existingEmailUser.id }
-        });
-      }
-
-      // Проверяем существующего пользователя по USERNAME
-      const existingNameUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { username: cleanUsername }
-      });
-
-      if (existingNameUser) {
-        if (existingNameUser.confirmed) {
-          return ctx.badRequest('Имя пользователя уже занято');
-        }
-        await strapi.db.query('plugin::users-permissions.user').delete({
-          where: { id: existingNameUser.id }
+        // Если аккаунт не подтвержден, удаляем его, чтобы создать заново
+        await strapi.query('plugin::users-permissions.user').delete({
+          where: { id: existingUser.id }
         });
       }
 
       // Генерируем 6-значный код
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      const defaultRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-        where: { type: 'authenticated' }
-      });
-
-      // Создаем аккаунт с confirmed: false
-      await strapi.plugin('users-permissions').service('user').add({
-        username: cleanUsername,
-        email: cleanEmail,
-        password: password,
-        provider: 'local',
-        role: defaultRole ? defaultRole.id : null,
+      // Создаем юзера со статусом confirmed: false
+      const newUser = await strapi.plugins['users-permissions'].services.user.add({
+        username,
+        email: email.toLowerCase(),
+        password,
         confirmed: false,
-        verificationCode: code
+        provider: 'local',
+        confirmationToken: verificationCode
       });
 
-      // Отправляем письмо с кодом
+      // Отправляем код на почту (если настроен плагин Email)
       try {
         await strapi.plugins['email'].services.email.send({
-          to: cleanEmail,
-          from: 'no-reply@yourdomain.com',
-          subject: 'Код подтверждения | 3D Market',
-          html: `<div style="padding: 20px; font-family: sans-serif;">
-                   <h2>Добро пожаловать в 3D Market!</h2>
-                   <p>Ваш код подтверждения:</p>
-                   <h1 style="color: #4f46e5; letter-spacing: 4px;">${code}</h1>
-                 </div>`,
+          to: newUser.email,
+          from: 'noreply@yourdomain.com', // Замени на свою почту, если есть домен
+          subject: 'Код подтверждения 3D Market',
+          text: `Ваш код подтверждения: ${verificationCode}`,
+          html: `<h3>Добро пожаловать в 3D Market!</h3><p>Ваш код: <strong>${verificationCode}</strong></p>`,
         });
       } catch (emailErr) {
-        console.error('Ошибка отправки Email:', emailErr);
+        console.log("Письмо не отправлено (вероятно, не настроен провайдер Email):", emailErr.message);
       }
 
-      return ctx.send({
-        status: 'CODE_SENT',
-        message: 'Код подтверждения отправлен на вашу почту',
-        email: cleanEmail
-      });
-
+      return ctx.send({ message: 'Код успешно сгенерирован и отправлен', ok: true });
     } catch (err) {
-      console.error('ОШИБКА РЕГИСТРАЦИИ:', err);
-      return ctx.badRequest(`Не удалось зарегистрировать: ${err.message}`);
+      console.error('Ошибка в customRegister:', err);
+      return ctx.badRequest('Произошла внутренняя ошибка при регистрации');
     }
   };
 
-  // 2. Проверка 6-значного кода
+  // 2. Контроллер для проверки кода
   plugin.controllers.auth.verifyCode = async (ctx) => {
+    const { email, code } = ctx.request.body;
+
+    if (!email || !code) {
+      return ctx.badRequest('Email и код обязательны');
+    }
+
     try {
-      const { email, code } = ctx.request.body;
-
-      if (!email || !code) {
-        return ctx.badRequest('Укажите email и 6-значный код');
-      }
-
-      const cleanEmail = email.toLowerCase().trim();
-
-      const user = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { email: cleanEmail }
+      const user = await strapi.query('plugin::users-permissions.user').findOne({
+        where: { email: email.toLowerCase(), confirmationToken: code }
       });
 
       if (!user) {
-        return ctx.badRequest('Пользователь с таким email не найден');
+        return ctx.badRequest('Неверный код или срок его действия истек');
       }
 
-      if (user.verificationCode !== code) {
-        return ctx.badRequest('Неверный код подтверждения!');
-      }
-
-      // Подтверждаем пользователя (confirmed: true)
-      const updatedUser = await strapi.db.query('plugin::users-permissions.user').update({
+      // Подтверждаем юзера и очищаем токен
+      const updatedUser = await strapi.query('plugin::users-permissions.user').update({
         where: { id: user.id },
-        data: {
-          confirmed: true,
-          verificationCode: null
-        }
+        data: { confirmed: true, confirmationToken: null }
       });
 
-      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
-        id: updatedUser.id,
-      });
+      // Генерируем JWT для входа
+      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
 
       return ctx.send({
         jwt,
-        user: {
-          id: updatedUser.id,
-          username: updatedUser.username,
-          email: updatedUser.email
-        }
+        user: updatedUser
       });
     } catch (err) {
-      return ctx.badRequest(`Ошибка верификации: ${err.message}`);
+      console.error('Ошибка в verifyCode:', err);
+      return ctx.badRequest('Ошибка при проверке кода');
     }
   };
 
-  // 3. Открываем кастомные маршруты
-  plugin.routes['content-api'].routes.push(
-    {
-      method: 'POST',
-      path: '/auth/custom-register',
-      handler: 'auth.customRegister',
-      config: { auth: false, prefix: '' },
-    },
-    {
-      method: 'POST',
-      path: '/auth/verify-code',
-      handler: 'auth.verifyCode',
-      config: { auth: false, prefix: '' },
+  // 3. ДОБАВЛЕНИЕ МАРШРУТОВ (С ВЫСОКИМ ПРИОРИТЕТОМ)
+  // Используем unshift() вместо push(), чтобы обойти ловушку 405 Method Not Allowed!
+  plugin.routes['content-api'].routes.unshift({
+    method: 'POST',
+    path: '/auth/custom-register',
+    handler: 'auth.customRegister',
+    config: {
+      prefix: '',
+      auth: false
     }
-  );
+  });
+
+  plugin.routes['content-api'].routes.unshift({
+    method: 'POST',
+    path: '/auth/verify-code',
+    handler: 'auth.verifyCode',
+    config: {
+      prefix: '',
+      auth: false
+    }
+  });
 
   return plugin;
 };
