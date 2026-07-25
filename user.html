@@ -417,7 +417,8 @@
     async function sendRegisterCodeInBackground(username, email, password) {
         pendingRegisterEmail = email;
         try {
-            const res = await fetch(`${STRAPI_BASE_URL}/api/auth/custom-register`, {
+            // ИСПРАВЛЕНО НА НОВЫЙ БЕЗОПАСНЫЙ ПУТЬ
+            const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })
@@ -449,7 +450,8 @@
         btn.textContent = "Проверка...";
 
         try {
-            const res = await fetch(`${STRAPI_BASE_URL}/api/auth/verify-code`, {
+            // ИСПРАВЛЕНО НА НОВЫЙ БЕЗОПАСНЫЙ ПУТЬ
+            const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/verify-code`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: pendingRegisterEmail, code })
