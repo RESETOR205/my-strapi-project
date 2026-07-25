@@ -65,7 +65,7 @@ module.exports = {
       });
 
       if (!user) {
-        return ctx.badRequest('Неверный код или срок его действия истек');
+        return ctx.badRequest('Неверный код');
       }
 
       const updatedUser = await strapi.query('plugin::users-permissions.user').update({
@@ -75,10 +75,7 @@ module.exports = {
 
       const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
 
-      return ctx.send({
-        jwt,
-        user: updatedUser
-      });
+      return ctx.send({ jwt, user: updatedUser });
     } catch (err) {
       console.error('Ошибка в verify:', err);
       return ctx.badRequest('Ошибка при проверке кода');
