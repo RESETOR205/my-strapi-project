@@ -406,7 +406,7 @@
                 <button type="submit" class="btn btn-primary form-submit">Войти</button>
             </form>
 
-            <!-- Форма регистрации (ЗАМЕНЕНА НА DIV) -->
+            <!-- Форма регистрации -->
             <div id="register-form" style="display: none;">
                 <div class="form-group">
                     <label>Имя пользователя</label>
@@ -495,10 +495,8 @@
         cabinetBtn.addEventListener('click', () => {
             const token = localStorage.getItem('jwt');
             if (token) {
-                // Если вошёл — ведём на страницу профиля
                 window.location.href = 'user.html';
             } else {
-                // Если не вошёл — открываем окно регистрации/входа
                 authModal.classList.add('active');
             }
         });
@@ -535,6 +533,7 @@
             const password = document.getElementById('login-password').value;
 
             try {
+                // Вход остается стандартным
                 const res = await fetch(`${STRAPI_BASE_URL}/api/auth/local`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -545,14 +544,13 @@
 
                 if (res.ok) {
                     localStorage.setItem('jwt', data.jwt);
-                    localStorage.setItem('token', data.jwt); // Для совместимости с user.html
+                    localStorage.setItem('token', data.jwt);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     showToast('Вы успешно вошли!');
                     authModal.classList.remove('active');
                     updateAuthUI();
                 } else {
                     const msg = data.error?.message || 'Ошибка входа';
-                    // Если аккаунт не подтвержден
                     if (msg.toLowerCase().includes('confirmed') || msg.toLowerCase().includes('подтвержден')) {
                         alert("Ваш Email ещё не подтвержден! Заполните данные во вкладке 'Регистрация', чтобы получить 6-значный код.");
                         document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
@@ -571,7 +569,6 @@
         // ------------------------------------------------------------
 
         window.goToStep2 = function() {
-            // 1. БЕЗУСЛОВНОЕ, МГНОВЕННОЕ ПЕРЕКЛЮЧЕНИЕ ЭКРАНА
             registerForm.style.display = 'none';
             tabsHeader.style.display = 'none';
             verifyForm.style.display = 'block';
@@ -580,7 +577,6 @@
             const email = emailInput ? emailInput.value.trim() : '';
             document.getElementById('target-email-display').textContent = email || 'вашу почту';
 
-            // 2. Сбор данных
             const username = document.getElementById('reg-username').value.trim();
             const password = document.getElementById('reg-password').value;
 
@@ -589,14 +585,14 @@
                 return;
             }
 
-            // Отправка фонового запроса
             sendRegisterCodeInBackground(username, email, password);
         };
 
         window.sendRegisterCodeInBackground = async function(username, email, password) {
             pendingRegisterEmail = email;
             try {
-                const res = await fetch(`${STRAPI_BASE_URL}/api/auth/custom-register`, {
+                // ОБНОВЛЕННЫЙ МАРШРУТ БЕЗ КОНФЛИКТА
+                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -628,7 +624,8 @@
             btn.textContent = "Проверка...";
 
             try {
-                const res = await fetch(`${STRAPI_BASE_URL}/api/auth/verify-code`, {
+                // ОБНОВЛЕННЫЙ МАРШРУТ БЕЗ КОНФЛИКТА
+                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/verify-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })
@@ -653,7 +650,7 @@
         };
 
         window.resetRegisterStep = function() {
-            tabRegisterBtn.click(); // Возвращает всё в исходное состояние
+            tabRegisterBtn.click();
         };
 
         // ------------------------------------------------------------
@@ -680,7 +677,7 @@
 
             let filtered = allModels.filter(item => {
                 const attrs = item.attributes || item;
-                const matchesCategory = activeCategory === 'all' || attrs.Category === activeCategory; // Важно: Category с большой буквы, если так в Strapi
+                const matchesCategory = activeCategory === 'all' || attrs.Category === activeCategory;
                 const matchesSearch = (attrs.Title || attrs.name || '').toLowerCase().includes(searchQuery);
                 return matchesCategory && matchesSearch;
             });
@@ -721,7 +718,6 @@
             if (e.target.classList.contains('category-btn')) {
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
-                // Используем английские значения, как в select при загрузке модели
                 const text = e.target.textContent;
                 const catMap = {
                     'Все модели': 'all',

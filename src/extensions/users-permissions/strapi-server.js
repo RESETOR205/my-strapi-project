@@ -8,7 +8,6 @@ module.exports = (plugin) => {
     }
 
     try {
-      // Ищем, есть ли уже юзер с такой почтой
       const existingUser = await strapi.query('plugin::users-permissions.user').findOne({
         where: { email: email.toLowerCase() }
       });
@@ -17,16 +16,13 @@ module.exports = (plugin) => {
         if (existingUser.confirmed) {
           return ctx.badRequest('Этот Email уже зарегистрирован и подтвержден.');
         }
-        // Если аккаунт не подтвержден, удаляем его, чтобы создать заново
         await strapi.query('plugin::users-permissions.user').delete({
           where: { id: existingUser.id }
         });
       }
 
-      // Генерируем 6-значный код
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Создаем юзера со статусом confirmed: false
       const newUser = await strapi.plugins['users-permissions'].services.user.add({
         username,
         email: email.toLowerCase(),
@@ -36,17 +32,16 @@ module.exports = (plugin) => {
         confirmationToken: verificationCode
       });
 
-      // Отправляем код на почту (если настроен плагин Email)
       try {
         await strapi.plugins['email'].services.email.send({
           to: newUser.email,
-          from: 'noreply@yourdomain.com', // Замени на свою почту, если есть домен
+          from: 'noreply@yourdomain.com', 
           subject: 'Код подтверждения 3D Market',
           text: `Ваш код подтверждения: ${verificationCode}`,
           html: `<h3>Добро пожаловать в 3D Market!</h3><p>Ваш код: <strong>${verificationCode}</strong></p>`,
         });
       } catch (emailErr) {
-        console.log("Письмо не отправлено (вероятно, не настроен провайдер Email):", emailErr.message);
+        console.log("Письмо не отправлено:", emailErr.message);
       }
 
       return ctx.send({ message: 'Код успешно сгенерирован и отправлен', ok: true });
@@ -73,13 +68,11 @@ module.exports = (plugin) => {
         return ctx.badRequest('Неверный код или срок его действия истек');
       }
 
-      // Подтверждаем юзера и очищаем токен
       const updatedUser = await strapi.query('plugin::users-permissions.user').update({
         where: { id: user.id },
         data: { confirmed: true, confirmationToken: null }
       });
 
-      // Генерируем JWT для входа
       const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
 
       return ctx.send({
@@ -92,26 +85,19 @@ module.exports = (plugin) => {
     }
   };
 
-  // 3. ДОБАВЛЕНИЕ МАРШРУТОВ (С ВЫСОКИМ ПРИОРИТЕТОМ)
-  // Используем unshift() вместо push(), чтобы обойти ловушку 405 Method Not Allowed!
+  // 3. ДОБАВЛЕНИЕ МАРШРУТОВ (С УНИКАЛЬНЫМИ ПУТЯМИ)
   plugin.routes['content-api'].routes.unshift({
     method: 'POST',
-    path: '/auth/custom-register',
+    path: '/custom-auth/register', // <-- Полностью ушли от стандартного /auth/
     handler: 'auth.customRegister',
-    config: {
-      prefix: '',
-      auth: false
-    }
+    config: { prefix: '', auth: false }
   });
 
   plugin.routes['content-api'].routes.unshift({
     method: 'POST',
-    path: '/auth/verify-code',
+    path: '/custom-auth/verify-code', // <-- Полностью ушли от стандартного /auth/
     handler: 'auth.verifyCode',
-    config: {
-      prefix: '',
-      auth: false
-    }
+    config: { prefix: '', auth: false }
   });
 
   return plugin;
