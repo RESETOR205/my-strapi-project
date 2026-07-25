@@ -105,60 +105,6 @@
             margin: 0 auto;
         }
 
-        /* Карусель (Слайдер) */
-        .carousel-wrapper {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 30px;
-            background-color: #1a202c;
-        }
-
-        .carousel-track {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.5s ease-in-out;
-        }
-
-        .carousel-slide {
-            min-width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(45deg, #161a23, #2d3748);
-            color: #fff;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        /* Индикаторы карусели расположены СНИЗУ */
-        .carousel-indicators {
-            position: absolute;
-            bottom: 15px; 
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-        }
-
-        .indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.4);
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .indicator.active {
-            background-color: #3b82f6;
-        }
-
         /* Категории */
         .categories-title {
             font-size: 12px;
@@ -407,21 +353,6 @@
     <!-- Основное содержимое -->
     <main>
 
-        <!-- Карусель с новинками -->
-        <div class="carousel-wrapper">
-            <div class="carousel-track" id="carousel-track">
-                <div class="carousel-slide" style="background: linear-gradient(45deg, #1e3a8a, #3b82f6);">Скидки на персонажей 50%</div>
-                <div class="carousel-slide" style="background: linear-gradient(45deg, #064e3b, #10b981);">Новые коллекции оружия</div>
-                <div class="carousel-slide" style="background: linear-gradient(45deg, #7f1d1d, #ef4444);">Лучшие ассеты для окружения</div>
-            </div>
-            <!-- Индикаторы снизу -->
-            <div class="carousel-indicators" id="carousel-indicators">
-                <button class="indicator active" data-index="0"></button>
-                <button class="indicator" data-index="1"></button>
-                <button class="indicator" data-index="2"></button>
-            </div>
-        </div>
-
         <div class="categories-title">Категории</div>
         <div class="categories" id="categories-container">
             <button class="category-btn active" data-category="all">Все модели</button>
@@ -524,29 +455,6 @@
         const toastEl = document.getElementById('toast');
         const searchInput = document.getElementById('search-input');
 
-        // Слайдер (Карусель) логика
-        const track = document.getElementById('carousel-track');
-        const indicators = document.querySelectorAll('.indicator');
-        let currentSlide = 0;
-
-        function updateCarousel(index) {
-            currentSlide = index;
-            track.style.transform = `translateX(-${currentSlide * 100}%)`;
-            indicators.forEach(ind => ind.classList.remove('active'));
-            indicators[currentSlide].classList.add('active');
-        }
-
-        indicators.forEach((indicator, index) => {
-            indicator.addEventListener('click', () => {
-                updateCarousel(index);
-            });
-        });
-
-        setInterval(() => {
-            let next = (currentSlide + 1) % indicators.length;
-            updateCarousel(next);
-        }, 5000);
-
         // Уведомления
         function showToast(message, isError = false) {
             toastEl.textContent = message;
@@ -644,8 +552,8 @@
             document.getElementById('target-email-display').textContent = email;
 
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ (БЕЗ 405 ОШИБКИ)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-api/register`, {
+                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ (market-auth)
+                const res = await fetch(`${STRAPI_BASE_URL}/api/market-auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -673,8 +581,8 @@
             }
 
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ
-                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-api/verify`, {
+                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ (market-auth)
+                const res = await fetch(`${STRAPI_BASE_URL}/api/market-auth/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })
