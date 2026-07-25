@@ -1,6 +1,8 @@
+'use strict';
+
 module.exports = (plugin) => {
-  // 1. Контроллер для генерации кода и регистрации
-  plugin.controllers.auth.customRegister = async (ctx) => {
+  // 1. Контроллер для генерации и отправки кода
+  plugin.controllers.auth.sendCode = async (ctx) => {
     const { username, email, password } = ctx.request.body;
 
     if (!username || !email || !password) {
@@ -8,14 +10,17 @@ module.exports = (plugin) => {
     }
 
     try {
+      const emailLower = email.toLowerCase();
+      // Ищем, есть ли уже такой юзер
       const existingUser = await strapi.query('plugin::users-permissions.user').findOne({
-        where: { email: email.toLowerCase() }
+        where: { email: emailLower }
       });
 
       if (existingUser) {
         if (existingUser.confirmed) {
           return ctx.badRequest('Этот Email уже зарегистрирован и подтвержден.');
         }
+        // Если не подтвержден - удаляем старую запись, чтобы создать новую с новым кодом
         await strapi.query('plugin::users-permissions.user').delete({
           where: { id: existingUser.id }
         });
@@ -23,17 +28,19 @@ module.exports = (plugin) => {
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      const newUser = await strapi.plugins['users-permissions'].services.user.add({
+      // Создаем пользователя
+      const newUser = await strapi.plugin('users-permissions').service('user').add({
         username,
-        email: email.toLowerCase(),
+        email: emailLower,
         password,
         confirmed: false,
         provider: 'local',
         confirmationToken: verificationCode
       });
 
+      // Отправляем письмо
       try {
-        await strapi.plugins['email'].services.email.send({
+        await strapi.plugin('email').service('email').send({
           to: newUser.email,
           from: 'noreply@yourdomain.com', 
           subject: 'Код подтверждения 3D Market',
@@ -41,13 +48,13 @@ module.exports = (plugin) => {
           html: `<h3>Добро пожаловать в 3D Market!</h3><p>Ваш код: <strong>${verificationCode}</strong></p>`,
         });
       } catch (emailErr) {
-        console.log("Письмо не отправлено:", emailErr.message);
+        console.log("Письмо не отправлено (нет SMTP):", emailErr.message);
       }
 
-      return ctx.send({ message: 'Код успешно сгенерирован и отправлен', ok: true });
+      return ctx.send({ message: 'Код успешно сгенерирован', ok: true });
     } catch (err) {
-      console.error('Ошибка в customRegister:', err);
-      return ctx.badRequest('Произошла внутренняя ошибка при регистрации');
+      console.error('Ошибка в sendCode:', err);
+      return ctx.badRequest('Произошла внутренняя ошибка');
     }
   };
 
@@ -65,40 +72,40 @@ module.exports = (plugin) => {
       });
 
       if (!user) {
-        return ctx.badRequest('Неверный код или срок его действия истек');
+        return ctx.badRequest('Неверный код');
       }
 
+      // Обновляем статус юзера
       const updatedUser = await strapi.query('plugin::users-permissions.user').update({
         where: { id: user.id },
         data: { confirmed: true, confirmationToken: null }
       });
 
-      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+      // Выдаем токен
+      const jwt = strapi.plugin('users-permissions').service('jwt').issue({ id: user.id });
 
-      return ctx.send({
-        jwt,
-        user: updatedUser
-      });
+      return ctx.send({ jwt, user: updatedUser });
     } catch (err) {
       console.error('Ошибка в verifyCode:', err);
       return ctx.badRequest('Ошибка при проверке кода');
     }
   };
 
-  // 3. ДОБАВЛЕНИЕ МАРШРУТОВ (С УНИКАЛЬНЫМИ ПУТЯМИ)
-  plugin.routes['content-api'].routes.unshift({
-    method: 'POST',
-    path: '/custom-auth/register', // <-- Полностью ушли от стандартного /auth/
-    handler: 'auth.customRegister',
-    config: { prefix: '', auth: false }
-  });
-
-  plugin.routes['content-api'].routes.unshift({
-    method: 'POST',
-    path: '/custom-auth/verify-code', // <-- Полностью ушли от стандартного /auth/
-    handler: 'auth.verifyCode',
-    config: { prefix: '', auth: false }
-  });
+  // 3. Внедряем маршруты напрямую в системный плагин
+  plugin.routes['content-api'].routes.push(
+    {
+      method: 'POST',
+      path: '/auth/send-code',
+      handler: 'auth.sendCode',
+      config: { prefix: '' }
+    },
+    {
+      method: 'POST',
+      path: '/auth/verify-code',
+      handler: 'auth.verifyCode',
+      config: { prefix: '' }
+    }
+  );
 
   return plugin;
 };
