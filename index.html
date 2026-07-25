@@ -1,4 +1,4 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -103,6 +103,60 @@
             max-width: 1400px;
             width: 100%;
             margin: 0 auto;
+        }
+
+        /* Карусель (Слайдер) */
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            background-color: #1a202c;
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #161a23, #2d3748);
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Индикаторы карусели расположены СНИЗУ */
+        .carousel-indicators {
+            position: absolute;
+            bottom: 15px; 
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .indicator.active {
+            background-color: #3b82f6;
         }
 
         /* Категории */
@@ -211,9 +265,9 @@
             color: #fff;
         }
 
-        .model-author {
-            font-size: 12px;
-            color: #a0aec0;
+        .model-price {
+            font-weight: bold;
+            color: #10b981;
         }
 
         .model-footer {
@@ -222,11 +276,6 @@
             align-items: center;
             margin-top: auto;
             padding-top: 10px;
-        }
-
-        .model-price {
-            font-weight: bold;
-            color: #10b981;
         }
 
         /* Модальное окно Входа / Регистрации */
@@ -342,11 +391,12 @@
 </head>
 <body>
 
+    <!-- Шапка -->
     <header>
         <a href="index.html" class="logo">3D <span>Market</span></a>
         
         <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Поиск моделей (например: Glock, Ландшафт)...">
+            <input type="text" id="search-input" placeholder="Поиск моделей (например: Оружие, Ландшафт)...">
         </div>
 
         <div class="nav-actions">
@@ -354,7 +404,24 @@
         </div>
     </header>
 
+    <!-- Основное содержимое -->
     <main>
+
+        <!-- Карусель с новинками -->
+        <div class="carousel-wrapper">
+            <div class="carousel-track" id="carousel-track">
+                <div class="carousel-slide" style="background: linear-gradient(45deg, #1e3a8a, #3b82f6);">Скидки на персонажей 50%</div>
+                <div class="carousel-slide" style="background: linear-gradient(45deg, #064e3b, #10b981);">Новые коллекции оружия</div>
+                <div class="carousel-slide" style="background: linear-gradient(45deg, #7f1d1d, #ef4444);">Лучшие ассеты для окружения</div>
+            </div>
+            <!-- Индикаторы снизу -->
+            <div class="carousel-indicators" id="carousel-indicators">
+                <button class="indicator active" data-index="0"></button>
+                <button class="indicator" data-index="1"></button>
+                <button class="indicator" data-index="2"></button>
+            </div>
+        </div>
+
         <div class="categories-title">Категории</div>
         <div class="categories" id="categories-container">
             <button class="category-btn active" data-category="all">Все модели</button>
@@ -363,32 +430,31 @@
             <button class="category-btn" data-category="Окружение">Окружение</button>
             <button class="category-btn" data-category="Транспорт">Транспорт</button>
             <button class="category-btn" data-category="Архитектура">Архитектура</button>
-            <button class="category-btn" data-category="Предметы">Предметы</button>
         </div>
 
         <div class="section-header">
-            <h1 class="section-title">Все 3D-модели</h1>
+            <h1 class="section-title">Каталог</h1>
             <span class="model-count" id="model-count">0 моделей</span>
         </div>
 
         <div class="models-grid" id="models-grid">
             <div class="empty-state">
-                Модели по выбранным критериям не найдены
+                Загрузка моделей...
             </div>
         </div>
     </main>
 
+    <!-- Всплывающее окно Входа и Регистрации -->
     <div class="modal-overlay" id="auth-modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close">&times;</button>
-            
-            <span style="position: absolute; top: 16px; left: 16px; font-size: 11px; color: #22c55e; background: rgba(34,197,94,0.1); padding: 2px 6px; border-radius: 4px; font-weight: bold;">v4.0 100% SWITCH</span>
             
             <div class="modal-tabs" id="auth-tabs-header">
                 <button class="tab-btn active" id="tab-login-btn">Вход</button>
                 <button class="tab-btn" id="tab-register-btn">Регистрация</button>
             </div>
 
+            <!-- Форма входа -->
             <form id="login-form">
                 <div class="form-group">
                     <label>Имя пользователя или Email</label>
@@ -401,6 +467,7 @@
                 <button type="submit" class="btn btn-primary form-submit">Войти</button>
             </form>
 
+            <!-- Форма регистрации -->
             <div id="register-form" style="display: none;">
                 <div class="form-group">
                     <label>Имя пользователя</label>
@@ -417,6 +484,7 @@
                 <button type="button" class="btn btn-primary form-submit" onclick="goToStep2()">Зарегистрироваться</button>
             </div>
 
+            <!-- Форма подтверждения кода -->
             <div id="auth-verify-form" style="display: none; text-align: center;">
                 <h2 style="margin-bottom: 10px; font-size: 20px;">Подтверждение Email</h2>
                 <p style="color: #a0aec0; font-size: 13px; margin-bottom: 20px;">
@@ -432,15 +500,16 @@
         </div>
     </div>
 
+    <!-- Уведомление -->
     <div class="toast" id="toast"></div>
 
     <script>
-        // Твой бэкенд на Railway
+        // АДРЕС БЭКЕНДА
         const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
         
         let allModels = [];
         let activeCategory = 'all';
-        let pendingRegisterEmail = ''; // Хранит email для проверки кода
+        let pendingRegisterEmail = '';
 
         // Элементы
         const cabinetBtn = document.getElementById('cabinet-btn');
@@ -455,25 +524,42 @@
         const toastEl = document.getElementById('toast');
         const searchInput = document.getElementById('search-input');
 
-        // Всплывающее уведомление
+        // Слайдер (Карусель) логика
+        const track = document.getElementById('carousel-track');
+        const indicators = document.querySelectorAll('.indicator');
+        let currentSlide = 0;
+
+        function updateCarousel(index) {
+            currentSlide = index;
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            indicators.forEach(ind => ind.classList.remove('active'));
+            indicators[currentSlide].classList.add('active');
+        }
+
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                updateCarousel(index);
+            });
+        });
+
+        setInterval(() => {
+            let next = (currentSlide + 1) % indicators.length;
+            updateCarousel(next);
+        }, 5000);
+
+        // Уведомления
         function showToast(message, isError = false) {
             toastEl.textContent = message;
             toastEl.className = 'toast' + (isError ? ' error' : '');
             toastEl.style.display = 'block';
-            setTimeout(() => {
-                toastEl.style.display = 'none';
-            }, 5000);
+            setTimeout(() => toastEl.style.display = 'none', 5000);
         }
 
-        // Обновление состояния кнопки авторизации
         function updateAuthUI() {
             const userStr = localStorage.getItem('user');
-            const token = localStorage.getItem('jwt');
-
-            if (token && userStr) {
+            if (localStorage.getItem('jwt') && userStr) {
                 try {
-                    const user = JSON.parse(userStr);
-                    cabinetBtn.textContent = user.username || 'Профиль';
+                    cabinetBtn.textContent = JSON.parse(userStr).username;
                 } catch(e) {
                     cabinetBtn.textContent = 'Личный кабинет';
                 }
@@ -482,23 +568,16 @@
             }
         }
 
-        // Клик по «Личный кабинет»
         cabinetBtn.addEventListener('click', () => {
-            const token = localStorage.getItem('jwt');
-            if (token) {
+            if (localStorage.getItem('jwt')) {
                 window.location.href = 'user.html';
             } else {
                 authModal.classList.add('active');
             }
         });
 
-        // Закрытие модального окна
         modalClose.addEventListener('click', () => authModal.classList.remove('active'));
-        authModal.addEventListener('click', (e) => {
-            if (e.target === authModal) authModal.classList.remove('active');
-        });
-
-        // Переключение между Входом и Регистрацией
+        
         tabLoginBtn.addEventListener('click', () => {
             tabLoginBtn.classList.add('active');
             tabRegisterBtn.classList.remove('active');
@@ -517,14 +596,13 @@
             tabsHeader.style.display = 'flex';
         });
 
-        // ВХОД В АККАУНТ
+        // ЛОГИН
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const identifier = document.getElementById('login-identifier').value.trim();
             const password = document.getElementById('login-password').value;
 
             try {
-                // Вход остается стандартным
                 const res = await fetch(`${STRAPI_BASE_URL}/api/auth/local`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -532,58 +610,42 @@
                 });
 
                 const data = await res.json();
-
                 if (res.ok) {
                     localStorage.setItem('jwt', data.jwt);
-                    localStorage.setItem('token', data.jwt);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    showToast('Вы успешно вошли!');
+                    showToast('Успешный вход!');
                     authModal.classList.remove('active');
                     updateAuthUI();
                 } else {
-                    const msg = data.error?.message || 'Ошибка входа';
-                    if (msg.toLowerCase().includes('confirmed') || msg.toLowerCase().includes('подтвержден')) {
-                        alert("Ваш Email ещё не подтвержден! Заполните данные во вкладке 'Регистрация', чтобы получить 6-значный код.");
-                        document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
-                        tabRegisterBtn.click();
-                    } else {
-                        showToast(msg, true);
-                    }
+                    showToast(data.error?.message || 'Ошибка входа', true);
                 }
             } catch (err) {
-                showToast('Ошибка подключения к серверу', true);
+                showToast('Ошибка сервера', true);
             }
         });
 
-        // ------------------------------------------------------------
-        // ЛОГИКА РЕГИСТРАЦИИ
-        // ------------------------------------------------------------
-
-        window.goToStep2 = function() {
-            registerForm.style.display = 'none';
-            tabsHeader.style.display = 'none';
-            verifyForm.style.display = 'block';
-
-            const emailInput = document.getElementById('reg-email');
-            const email = emailInput ? emailInput.value.trim() : '';
-            document.getElementById('target-email-display').textContent = email || 'вашу почту';
-
+        // ПЕРЕХОД К ПОДТВЕРЖДЕНИЮ И ОТПРАВКА КОДА
+        window.goToStep2 = async function() {
             const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
 
             if (!username || !email || !password) {
-                alert("Внимание: Заполните все поля, чтобы код пришёл на почту!");
+                alert("Заполните все поля!");
                 return;
             }
 
-            sendRegisterCodeInBackground(username, email, password);
-        };
-
-        window.sendRegisterCodeInBackground = async function(username, email, password) {
             pendingRegisterEmail = email;
+            
+            // Прячем форму регистрации, показываем ввод кода
+            registerForm.style.display = 'none';
+            tabsHeader.style.display = 'none';
+            verifyForm.style.display = 'block';
+            document.getElementById('target-email-display').textContent = email;
+
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ МАРШРУТ (без 405 ошибки)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/register`, {
+                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ (БЕЗ 405 ОШИБКИ)
+                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -591,32 +653,28 @@
 
                 const data = await res.json();
                 if (!res.ok) {
-                    alert("Ошибка бэкенда: " + (data.error?.message || data.message || "Неизвестная ошибка"));
+                    alert("Ошибка: " + (data.error?.message || data.message || "Сбой"));
+                    resetRegisterStep();
                 } else {
-                    showToast("Код успешно отправлен вам на почту!");
+                    showToast("Код успешно отправлен!");
                 }
             } catch (err) {
-                console.error("Ошибка сети:", err);
                 alert("Ошибка связи с сервером: " + err.message);
+                resetRegisterStep();
             }
         };
 
         // ПРОВЕРКА КОДА
         window.handleVerifyCodeDirect = async function() {
             const code = document.getElementById('verify-code-input').value.trim();
-
             if (!code || code.length !== 6) {
-                alert("Введите 6-значный код из письма!");
+                alert("Введите 6 цифр");
                 return;
             }
 
-            const btn = document.getElementById('verify-btn');
-            btn.disabled = true;
-            btn.textContent = "Проверка...";
-
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ МАРШРУТ (без 405 ошибки)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/verify-code`, {
+                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ
+                const res = await fetch(`${STRAPI_BASE_URL}/api/custom-api/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })
@@ -626,17 +684,13 @@
                 if (!res.ok) throw new Error(data.error?.message || 'Неверный код!');
 
                 localStorage.setItem('jwt', data.jwt);
-                localStorage.setItem('token', data.jwt);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                showToast("Аккаунт успешно подтверждён!");
+                showToast("Аккаунт подтверждён!");
                 authModal.classList.remove('active');
                 updateAuthUI();
             } catch (err) {
-                alert("ОШИБКА ПРОВЕРКИ КОДА: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Подтвердить код";
+                alert(err.message);
             }
         };
 
@@ -644,20 +698,16 @@
             tabRegisterBtn.click();
         };
 
-        // ------------------------------------------------------------
-        // Загрузка и отрисовка каталога моделей
-        // ------------------------------------------------------------
+        // ЗАГРУЗКА МОДЕЛЕЙ
         async function loadModels() {
             try {
                 const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
-                if (!res.ok) throw new Error('Не удалось получить данные');
-                
+                if (!res.ok) throw new Error('Ошибка');
                 const responseData = await res.json();
                 allModels = responseData.data || [];
                 renderModels();
             } catch (err) {
-                console.error('Ошибка загрузки моделей:', err);
-                renderModels();
+                document.getElementById('models-grid').innerHTML = '<div class="empty-state">Ошибка загрузки моделей</div>';
             }
         }
 
@@ -676,22 +726,20 @@
             countEl.textContent = `${filtered.length} моделей`;
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="empty-state">Модели по выбранным критериям не найдены</div>';
+                grid.innerHTML = '<div class="empty-state">Ничего не найдено</div>';
                 return;
             }
 
             grid.innerHTML = filtered.map(item => {
                 const m = item.attributes || item;
-                
                 let previewUrl = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
-                if (m.Previews && m.Previews.data && m.Previews.data.length > 0) {
+                if (m.Previews?.data?.length > 0) {
                     const url = m.Previews.data[0].attributes.url;
                     previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
                 }
-
                 return `
                     <div class="model-card">
-                        <img src="${previewUrl}" class="model-preview" alt="${m.Title || '3D Model'}">
+                        <img src="${previewUrl}" class="model-preview" alt="Model">
                         <div class="model-info">
                             <div class="model-title">${m.Title || 'Без названия'}</div>
                             <div class="model-footer">
@@ -699,35 +747,21 @@
                                 <a href="product.html?id=${item.id}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Подробнее</a>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
-        // Фильтр категорий
         document.getElementById('categories-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('category-btn')) {
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
-                const text = e.target.textContent;
-                const catMap = {
-                    'Все модели': 'all',
-                    'Персонажи': 'characters',
-                    'Оружие': 'weapons',
-                    'Окружение': 'environment',
-                    'Транспорт': 'vehicles',
-                    'Архитектура': 'architecture',
-                    'Предметы': 'props'
-                };
-                activeCategory = catMap[text] || 'all';
+                activeCategory = e.target.getAttribute('data-category') || 'all';
                 renderModels();
             }
         });
 
-        // Живой поиск
         searchInput.addEventListener('input', renderModels);
 
-        // Старт
         updateAuthUI();
         loadModels();
     </script>
