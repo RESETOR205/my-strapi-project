@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Market — Маркетплейс 3D-моделей</title>
+    <title>3D Market — Платформа 3D-моделей</title>
     <style>
         /* Сброс стилей и базовые настройки */
         * {
@@ -552,8 +552,8 @@
             document.getElementById('target-email-display').textContent = email;
 
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ (market-auth)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/market-auth/register`, {
+                // ИСПОЛЬЗУЕМ ОБНОВЛЕННЫЙ МАРШРУТ (без конфликтов)
+                const res = await fetch(`${STRAPI_BASE_URL}/api/market/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -581,8 +581,8 @@
             }
 
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ НЕЗАВИСИМЫЙ МАРШРУТ (market-auth)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/market-auth/verify`, {
+                // ИСПОЛЬЗУЕМ ОБНОВЛЕННЫЙ МАРШРУТ
+                const res = await fetch(`${STRAPI_BASE_URL}/api/market/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })
