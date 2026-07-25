@@ -20,7 +20,7 @@ module.exports = (plugin) => {
         if (existingUser.confirmed) {
           return ctx.badRequest('Этот Email уже зарегистрирован и подтвержден.');
         }
-        // Если не подтвержден - удаляем старую запись, чтобы создать новую с новым кодом
+        // Если не подтвержден - удаляем старую запись
         await strapi.query('plugin::users-permissions.user').delete({
           where: { id: existingUser.id }
         });
@@ -48,7 +48,7 @@ module.exports = (plugin) => {
           html: `<h3>Добро пожаловать в 3D Market!</h3><p>Ваш код: <strong>${verificationCode}</strong></p>`,
         });
       } catch (emailErr) {
-        console.log("Письмо не отправлено (нет SMTP):", emailErr.message);
+        console.log("Письмо не отправлено:", emailErr.message);
       }
 
       return ctx.send({ message: 'Код успешно сгенерирован', ok: true });
@@ -91,19 +91,19 @@ module.exports = (plugin) => {
     }
   };
 
-  // 3. Внедряем маршруты напрямую в системный плагин
+  // 3. Внедряем маршруты напрямую в системный плагин (С ЖЕСТКИМ ОТКЛЮЧЕНИЕМ АВТОРИЗАЦИИ)
   plugin.routes['content-api'].routes.push(
     {
       method: 'POST',
       path: '/auth/send-code',
       handler: 'auth.sendCode',
-      config: { prefix: '' }
+      config: { auth: false, prefix: '' } // <-- ВОТ ЭТО ОТКЛЮЧАЕТ НУЖДУ В ГАЛОЧКАХ
     },
     {
       method: 'POST',
       path: '/auth/verify-code',
       handler: 'auth.verifyCode',
-      config: { prefix: '' }
+      config: { auth: false, prefix: '' } // <-- И ЗДЕСЬ
     }
   );
 
