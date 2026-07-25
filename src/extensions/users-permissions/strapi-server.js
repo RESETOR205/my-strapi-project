@@ -1,5 +1,5 @@
 module.exports = (plugin) => {
-  // 1. Кастомная регистрация
+  // 1. Кастомная регистрация с автоматической очисткой неподтверждённых профилей
   plugin.controllers.auth.customRegister = async (ctx) => {
     try {
       const { email, username, password } = ctx.request.body;
@@ -12,7 +12,7 @@ module.exports = (plugin) => {
       const cleanUsername = username.trim();
 
       // Проверяем существующего пользователя по EMAIL
-      const existingEmailUser = await strapi.query('plugin::users-permissions.user').findOne({
+      const existingEmailUser = await strapi.db.query('plugin::users-permissions.user').findOne({
         where: { email: cleanEmail }
       });
 
@@ -20,14 +20,14 @@ module.exports = (plugin) => {
         if (existingEmailUser.confirmed) {
           return ctx.badRequest('Пользователь с таким email уже зарегистрирован');
         }
-        // Если не подтвержден — удаляем старую запись
-        await strapi.query('plugin::users-permissions.user').delete({
+        // Если не подтвержден — удаляем старую запись из БД
+        await strapi.db.query('plugin::users-permissions.user').delete({
           where: { id: existingEmailUser.id }
         });
       }
 
       // Проверяем существующего пользователя по USERNAME
-      const existingNameUser = await strapi.query('plugin::users-permissions.user').findOne({
+      const existingNameUser = await strapi.db.query('plugin::users-permissions.user').findOne({
         where: { username: cleanUsername }
       });
 
@@ -35,7 +35,7 @@ module.exports = (plugin) => {
         if (existingNameUser.confirmed) {
           return ctx.badRequest('Имя пользователя уже занято');
         }
-        await strapi.query('plugin::users-permissions.user').delete({
+        await strapi.db.query('plugin::users-permissions.user').delete({
           where: { id: existingNameUser.id }
         });
       }
@@ -43,11 +43,11 @@ module.exports = (plugin) => {
       // Генерируем 6-значный код
       const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-      const defaultRole = await strapi.query('plugin::users-permissions.role').findOne({
+      const defaultRole = await strapi.db.query('plugin::users-permissions.role').findOne({
         where: { type: 'authenticated' }
       });
 
-      // Создаем нового пользователя
+      // Создаем аккаунт с confirmed: false
       await strapi.plugin('users-permissions').service('user').add({
         username: cleanUsername,
         email: cleanEmail,
@@ -81,7 +81,7 @@ module.exports = (plugin) => {
       });
 
     } catch (err) {
-      console.error('КРИТИЧЕСКАЯ ОШИБКА РЕГИСТРАЦИИ:', err);
+      console.error('ОШИБКА РЕГИСТРАЦИИ:', err);
       return ctx.badRequest(`Не удалось зарегистрировать: ${err.message}`);
     }
   };
@@ -97,7 +97,7 @@ module.exports = (plugin) => {
 
       const cleanEmail = email.toLowerCase().trim();
 
-      const user = await strapi.query('plugin::users-permissions.user').findOne({
+      const user = await strapi.db.query('plugin::users-permissions.user').findOne({
         where: { email: cleanEmail }
       });
 
@@ -109,8 +109,8 @@ module.exports = (plugin) => {
         return ctx.badRequest('Неверный код подтверждения!');
       }
 
-      // Подтверждаем пользователя
-      const updatedUser = await strapi.query('plugin::users-permissions.user').update({
+      // Подтверждаем пользователя (confirmed: true)
+      const updatedUser = await strapi.db.query('plugin::users-permissions.user').update({
         where: { id: user.id },
         data: {
           confirmed: true,
@@ -135,7 +135,7 @@ module.exports = (plugin) => {
     }
   };
 
-  // 3. Открытые маршруты
+  // 3. Открываем кастомные маршруты
   plugin.routes['content-api'].routes.push(
     {
       method: 'POST',
