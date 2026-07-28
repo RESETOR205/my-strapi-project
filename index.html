@@ -553,7 +553,7 @@
 
             try {
                 // ИСПОЛЬЗУЕМ ОБНОВЛЕННЫЙ МАРШРУТ (без конфликтов)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/auth/send-code`, {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/market/send-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -582,7 +582,7 @@
 
             try {
                 // ИСПОЛЬЗУЕМ ОБНОВЛЕННЫЙ МАРШРУТ
-                const res = await fetch(`${STRAPI_BASE_URL}/api/auth/verify-code`, {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/market/verify-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })

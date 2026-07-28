@@ -95,15 +95,15 @@ module.exports = (plugin) => {
   plugin.routes['content-api'].routes.push(
     {
       method: 'POST',
-      path: '/auth/send-code',
+      path: '/market/send-code', // Изменили название пути
       handler: 'auth.sendCode',
-      config: { auth: false, prefix: '' } // <-- ВОТ ЭТО ОТКЛЮЧАЕТ НУЖДУ В ГАЛОЧКАХ
+      config: { auth: false, prefix: '' } // Отключает нужду в галочках
     },
     {
       method: 'POST',
-      path: '/auth/verify-code',
+      path: '/market/verify-code', // Изменили название пути
       handler: 'auth.verifyCode',
-      config: { auth: false, prefix: '' } // <-- И ЗДЕСЬ
+      config: { auth: false, prefix: '' } // Отключает нужду в галочках
     }
   );
 
