@@ -3,13 +3,13 @@ module.exports = {
     {
       method: 'POST',
       path: '/email-auth/send',
-      handler: 'email-auth.sendCode',
+      handler: 'api::email-auth.email-auth.sendCode', // <-- ВОТ ЗДЕСЬ БЫЛА ОШИБКА
       config: { auth: false }
     },
     {
       method: 'POST',
       path: '/email-auth/verify',
-      handler: 'email-auth.verifyCode',
+      handler: 'api::email-auth.email-auth.verifyCode', // <-- И ЗДЕСЬ
       config: { auth: false }
     }
   ]
