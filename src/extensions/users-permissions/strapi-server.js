@@ -91,19 +91,19 @@ module.exports = (plugin) => {
     }
   };
 
-  // 3. Внедряем маршруты напрямую в системный плагин (С ЖЕСТКИМ ОТКЛЮЧЕНИЕМ АВТОРИЗАЦИИ)
-  plugin.routes['content-api'].routes.push(
+  // 3. Внедряем маршруты В САМОЕ НАЧАЛО списка (используем unshift)
+  plugin.routes['content-api'].routes.unshift(
     {
       method: 'POST',
-      path: '/market/send-code', // Изменили название пути
+      path: '/send-email-code',
       handler: 'auth.sendCode',
-      config: { auth: false, prefix: '' } // Отключает нужду в галочках
+      config: { auth: false, prefix: '' }
     },
     {
       method: 'POST',
-      path: '/market/verify-code', // Изменили название пути
+      path: '/verify-email-code',
       handler: 'auth.verifyCode',
-      config: { auth: false, prefix: '' } // Отключает нужду в галочках
+      config: { auth: false, prefix: '' }
     }
   );
 

@@ -552,8 +552,8 @@
             document.getElementById('target-email-display').textContent = email;
 
             try {
-                // ИСПОЛЬЗУЕМ ОБНОВЛЕННЫЙ МАРШРУТ (без конфликтов)
-                const res = await fetch(`${STRAPI_BASE_URL}/api/market/send-code`, {
+                // ИСПОЛЬЗУЕМ МАКСИМАЛЬНО ЧИСТЫЙ МАРШРУТ
+                const res = await fetch(`${STRAPI_BASE_URL}/api/send-email-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -581,8 +581,8 @@
             }
 
             try {
-                // ИСПОЛЬЗУЕМ ОБНОВЛЕННЫЙ МАРШРУТ
-                const res = await fetch(`${STRAPI_BASE_URL}/api/market/verify-code`, {
+                // ИСПОЛЬЗУЕМ МАКСИМАЛЬНО ЧИСТЫЙ МАРШРУТ
+                const res = await fetch(`${STRAPI_BASE_URL}/api/verify-email-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })
