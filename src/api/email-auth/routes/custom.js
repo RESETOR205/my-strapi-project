@@ -3,13 +3,13 @@ module.exports = {
     {
       method: 'POST',
       path: '/email-auth/send',
-      handler: 'email-auth.sendCode',
+      handler: 'api::email-auth.email-auth.sendCode', // <-- ВОТ ТЕПЕРЬ ТУТ ПРАВИЛЬНЫЙ КОД ДЛЯ STRAPI v4
       config: { auth: false }
     },
     {
       method: 'POST',
       path: '/email-auth/verify',
-      handler: 'email-auth.verifyCode',
+      handler: 'api::email-auth.email-auth.verifyCode', // <-- И ЗДЕСЬ ТОЖЕ
       config: { auth: false }
     }
   ]
