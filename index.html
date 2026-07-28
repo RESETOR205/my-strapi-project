@@ -337,7 +337,6 @@
 </head>
 <body>
 
-    <!-- Шапка -->
     <header>
         <a href="index.html" class="logo">3D <span>Market</span></a>
         
@@ -350,7 +349,6 @@
         </div>
     </header>
 
-    <!-- Основное содержимое -->
     <main>
 
         <div class="categories-title">Категории</div>
@@ -375,7 +373,6 @@
         </div>
     </main>
 
-    <!-- Всплывающее окно Входа и Регистрации -->
     <div class="modal-overlay" id="auth-modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close">&times;</button>
@@ -385,7 +382,6 @@
                 <button class="tab-btn" id="tab-register-btn">Регистрация</button>
             </div>
 
-            <!-- Форма входа -->
             <form id="login-form">
                 <div class="form-group">
                     <label>Имя пользователя или Email</label>
@@ -398,7 +394,6 @@
                 <button type="submit" class="btn btn-primary form-submit">Войти</button>
             </form>
 
-            <!-- Форма регистрации -->
             <div id="register-form" style="display: none;">
                 <div class="form-group">
                     <label>Имя пользователя</label>
@@ -415,7 +410,6 @@
                 <button type="button" class="btn btn-primary form-submit" onclick="goToStep2()">Зарегистрироваться</button>
             </div>
 
-            <!-- Форма подтверждения кода -->
             <div id="auth-verify-form" style="display: none; text-align: center;">
                 <h2 style="margin-bottom: 10px; font-size: 20px;">Подтверждение Email</h2>
                 <p style="color: #a0aec0; font-size: 13px; margin-bottom: 20px;">
@@ -431,7 +425,6 @@
         </div>
     </div>
 
-    <!-- Уведомление -->
     <div class="toast" id="toast"></div>
 
     <script>
@@ -552,8 +545,8 @@
             document.getElementById('target-email-display').textContent = email;
 
             try {
-                // ИСПОЛЬЗУЕМ МАКСИМАЛЬНО ЧИСТЫЙ МАРШРУТ
-                const res = await fetch(`${STRAPI_BASE_URL}/api/send-email-code`, {
+                // ИСПОЛЬЗУЕМ НОВЫЙ ЧИСТЫЙ МАРШРУТ
+                const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, password })
@@ -581,8 +574,8 @@
             }
 
             try {
-                // ИСПОЛЬЗУЕМ МАКСИМАЛЬНО ЧИСТЫЙ МАРШРУТ
-                const res = await fetch(`${STRAPI_BASE_URL}/api/verify-email-code`, {
+                // ИСПОЛЬЗУЕМ НОВЫЙ ЧИСТЫЙ МАРШРУТ
+                const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingRegisterEmail, code })

@@ -2,14 +2,14 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/market/register',
-      handler: 'market-auth.register',
+      path: '/email-auth/send',
+      handler: 'email-auth.sendCode',
       config: { auth: false }
     },
     {
       method: 'POST',
-      path: '/market/verify',
-      handler: 'market-auth.verify',
+      path: '/email-auth/verify',
+      handler: 'email-auth.verifyCode',
       config: { auth: false }
     }
   ]

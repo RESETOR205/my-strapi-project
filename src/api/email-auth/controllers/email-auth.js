@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  async register(ctx) {
+  async sendCode(ctx) {
     const { username, email, password } = ctx.request.body;
 
     if (!username || !email || !password) {
@@ -9,14 +9,17 @@ module.exports = {
     }
 
     try {
+      const emailLower = email.toLowerCase();
+      // Ищем, есть ли уже такой юзер
       const existingUser = await strapi.query('plugin::users-permissions.user').findOne({
-        where: { email: email.toLowerCase() }
+        where: { email: emailLower }
       });
 
       if (existingUser) {
         if (existingUser.confirmed) {
           return ctx.badRequest('Этот Email уже зарегистрирован и подтвержден.');
         }
+        // Удаляем старую неподтвержденную запись
         await strapi.query('plugin::users-permissions.user').delete({
           where: { id: existingUser.id }
         });
@@ -24,17 +27,19 @@ module.exports = {
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      const newUser = await strapi.plugins['users-permissions'].services.user.add({
+      // Создаем пользователя
+      const newUser = await strapi.plugin('users-permissions').service('user').add({
         username,
-        email: email.toLowerCase(),
+        email: emailLower,
         password,
         confirmed: false,
         provider: 'local',
         confirmationToken: verificationCode
       });
 
+      // Отправляем письмо
       try {
-        await strapi.plugins['email'].services.email.send({
+        await strapi.plugin('email').service('email').send({
           to: newUser.email,
           from: 'noreply@yourdomain.com', 
           subject: 'Код подтверждения 3D Market',
@@ -47,12 +52,12 @@ module.exports = {
 
       return ctx.send({ message: 'Код успешно сгенерирован', ok: true });
     } catch (err) {
-      console.error('Ошибка в register:', err);
-      return ctx.badRequest('Произошла внутренняя ошибка при регистрации');
+      console.error('Ошибка в sendCode:', err);
+      return ctx.badRequest('Произошла внутренняя ошибка');
     }
   },
 
-  async verify(ctx) {
+  async verifyCode(ctx) {
     const { email, code } = ctx.request.body;
 
     if (!email || !code) {
@@ -68,16 +73,18 @@ module.exports = {
         return ctx.badRequest('Неверный код');
       }
 
+      // Обновляем статус юзера
       const updatedUser = await strapi.query('plugin::users-permissions.user').update({
         where: { id: user.id },
         data: { confirmed: true, confirmationToken: null }
       });
 
-      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+      // Выдаем токен
+      const jwt = strapi.plugin('users-permissions').service('jwt').issue({ id: user.id });
 
       return ctx.send({ jwt, user: updatedUser });
     } catch (err) {
-      console.error('Ошибка в verify:', err);
+      console.error('Ошибка в verifyCode:', err);
       return ctx.badRequest('Ошибка при проверке кода');
     }
   }
