@@ -1,7 +1,5 @@
-'use strict';
-
-module.exports = {
-  async sendCode(ctx) {
+export default {
+  async sendCode(ctx: any) {
     const { username, email, password } = ctx.request.body;
 
     if (!username || !email || !password) {
@@ -10,7 +8,7 @@ module.exports = {
 
     try {
       const emailLower = email.toLowerCase();
-      // Ищем, есть ли уже такой юзер
+      
       const existingUser = await strapi.query('plugin::users-permissions.user').findOne({
         where: { email: emailLower }
       });
@@ -19,7 +17,6 @@ module.exports = {
         if (existingUser.confirmed) {
           return ctx.badRequest('Этот Email уже зарегистрирован и подтвержден.');
         }
-        // Удаляем старую неподтвержденную запись
         await strapi.query('plugin::users-permissions.user').delete({
           where: { id: existingUser.id }
         });
@@ -27,7 +24,6 @@ module.exports = {
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Создаем пользователя
       const newUser = await strapi.plugin('users-permissions').service('user').add({
         username,
         email: emailLower,
@@ -37,7 +33,6 @@ module.exports = {
         confirmationToken: verificationCode
       });
 
-      // Отправляем письмо
       try {
         await strapi.plugin('email').service('email').send({
           to: newUser.email,
@@ -46,7 +41,7 @@ module.exports = {
           text: `Ваш код подтверждения: ${verificationCode}`,
           html: `<h3>Добро пожаловать в 3D Market!</h3><p>Ваш код: <strong>${verificationCode}</strong></p>`,
         });
-      } catch (emailErr) {
+      } catch (emailErr: any) {
         console.log("Письмо не отправлено:", emailErr.message);
       }
 
@@ -57,7 +52,7 @@ module.exports = {
     }
   },
 
-  async verifyCode(ctx) {
+  async verifyCode(ctx: any) {
     const { email, code } = ctx.request.body;
 
     if (!email || !code) {
@@ -73,13 +68,11 @@ module.exports = {
         return ctx.badRequest('Неверный код');
       }
 
-      // Обновляем статус юзера
       const updatedUser = await strapi.query('plugin::users-permissions.user').update({
         where: { id: user.id },
         data: { confirmed: true, confirmationToken: null }
       });
 
-      // Выдаем токен
       const jwt = strapi.plugin('users-permissions').service('jwt').issue({ id: user.id });
 
       return ctx.send({ jwt, user: updatedUser });
