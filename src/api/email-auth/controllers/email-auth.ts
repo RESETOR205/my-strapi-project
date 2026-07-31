@@ -33,17 +33,11 @@ export default {
         confirmationToken: verificationCode
       });
 
-      try {
-        await strapi.plugin('email').service('email').send({
-          to: newUser.email,
-          from: 'noreply@yourdomain.com', 
-          subject: 'Код подтверждения 3D Market',
-          text: `Ваш код подтверждения: ${verificationCode}`,
-          html: `<h3>Добро пожаловать в 3D Market!</h3><p>Ваш код: <strong>${verificationCode}</strong></p>`,
-        });
-      } catch (emailErr: any) {
-        console.log("Письмо не отправлено:", emailErr.message);
-      }
+      // ВРЕМЕННО ОТКЛЮЧИЛИ ОТПРАВКУ ПИСЬМА (чтобы Railway не зависал)
+      // Выводим сгенерированный код прямо в логи сервера:
+      console.log('\n=================================================');
+      console.log(`🚨 РЕГИСТРАЦИЯ: КОД ДЛЯ ${emailLower} -> ${verificationCode} 🚨`);
+      console.log('=================================================\n');
 
       return ctx.send({ message: 'Код успешно сгенерирован', ok: true });
     } catch (err) {
