@@ -3,13 +3,13 @@ export default {
     {
       method: 'POST',
       path: '/email-auth/send',
-      handler: 'email-auth.sendCode',
+      handler: 'api::email-auth.email-auth.sendCode', // <-- вернул правильную приставку api::
       config: { auth: false }
     },
     {
       method: 'POST',
       path: '/email-auth/verify',
-      handler: 'email-auth.verifyCode',
+      handler: 'api::email-auth.email-auth.verifyCode', // <-- вернул правильную приставку api::
       config: { auth: false }
     }
   ]
