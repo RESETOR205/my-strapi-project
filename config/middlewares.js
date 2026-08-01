@@ -7,7 +7,7 @@ module.exports = [
         useDefaults: true,
         directives: {
           'connect-src': ["'self'", 'https:'],
-          // Разрешаем загрузку картинок и 3D-файлов с твоего сервера Railway
+          // Разрешаем загрузку картинок и медиа с твоего сервера Railway
           'img-src': ["'self'", 'data:', 'blob:', 'market-assets.strapi.io', '*.up.railway.app'],
           'media-src': ["'self'", 'data:', 'blob:', 'market-assets.strapi.io', '*.up.railway.app'],
           upgradeInsecureRequests: null,
@@ -18,7 +18,7 @@ module.exports = [
   {
     name: 'strapi::cors',
     config: {
-      origin: ['*'], // Разрешаем любым сайтам (включая твой github.io) стучаться к бэкенду
+      origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'https://master3d.github.io'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
       keepHeaderOnError: true,
