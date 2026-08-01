@@ -393,7 +393,6 @@
 
     // БЕЗУСЛОВНОЕ, МГНОВЕННОЕ ПЕРЕКЛЮЧЕНИЕ НА ШАГ 2
     function goToStep2() {
-        // 1. САМЫМ ПЕРВЫМ ДЕЛОМ - МЕНЯЕМ ИНТЕРФЕЙС! НИКАКИЕ ОШИБКИ И ПРОВЕРКИ ЭТО НЕ ОСТАНОВЯТ!
         document.getElementById('auth-register-form').style.display = 'none';
         document.getElementById('auth-verify-form').style.display = 'block';
         document.getElementById('auth-tabs-header').style.display = 'none';
@@ -402,7 +401,6 @@
         const email = emailInput ? emailInput.value.trim() : '';
         document.getElementById('target-email-display').textContent = email || 'вашу почту';
 
-        // 2. Только теперь считываем остальные данные и пробуем отправить запрос на сервер
         const username = document.getElementById('reg-username').value.trim();
         const password = document.getElementById('reg-password').value;
 
@@ -417,8 +415,8 @@
     async function sendRegisterCodeInBackground(username, email, password) {
         pendingRegisterEmail = email;
         try {
-            // ИСПРАВЛЕНО НА НОВЫЙ БЕЗОПАСНЫЙ ПУТЬ
-            const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/register`, {
+            // ИСПРАВЛЕНО НА НОВЫЙ МАРШРУТ (который мы создали)
+            const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })
@@ -450,8 +448,8 @@
         btn.textContent = "Проверка...";
 
         try {
-            // ИСПРАВЛЕНО НА НОВЫЙ БЕЗОПАСНЫЙ ПУТЬ
-            const res = await fetch(`${STRAPI_BASE_URL}/api/custom-auth/verify-code`, {
+            // ИСПРАВЛЕНО НА НОВЫЙ МАРШРУТ (который мы создали)
+            const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: pendingRegisterEmail, code })
@@ -460,12 +458,14 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error?.message || 'Неверный код!');
 
+            // СОХРАНЯЕМ ДАННЫЕ В LOCALSTORAGE
             localStorage.setItem('jwt', data.jwt);
-            localStorage.setItem('token', data.jwt);
+            localStorage.setItem('token', data.jwt); // Оставил для обратной совместимости с твоими скриптами загрузки моделей
             localStorage.setItem('user', JSON.stringify(data.user));
 
             showToast("Аккаунт успешно подтверждён!");
             closeAuthModal();
+            // Обновляем страницу, чтобы скрипты ниже подхватили токен и загрузили модели
             window.location.reload();
         } catch (err) {
             alert("ОШИБКА ПРОВЕРКИ КОДА: " + err.message);
@@ -501,7 +501,7 @@
     function resetCardImage(modelId) { changeCardImage(modelId, 0); }
 
     async function deleteModel(modelId) {
-        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!token) { alert("Ошибка авторизации."); return; }
         if (!confirm("Вы точно хотите удалить эту модель?")) return;
 
@@ -534,7 +534,7 @@
 
     async function loadUserModels() {
         const grid = document.getElementById('user-models-grid');
-        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!grid) return;
 
         try {
@@ -617,10 +617,11 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!token) { renderUnauthenticatedUI(); return; }
 
         try {
+            // Запрашиваем актуальные данные о пользователе у сервера
             const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -660,7 +661,7 @@
 
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!token) { showToast("Ошибка авторизации!", true); return; }
 
         const submitBtn = document.getElementById('submitBtn');

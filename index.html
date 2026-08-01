@@ -517,6 +517,9 @@
                     showToast('Успешный вход!');
                     authModal.classList.remove('active');
                     updateAuthUI();
+                    
+                    // ПЕРЕХОД В ПРОФИЛЬ ПОСЛЕ ЛОГИНА
+                    window.location.href = 'user.html';
                 } else {
                     showToast(data.error?.message || 'Ошибка входа', true);
                 }
@@ -545,7 +548,6 @@
             document.getElementById('target-email-display').textContent = email;
 
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ ЧИСТЫЙ МАРШРУТ
                 const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -574,7 +576,6 @@
             }
 
             try {
-                // ИСПОЛЬЗУЕМ НОВЫЙ ЧИСТЫЙ МАРШРУТ
                 const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -590,6 +591,10 @@
                 showToast("Аккаунт подтверждён!");
                 authModal.classList.remove('active');
                 updateAuthUI();
+                
+                // ПЕРЕХОД В ПРОФИЛЬ ПОСЛЕ ПОДТВЕРЖДЕНИЯ
+                window.location.href = 'user.html';
+                
             } catch (err) {
                 alert(err.message);
             }
