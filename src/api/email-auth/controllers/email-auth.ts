@@ -39,24 +39,36 @@ export default {
         confirmationToken: verificationCode
       });
 
-      // Отправляем реальное письмо на почту
+      // Отправляем реальное письмо на почту через Google Apps Script API (ОБХОД БЛОКИРОВКИ)
       try {
-        await strapi.plugin('email').service('email').send({
-          to: newUser.email,
-          subject: 'Код подтверждения для регистрации на 3D Маркетплейсе',
-          text: `Ваш код подтверждения: ${verificationCode}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
-              <h2>Добро пожаловать в 3D Market!</h2>
-              <p>Ваш код для завершения регистрации:</p>
-              <h1 style="color: #4CAF50; letter-spacing: 5px;">${verificationCode}</h1>
-              <p>Никому не сообщайте этот код.</p>
-            </div>
-          `,
+        const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwWBLhq4sxBKzMoxqh6l8PMqjonQf1_t02aGZGoyRjljP4xG4mBM_Dl81r0ugT9wVPD/exec';
+        
+        const response = await fetch(googleScriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: newUser.email,
+            subject: 'Код подтверждения для регистрации на 3D Маркетплейсе',
+            html: `
+              <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+                <h2>Добро пожаловать в 3D Market!</h2>
+                <p>Ваш код для завершения регистрации:</p>
+                <h1 style="color: #4CAF50; letter-spacing: 5px;">${verificationCode}</h1>
+                <p>Никому не сообщайте этот код.</p>
+              </div>
+            `
+          })
         });
+
+        if (!response.ok) {
+          throw new Error('Google Script вернул ошибку сети');
+        }
+
         console.log(`Письмо успешно отправлено на ${emailLower}`);
       } catch (emailErr: any) {
-        console.error("Ошибка при отправке письма:", emailErr);
+        console.error("Ошибка при отправке письма через Google Script:", emailErr);
         // Если письмо не ушло, удаляем пользователя, чтобы он не "застрял" в базе без кода
         await strapi.query('plugin::users-permissions.user').delete({ where: { id: newUser.id } });
         return ctx.badRequest('Не удалось отправить письмо. Проверьте почту или попробуйте позже.');
