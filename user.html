@@ -235,26 +235,25 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthModal()">&times;</span>
-            <span class="version-badge">v4.2 FINAL-AUTH</span>
+            <span class="version-badge">v4.3 NUCLEAR-FIX</span>
             
             <div class="auth-tabs" id="auth-tabs-header">
                 <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Вход</button>
                 <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Регистрация</button>
             </div>
 
-            <!-- Форма Входа -->
-            <form id="auth-login-form">
+            <!-- Форма Входа (теперь это DIV, перезагрузка невозможна) -->
+            <div id="auth-login-form">
                 <div class="form-group">
                     <label>Логин или Email</label>
-                    <input type="text" id="login-identifier" required placeholder="user@example.com">
+                    <input type="text" id="login-identifier" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
                     <label>Пароль</label>
-                    <input type="password" id="login-password" required placeholder="••••••••">
+                    <input type="password" id="login-password" placeholder="••••••••">
                 </div>
-                <!-- КНОПКА ТЕПЕРЬ ТИПА BUTTON И С ONCLICK -->
                 <button type="button" class="submit-btn" id="login-submit-btn" onclick="handleLogin()">Войти</button>
-            </form>
+            </div>
 
             <!-- БЛОК РЕГИСТРАЦИИ -->
             <div id="auth-register-form" style="display: none;">
@@ -354,13 +353,12 @@
         document.getElementById('auth-tabs-header').style.display = 'flex';
     }
 
-    // ВХОД (ЖЕЛЕЗОБЕТОННАЯ БЛОКИРОВКА ПЕРЕЗАГРУЗКИ)
+    // ВХОД 
     async function handleLogin() {
         const identifier = document.getElementById('login-identifier').value.trim();
         const password = document.getElementById('login-password').value;
         const submitBtn = document.getElementById('login-submit-btn');
 
-        // Так как мы убрали type="submit", нужно проверять пустые поля вручную
         if (!identifier || !password) {
             alert("Пожалуйста, заполните все поля для входа!");
             return;
