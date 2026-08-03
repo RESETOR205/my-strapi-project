@@ -29,14 +29,24 @@ export default {
       // Генерируем 6-значный код
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Создаем нового неподтвержденного пользователя с кодом
+      // ПОИСК РОЛИ: Находим ID роли 'Authenticated' в базе данных Strapi
+      const authenticatedRole = await strapi.query('plugin::users-permissions.role').findOne({
+        where: { type: 'authenticated' }
+      });
+
+      if (!authenticatedRole) {
+        return ctx.badRequest('Системная ошибка: роль Authenticated не найдена');
+      }
+
+      // Создаем нового неподтвержденного пользователя с кодом и ПРИВЯЗАННОЙ РОЛЬЮ
       const newUser = await strapi.plugin('users-permissions').service('user').add({
         username,
         email: emailLower,
         password,
         confirmed: false,
         provider: 'local',
-        confirmationToken: verificationCode
+        confirmationToken: verificationCode,
+        role: authenticatedRole.id // <-- Автоматическая выдача прав
       });
 
       // Отправляем реальное письмо на почту через Google Apps Script API (ОБХОД БЛОКИРОВКИ)
