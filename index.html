@@ -341,8 +341,15 @@
         <a href="index.html" class="logo">3D <span>Market</span></a>
         
         <div class="search-bar">
-            <!-- Блокировка автозаполнения добавлена сюда -->
-            <input type="text" id="search-input" placeholder="Поиск моделей (например: Оружие, Ландшафт)..." autocomplete="new-password">
+            <!-- Жесткая блокировка автозаполнения (через readonly) -->
+            <input 
+                type="text" 
+                id="search-input" 
+                placeholder="Поиск моделей (например: Оружие, Ландшафт)..." 
+                autocomplete="off" 
+                readonly 
+                onfocus="this.removeAttribute('readonly');"
+            >
         </div>
 
         <div class="nav-actions">
