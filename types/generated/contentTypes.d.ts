@@ -448,7 +448,7 @@ export interface ApiModelModel extends Struct.CollectionTypeSchema {
     singularName: 'model';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     Category: Schema.Attribute.String;
