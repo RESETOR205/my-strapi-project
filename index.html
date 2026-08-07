@@ -182,12 +182,43 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; /* Добавлено для позиционирования сердечка */
         }
 
         .model-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
             border-color: #3b82f6;
+        }
+
+        /* КНОПКА ИЗБРАННОГО */
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(15, 17, 26, 0.7);
+            border: 1px solid #2d3748;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #a0aec0;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+        .favorite-btn:hover {
+            background: rgba(15, 17, 26, 0.95);
+            transform: scale(1.1);
+        }
+        .favorite-btn.active {
+            color: #ef4444; /* Красное сердечко */
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.15);
         }
 
         .model-preview {
@@ -462,6 +493,26 @@
             setTimeout(() => toastEl.style.display = 'none', 5000);
         }
 
+        // ЛОГИКА ИЗБРАННОГО
+        window.toggleFavorite = function(event, modelId) {
+            event.preventDefault(); 
+            event.stopPropagation(); // Чтобы не перекидывало на страницу модели при клике на сердечко
+
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            const index = favorites.indexOf(modelId);
+
+            if (index === -1) {
+                favorites.push(modelId);
+                showToast('Added to Favorites ❤️');
+            } else {
+                favorites.splice(index, 1);
+                showToast('Removed from Favorites');
+            }
+
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            renderModels(); // Перерисовываем карточки, чтобы обновить цвет сердечка
+        };
+
         function updateAuthUI() {
             const userStr = localStorage.getItem('user');
             if (localStorage.getItem('jwt') && userStr) {
@@ -637,9 +688,13 @@
                 return;
             }
 
+            // Получаем список избранного для отрисовки сердечек
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
             grid.innerHTML = filtered.map(item => {
                 const m = item.attributes || item;
                 const correctId = item.documentId || item.id;
+                const isFav = favorites.includes(correctId);
 
                 let previewUrl = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
                 
@@ -653,6 +708,9 @@
 
                 return `
                     <div class="model-card">
+                        <button class="favorite-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${correctId}')">
+                            ${isFav ? '❤️' : '🤍'}
+                        </button>
                         <img src="${previewUrl}" class="model-preview" alt="Model">
                         <div class="model-info">
                             <div class="model-title">${m.Title || 'Untitled'}</div>
