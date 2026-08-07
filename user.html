@@ -569,8 +569,20 @@
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!grid) return;
 
+        // ПОЛУЧАЕМ ID ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ДЛЯ ФИЛЬТРАЦИИ
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        const targetId = userObj.documentId || userObj.id;
+        
+        if (!targetId) {
+            grid.innerHTML = '<div style="color: #ef4444; padding: 20px;">Error: User ID not found</div>';
+            return;
+        }
+
+        const idType = userObj.documentId ? 'documentId' : 'id';
+
         try {
-            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
+            // ФИЛЬТРУЕМ ЗАПРОС ТОЛЬКО ПО МОДЕЛЯМ АВТОРА
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models?filters[owner][${idType}][$eq]=${targetId}&populate=*&_t=${Date.now()}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -661,6 +673,9 @@
                 const user = await res.json();
                 if (user && user.username) {
                     localStorage.setItem('username', user.username);
+                    // Обновляем данные пользователя в локальном хранилище, чтобы был свежий ID
+                    localStorage.setItem('user', JSON.stringify(user));
+
                     document.getElementById('user-name').textContent = user.username;
                     document.getElementById('user-nick').textContent = '@' + user.username.toLowerCase().replace(/\s+/g, '');
                     document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
@@ -703,6 +718,10 @@
         const fileInput = document.getElementById('model-file').files[0];
         const glbFileInput = document.getElementById('model-glb').files[0];
         const imgInputFiles = document.getElementById('model-img').files;
+
+        // ПРИКРЕПЛЯЕМ ID ПОЛЬЗОВАТЕЛЯ К НОВОЙ МОДЕЛИ
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        const ownerId = userObj.documentId || userObj.id;
 
         try {
             async function uploadToMediaLibrary(file) {
@@ -747,7 +766,8 @@
                     Category: document.getElementById('model-category').value,
                     ModelFBX: fbxId,
                     Previews: imgIds, 
-                    ModelGLB: glbId
+                    ModelGLB: glbId,
+                    owner: ownerId // ТЕПЕРЬ СЕРВЕР ЗНАЕТ, КТО АВТОР
                 }
             };
 
