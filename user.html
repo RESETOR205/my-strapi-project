@@ -571,18 +571,16 @@
 
         // ПОЛУЧАЕМ ID ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ДЛЯ ФИЛЬТРАЦИИ
         const userObj = JSON.parse(localStorage.getItem('user') || '{}');
-        const targetId = userObj.documentId || userObj.id;
+        const userId = userObj.id; 
         
-        if (!targetId) {
+        if (!userId) {
             grid.innerHTML = '<div style="color: #ef4444; padding: 20px;">Error: User ID not found</div>';
             return;
         }
 
-        const idType = userObj.documentId ? 'documentId' : 'id';
-
         try {
-            // ФИЛЬТРУЕМ ЗАПРОС ТОЛЬКО ПО МОДЕЛЯМ АВТОРА
-            const res = await fetch(`${STRAPI_BASE_URL}/api/models?filters[owner][${idType}][$eq]=${targetId}&populate=*&_t=${Date.now()}`, {
+            // ФИЛЬТРУЕМ ЗАПРОС ЧЕРЕЗ ID АВТОРА
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models?filters[owner][id][$eq]=${userId}&populate=*&_t=${Date.now()}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -673,7 +671,6 @@
                 const user = await res.json();
                 if (user && user.username) {
                     localStorage.setItem('username', user.username);
-                    // Обновляем данные пользователя в локальном хранилище, чтобы был свежий ID
                     localStorage.setItem('user', JSON.stringify(user));
 
                     document.getElementById('user-name').textContent = user.username;
@@ -721,7 +718,7 @@
 
         // ПРИКРЕПЛЯЕМ ID ПОЛЬЗОВАТЕЛЯ К НОВОЙ МОДЕЛИ
         const userObj = JSON.parse(localStorage.getItem('user') || '{}');
-        const ownerId = userObj.documentId || userObj.id;
+        const ownerId = userObj.id;
 
         try {
             async function uploadToMediaLibrary(file) {
@@ -767,7 +764,7 @@
                     ModelFBX: fbxId,
                     Previews: imgIds, 
                     ModelGLB: glbId,
-                    owner: ownerId // ТЕПЕРЬ СЕРВЕР ЗНАЕТ, КТО АВТОР
+                    owner: ownerId // ПРИВЯЗКА К АВТОРУ ПО ID
                 }
             };
 
