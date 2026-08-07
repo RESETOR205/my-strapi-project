@@ -569,18 +569,17 @@
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!grid) return;
 
-        // ПОЛУЧАЕМ ID ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ДЛЯ ФИЛЬТРАЦИИ
         const userObj = JSON.parse(localStorage.getItem('user') || '{}');
-        const userId = userObj.id; 
+        const userId = userObj.id;
+        const userDocId = userObj.documentId;
         
-        if (!userId) {
+        if (!userId && !userDocId) {
             grid.innerHTML = '<div style="color: #ef4444; padding: 20px;">Error: User ID not found</div>';
             return;
         }
 
         try {
-            // ФИЛЬТРУЕМ ЗАПРОС ЧЕРЕЗ ID АВТОРА
-            const res = await fetch(`${STRAPI_BASE_URL}/api/models?filters[owner][id][$eq]=${userId}&populate=*&_t=${Date.now()}`, {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -588,7 +587,19 @@
             if (!res.ok) throw new Error("Failed to load your artworks.");
 
             const responseData = await res.json();
-            const models = responseData.data || [];
+            const allModels = responseData.data || [];
+
+            const models = allModels.filter(item => {
+                const attrs = item.attributes || item;
+                const owner = attrs.owner || item.owner;
+                if (!owner) return false;
+
+                const ownerData = owner.data ? (owner.data.attributes || owner.data) : owner;
+                const ownerId = ownerData.id || owner.id;
+                const ownerDocId = ownerData.documentId || owner.documentId;
+
+                return ownerId === userId || ownerDocId === userDocId || owner === userId || owner === userDocId;
+            });
 
             if (models.length === 0) {
                 grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">You haven\'t published any models yet</div>';
@@ -716,7 +727,6 @@
         const glbFileInput = document.getElementById('model-glb').files[0];
         const imgInputFiles = document.getElementById('model-img').files;
 
-        // ПРИКРЕПЛЯЕМ ID ПОЛЬЗОВАТЕЛЯ К НОВОЙ МОДЕЛИ
         const userObj = JSON.parse(localStorage.getItem('user') || '{}');
         const ownerId = userObj.id;
 
@@ -764,7 +774,7 @@
                     ModelFBX: fbxId,
                     Previews: imgIds, 
                     ModelGLB: glbId,
-                    owner: ownerId // ПРИВЯЗКА К АВТОРУ ПО ID
+                    owner: ownerId
                 }
             };
 
