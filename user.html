@@ -177,6 +177,18 @@
         <div style="color: #94a3b8; padding: 20px;">Загрузка ваших моделей...</div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2>Удаление работы</h2>
+            <p style="color: #94a3b8; margin-bottom: 25px; line-height: 1.5;">Вы действительно хотите безвозвратно удалить эту модель?</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="submit-btn" style="background: #ef4444; margin-top: 0;" onclick="executeDelete()">Удалить</button>
+                <button class="submit-btn btn-secondary" style="margin-top: 0;" onclick="closeDeleteModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ МОДЕЛИ -->
     <div id="myModal" class="modal">
         <div class="modal-content">
@@ -242,7 +254,7 @@
                 <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Регистрация</button>
             </div>
 
-            <!-- Форма Входа (теперь это DIV, перезагрузка невозможна) -->
+            <!-- Форма Входа -->
             <div id="auth-login-form">
                 <div class="form-group">
                     <label>Логин или Email</label>
@@ -294,6 +306,7 @@
     
     const modelGalleries = {};
     let pendingRegisterEmail = '';
+    let modelToDeleteId = null; // Хранит ID модели, которую хотят удалить
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
@@ -360,7 +373,7 @@
         const submitBtn = document.getElementById('login-submit-btn');
 
         if (!identifier || !password) {
-            alert("Пожалуйста, заполните все поля для входа!");
+            showToast("Пожалуйста, заполните все поля для входа!", true);
             return;
         }
 
@@ -396,7 +409,7 @@
             window.location.reload(); 
             
         } catch (err) {
-            alert("ОШИБКА ВХОДА: " + err.message);
+            showToast("ОШИБКА ВХОДА: " + err.message, true);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Войти';
@@ -416,7 +429,7 @@
         const password = document.getElementById('reg-password').value;
 
         if (!username || !email || !password) {
-            alert("Внимание: Заполните все поля, чтобы код пришёл на почту!");
+            showToast("Внимание: Заполните все поля, чтобы код пришёл на почту!", true);
             return;
         }
 
@@ -434,13 +447,13 @@
 
             const data = await res.json();
             if (!res.ok) {
-                alert("Ошибка бэкенда: " + (data.error?.message || data.message || "Неизвестная ошибка"));
+                showToast("Ошибка бэкенда: " + (data.error?.message || data.message || "Неизвестная ошибка"), true);
             } else {
                 showToast("Код успешно отправлен вам на почту!");
             }
         } catch (err) {
             console.error("Ошибка сети:", err);
-            alert("Ошибка связи с сервером: " + err.message);
+            showToast("Ошибка связи с сервером: " + err.message, true);
         }
     }
 
@@ -448,7 +461,7 @@
         const code = document.getElementById('verify-code-input').value.trim();
 
         if (!code || code.length !== 6) {
-            alert("Введите 6-значный код из письма!");
+            showToast("Введите 6-значный код из письма!", true);
             return;
         }
 
@@ -474,7 +487,7 @@
             closeAuthModal();
             window.location.reload();
         } catch (err) {
-            alert("ОШИБКА ПРОВЕРКИ КОДА: " + err.message);
+            showToast("ОШИБКА ПРОВЕРКИ КОДА: " + err.message, true);
         } finally {
             btn.disabled = false;
             btn.textContent = "Подтвердить код";
@@ -506,10 +519,24 @@
 
     function resetCardImage(modelId) { changeCardImage(modelId, 0); }
 
-    async function deleteModel(modelId) {
+    // НОВАЯ ЛОГИКА УДАЛЕНИЯ (БЕЗ ОКНА БРАУЗЕРА)
+    function openDeleteModal(modelId) {
+        modelToDeleteId = modelId;
+        document.getElementById('deleteConfirmModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        modelToDeleteId = null;
+        document.getElementById('deleteConfirmModal').style.display = 'none';
+    }
+
+    async function executeDelete() {
+        if (!modelToDeleteId) return;
+        const modelId = modelToDeleteId;
+        closeDeleteModal(); // Сразу прячем окно для удобства пользователя
+
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
-        if (!token) { alert("Ошибка авторизации."); return; }
-        if (!confirm("Вы точно хотите удалить эту модель?")) return;
+        if (!token) { showToast("Ошибка авторизации.", true); return; }
 
         try {
             const response = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}`, {
@@ -534,8 +561,8 @@
                 return;
             } 
             const errorText = await response.text();
-            alert(`Ошибка: ${errorText}`);
-        } catch (error) { alert(`Ошибка сети: ${error.message}`); }
+            showToast(`Ошибка: ${errorText}`, true);
+        } catch (error) { showToast(`Ошибка сети: ${error.message}`, true); }
     }
 
     async function loadUserModels() {
@@ -596,8 +623,9 @@
                     window.location.href = `product.html?id=${modelId}`;
                 };
 
+                // Заменили вызов deleteModel на openDeleteModal
                 card.innerHTML = `
-                    <button class="delete-card-btn" onclick="event.stopPropagation(); deleteModel('${modelId}')">&times;</button>
+                    <button class="delete-card-btn" onclick="event.stopPropagation(); openDeleteModal('${modelId}')">&times;</button>
                     <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
                         <img id="card-img-${modelId}" src="${imgUrls[0]}" class="product-img" alt="${title}" onerror="this.onerror=null; this.src='${FALLBACK_IMG}';">
                         ${hasMultiple ? `
@@ -659,8 +687,10 @@
         btn.onclick = function() { modal.style.display = "flex"; }
         span.onclick = function() { modal.style.display = "none"; }
         window.onclick = function(event) { 
+            // Обработчик закрытия при клике мимо окон
             if (event.target == modal) modal.style.display = "none"; 
             if (event.target == document.getElementById("authModal")) closeAuthModal();
+            if (event.target == document.getElementById("deleteConfirmModal")) closeDeleteModal();
         }
     }
 
