@@ -366,7 +366,6 @@
         document.getElementById('auth-tabs-header').style.display = 'flex';
     }
 
-    // ВХОД 
     async function handleLogin() {
         const identifier = document.getElementById('login-identifier').value.trim();
         const password = document.getElementById('login-password').value;
@@ -388,17 +387,7 @@
             });
 
             const data = await res.json();
-
-            if (!res.ok) {
-                const errMsg = data.error?.message || 'Login error';
-                if (errMsg.toLowerCase().includes('confirmed') || errMsg.toLowerCase().includes('подтвержден')) {
-                    alert("Your email is not verified! Fill in the 'Sign Up' tab to get a 6-digit code.");
-                    document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
-                    switchAuthTab('register');
-                    return;
-                }
-                throw new Error(errMsg);
-            }
+            if (!res.ok) throw new Error(data.error?.message || 'Login error');
 
             localStorage.setItem('jwt', data.jwt);
             localStorage.setItem('token', data.jwt);
@@ -791,7 +780,7 @@
                 loadUserModels();
             } else {
                 const errJson = await response.json().catch(() => ({}));
-                const strapiErrorMessage = errJson?.error?.message || "Error saving listing";
+                const strapiErrorMessage = errJson?.error?.message || "Error saving listing. Please make sure field 'owner' is permitted in Settings -> Roles -> Authenticated.";
                 showToast(strapiErrorMessage, true);
             }
         } catch (error) {
