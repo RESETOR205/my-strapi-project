@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Market — Платформа 3D-моделей</title>
+    <title>3D Market — 3D Models Platform</title>
     <style>
         /* Сброс стилей и базовые настройки */
         * {
@@ -341,11 +341,11 @@
         <a href="index.html" class="logo">3D <span>Market</span></a>
         
         <div class="search-bar">
-            <!-- Жесткая блокировка автозаполнения (через readonly) -->
+            <!-- Жесткая блокировка автозаполнения -->
             <input 
                 type="text" 
                 id="search-input" 
-                placeholder="Поиск моделей (например: Оружие, Ландшафт)..." 
+                placeholder="Search models (e.g. Weapons, Environment)..." 
                 autocomplete="off" 
                 readonly 
                 onfocus="this.removeAttribute('readonly');"
@@ -353,31 +353,31 @@
         </div>
 
         <div class="nav-actions">
-            <button class="btn btn-primary" id="cabinet-btn">Личный кабинет</button>
+            <button class="btn btn-primary" id="cabinet-btn">Dashboard</button>
         </div>
     </header>
 
     <main>
 
-        <div class="categories-title">Категории</div>
+        <div class="categories-title">Categories</div>
         <div class="categories" id="categories-container">
-            <button class="category-btn active" data-category="all">Все модели</button>
-            <button class="category-btn" data-category="Персонажи">Персонажи</button>
-            <button class="category-btn" data-category="Оружие">Оружие</button>
-            <button class="category-btn" data-category="Окружение">Окружение</button>
-            <button class="category-btn" data-category="Транспорт">Транспорт</button>
-            <button class="category-btn" data-category="Архитектура">Архитектура</button>
-            <button class="category-btn" data-category="props">Предметы / Прочее</button>
+            <button class="category-btn active" data-category="all">All models</button>
+            <button class="category-btn" data-category="characters">Characters</button>
+            <button class="category-btn" data-category="weapons">Weapons</button>
+            <button class="category-btn" data-category="environment">Environment</button>
+            <button class="category-btn" data-category="vehicles">Vehicles</button>
+            <button class="category-btn" data-category="architecture">Architecture</button>
+            <button class="category-btn" data-category="props">Props / Other</button>
         </div>
 
         <div class="section-header">
-            <h1 class="section-title">Каталог</h1>
-            <span class="model-count" id="model-count">0 моделей</span>
+            <h1 class="section-title">Catalog</h1>
+            <span class="model-count" id="model-count">0 models</span>
         </div>
 
         <div class="models-grid" id="models-grid">
             <div class="empty-state">
-                Загрузка моделей...
+                Loading models...
             </div>
         </div>
     </main>
@@ -387,48 +387,48 @@
             <button class="modal-close" id="modal-close">&times;</button>
             
             <div class="modal-tabs" id="auth-tabs-header">
-                <button class="tab-btn active" id="tab-login-btn">Вход</button>
-                <button class="tab-btn" id="tab-register-btn">Регистрация</button>
+                <button class="tab-btn active" id="tab-login-btn">Login</button>
+                <button class="tab-btn" id="tab-register-btn">Sign Up</button>
             </div>
 
             <form id="login-form">
                 <div class="form-group">
-                    <label>Имя пользователя или Email</label>
+                    <label>Username or Email</label>
                     <input type="text" id="login-identifier" required placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                    <label>Пароль</label>
+                    <label>Password</label>
                     <input type="password" id="login-password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn btn-primary form-submit">Войти</button>
+                <button type="submit" class="btn btn-primary form-submit">Log in</button>
             </form>
 
             <div id="register-form" style="display: none;">
                 <div class="form-group">
-                    <label>Имя пользователя</label>
+                    <label>Username</label>
                     <input type="text" id="reg-username" required placeholder="User123">
                 </div>
                 <div class="form-group">
-                    <label>Email (для подтверждения)</label>
-                    <input type="email" id="reg-email" required placeholder="your-email@gmail.com">
+                    <label>Email (for verification)</label>
+                    <input type="email" id="reg-email" required placeholder="your-email@example.com">
                 </div>
                 <div class="form-group">
-                    <label>Пароль</label>
+                    <label>Password</label>
                     <input type="password" id="reg-password" required placeholder="••••••••">
                 </div>
-                <button type="button" class="btn btn-primary form-submit" onclick="goToStep2()">Зарегистрироваться</button>
+                <button type="button" class="btn btn-primary form-submit" onclick="goToStep2()">Sign Up</button>
             </div>
 
             <div id="auth-verify-form" style="display: none; text-align: center;">
-                <h2 style="margin-bottom: 10px; font-size: 20px;">Подтверждение Email</h2>
+                <h2 style="margin-bottom: 10px; font-size: 20px;">Email Verification</h2>
                 <p style="color: #a0aec0; font-size: 13px; margin-bottom: 20px;">
-                    Мы отправили 6-значный код на почту:<br><b id="target-email-display" style="color: #3b82f6;"></b>
+                    We sent a 6-digit code to:<br><b id="target-email-display" style="color: #3b82f6;"></b>
                 </p>
                 <div class="form-group">
                     <input type="text" id="verify-code-input" maxlength="6" placeholder="123456" autocomplete="off" style="letter-spacing: 8px; font-size: 22px; text-align: center; font-weight: bold;">
                 </div>
-                <button type="button" class="btn btn-primary form-submit" id="verify-btn" onclick="handleVerifyCodeDirect()">Подтвердить код</button>
-                <button type="button" class="btn btn-secondary form-submit" onclick="resetRegisterStep()">Назад</button>
+                <button type="button" class="btn btn-primary form-submit" id="verify-btn" onclick="handleVerifyCodeDirect()">Verify Code</button>
+                <button type="button" class="btn btn-secondary form-submit" onclick="resetRegisterStep()">Back</button>
             </div>
 
         </div>
@@ -437,14 +437,12 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // АДРЕС БЭКЕНДА
         const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
         
         let allModels = [];
         let activeCategory = 'all';
         let pendingRegisterEmail = '';
 
-        // Элементы
         const cabinetBtn = document.getElementById('cabinet-btn');
         const authModal = document.getElementById('auth-modal');
         const modalClose = document.getElementById('modal-close');
@@ -457,7 +455,6 @@
         const toastEl = document.getElementById('toast');
         const searchInput = document.getElementById('search-input');
 
-        // Уведомления
         function showToast(message, isError = false) {
             toastEl.textContent = message;
             toastEl.className = 'toast' + (isError ? ' error' : '');
@@ -471,10 +468,10 @@
                 try {
                     cabinetBtn.textContent = JSON.parse(userStr).username;
                 } catch(e) {
-                    cabinetBtn.textContent = 'Личный кабинет';
+                    cabinetBtn.textContent = 'Dashboard';
                 }
             } else {
-                cabinetBtn.textContent = 'Личный кабинет';
+                cabinetBtn.textContent = 'Dashboard';
             }
         }
 
@@ -506,7 +503,6 @@
             tabsHeader.style.display = 'flex';
         });
 
-        // ЛОГИН
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const identifier = document.getElementById('login-identifier').value.trim();
@@ -523,34 +519,31 @@
                 if (res.ok) {
                     localStorage.setItem('jwt', data.jwt);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    showToast('Успешный вход!');
+                    showToast('Login successful!');
                     authModal.classList.remove('active');
                     updateAuthUI();
                     
-                    // ПЕРЕХОД В ПРОФИЛЬ ПОСЛЕ ЛОГИНА
                     window.location.href = 'user.html';
                 } else {
-                    showToast(data.error?.message || 'Ошибка входа', true);
+                    showToast(data.error?.message || 'Login error', true);
                 }
             } catch (err) {
-                showToast('Ошибка сервера', true);
+                showToast('Server error', true);
             }
         });
 
-        // ПЕРЕХОД К ПОДТВЕРЖДЕНИЮ И ОТПРАВКА КОДА
         window.goToStep2 = async function() {
             const username = document.getElementById('reg-username').value.trim();
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
 
             if (!username || !email || !password) {
-                alert("Заполните все поля!");
+                alert("Please fill in all fields!");
                 return;
             }
 
             pendingRegisterEmail = email;
             
-            // Прячем форму регистрации, показываем ввод кода
             registerForm.style.display = 'none';
             tabsHeader.style.display = 'none';
             verifyForm.style.display = 'block';
@@ -565,22 +558,21 @@
 
                 const data = await res.json();
                 if (!res.ok) {
-                    alert("Ошибка: " + (data.error?.message || data.message || "Сбой"));
+                    alert("Error: " + (data.error?.message || data.message || "Failed"));
                     resetRegisterStep();
                 } else {
-                    showToast("Код успешно отправлен!");
+                    showToast("Code sent successfully!");
                 }
             } catch (err) {
-                alert("Ошибка связи с сервером: " + err.message);
+                alert("Server connection error: " + err.message);
                 resetRegisterStep();
             }
         };
 
-        // ПРОВЕРКА КОДА
         window.handleVerifyCodeDirect = async function() {
             const code = document.getElementById('verify-code-input').value.trim();
             if (!code || code.length !== 6) {
-                alert("Введите 6 цифр");
+                alert("Enter 6 digits");
                 return;
             }
 
@@ -592,16 +584,15 @@
                 });
 
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error?.message || 'Неверный код!');
+                if (!res.ok) throw new Error(data.error?.message || 'Invalid code!');
 
                 localStorage.setItem('jwt', data.jwt);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                showToast("Аккаунт подтверждён!");
+                showToast("Account verified!");
                 authModal.classList.remove('active');
                 updateAuthUI();
                 
-                // ПЕРЕХОД В ПРОФИЛЬ ПОСЛЕ ПОДТВЕРЖДЕНИЯ
                 window.location.href = 'user.html';
                 
             } catch (err) {
@@ -613,16 +604,15 @@
             tabRegisterBtn.click();
         };
 
-        // ЗАГРУЗКА МОДЕЛЕЙ
         async function loadModels() {
             try {
                 const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
-                if (!res.ok) throw new Error('Ошибка');
+                if (!res.ok) throw new Error('Error');
                 const responseData = await res.json();
                 allModels = responseData.data || [];
                 renderModels();
             } catch (err) {
-                document.getElementById('models-grid').innerHTML = '<div class="empty-state">Ошибка загрузки моделей</div>';
+                document.getElementById('models-grid').innerHTML = '<div class="empty-state">Error loading models</div>';
             }
         }
 
@@ -633,31 +623,26 @@
 
             let filtered = allModels.filter(item => {
                 const attrs = item.attributes || item;
-                // Адаптация под Strapi 5 и Strapi 4
                 const categoryValue = attrs.Category || attrs.category || 'props';
                 const matchesCategory = activeCategory === 'all' || 
-                                        categoryValue === activeCategory || 
                                         categoryValue.toLowerCase() === activeCategory.toLowerCase();
                 const matchesSearch = (attrs.Title || attrs.name || '').toLowerCase().includes(searchQuery);
                 return matchesCategory && matchesSearch;
             });
 
-            countEl.textContent = `${filtered.length} моделей`;
+            countEl.textContent = `${filtered.length} models`;
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="empty-state">Ничего не найдено</div>';
+                grid.innerHTML = '<div class="empty-state">No models found</div>';
                 return;
             }
 
             grid.innerHTML = filtered.map(item => {
                 const m = item.attributes || item;
-                
-                // Вот тот самый фикс с правильным ID для Strapi 5
                 const correctId = item.documentId || item.id;
 
                 let previewUrl = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
                 
-                // Обработка картинок для разных версий ответа Strapi
                 if (m.Previews?.data?.length > 0) {
                     const url = m.Previews.data[0].attributes?.url || m.Previews.data[0].url;
                     previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
@@ -670,11 +655,10 @@
                     <div class="model-card">
                         <img src="${previewUrl}" class="model-preview" alt="Model">
                         <div class="model-info">
-                            <div class="model-title">${m.Title || 'Без названия'}</div>
+                            <div class="model-title">${m.Title || 'Untitled'}</div>
                             <div class="model-footer">
-                                <span class="model-price">${m.Price ? m.Price + ' $' : 'Бесплатно'}</span>
-                                <!-- Подставляем правильный correctId -->
-                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Подробнее</a>
+                                <span class="model-price">${m.Price ? m.Price + ' $' : 'Free'}</span>
+                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">View Details</a>
                             </div>
                         </div>
                     </div>`;

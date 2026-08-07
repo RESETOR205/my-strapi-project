@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | 3D Market</title>
+    <title>Dashboard | 3D Market</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #0f111a; color: #fff; padding: 20px; }
@@ -149,42 +149,42 @@
 
     <header>
         <a href="index.html" class="logo-link">3D Market</a>
-        <a href="index.html" class="back-btn">— На главную</a>
+        <a href="index.html" class="back-btn">— Back to Home</a>
     </header>
 
     <div class="profile-container">
         <div class="profile-avatar" id="user-avatar">?</div>
         <div class="profile-info">
             <div class="profile-header-row">
-                <div class="profile-username" id="user-name">Загрузка...</div>
+                <div class="profile-username" id="user-name">Loading...</div>
                 <div class="profile-nick" id="user-nick">@username</div>
             </div>
             <div class="profile-header-row">
                 <div class="profile-rating">★ 5.0</div>
-                <div class="profile-reviews">(0 отзывов)</div>
+                <div class="profile-reviews">(0 reviews)</div>
             </div>
         </div>
-        <button class="logout-btn" id="logoutBtn" style="display: none;" onclick="logoutUser()">Выйти</button>
-        <button class="login-btn-profile" id="loginBtn" style="display: none;" onclick="openAuthModal()">Войти / Регистрация</button>
+        <button class="logout-btn" id="logoutBtn" style="display: none;" onclick="logoutUser()">Log Out</button>
+        <button class="login-btn-profile" id="loginBtn" style="display: none;" onclick="openAuthModal()">Log In / Sign Up</button>
     </div>
 
     <div class="section-title-bar">
-        <div class="section-title">Лучшие работы</div>
-        <button class="add-product-btn" id="openModalBtn">+ Добавить модель</button>
+        <div class="section-title">My Artworks</div>
+        <button class="add-product-btn" id="openModalBtn">+ Add Model</button>
     </div>
 
     <div class="works-grid" id="user-models-grid">
-        <div style="color: #94a3b8; padding: 20px;">Загрузка ваших моделей...</div>
+        <div style="color: #94a3b8; padding: 20px;">Loading your models...</div>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ -->
     <div id="deleteConfirmModal" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <h2>Удаление работы</h2>
-            <p style="color: #94a3b8; margin-bottom: 25px; line-height: 1.5;">Вы действительно хотите безвозвратно удалить эту модель?</p>
+            <h2>Delete Model</h2>
+            <p style="color: #94a3b8; margin-bottom: 25px; line-height: 1.5;">Are you sure you want to permanently delete this model?</p>
             <div style="display: flex; gap: 15px; justify-content: center;">
-                <button class="submit-btn" style="background: #ef4444; margin-top: 0;" onclick="executeDelete()">Удалить</button>
-                <button class="submit-btn btn-secondary" style="margin-top: 0;" onclick="closeDeleteModal()">Отмена</button>
+                <button class="submit-btn" style="background: #ef4444; margin-top: 0;" onclick="executeDelete()">Delete</button>
+                <button class="submit-btn btn-secondary" style="margin-top: 0;" onclick="closeDeleteModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -193,52 +193,52 @@
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeModalBtn">&times;</span>
-            <h2>Опубликовать новую работу</h2>
+            <h2>Publish New Artwork</h2>
             <form id="upload-form">
                 <div class="form-group">
-                    <label for="model-title">Название модели</label>
-                    <input type="text" id="model-title" required placeholder="Например: Glock 17">
+                    <label for="model-title">Model Title</label>
+                    <input type="text" id="model-title" required placeholder="e.g. Glock 17">
                 </div>
                 
                 <div class="form-group">
-                    <label for="model-category">Категория модели</label>
+                    <label for="model-category">Category</label>
                     <select id="model-category" required>
-                        <option value="characters">Персонажи (Characters)</option>
-                        <option value="weapons">Оружие (Weapons)</option>
-                        <option value="environment">Окружение (Environment)</option>
-                        <option value="vehicles">Транспорт (Vehicles)</option>
-                        <option value="architecture">Архитектура (Architecture)</option>
-                        <option value="props" selected>Предметы / Прочее (Props)</option>
+                        <option value="characters">Characters</option>
+                        <option value="weapons">Weapons</option>
+                        <option value="environment">Environment</option>
+                        <option value="vehicles">Vehicles</option>
+                        <option value="architecture">Architecture</option>
+                        <option value="props" selected>Props / Other</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="model-file">Основной файл модели (.fbx, .obj, .zip)</label>
+                    <label for="model-file">Main Model File (.fbx, .obj, .zip)</label>
                     <input type="file" id="model-file" accept=".fbx,.obj,.zip" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="model-glb">Файл для 3D просмотра (.glb) <span style="color:#64748b;">(Необязательно)</span></label>
+                    <label for="model-glb">3D Viewer File (.glb) <span style="color:#64748b;">(Optional)</span></label>
                     <input type="file" id="model-glb" accept=".glb,.gltf">
                 </div>
 
                 <div class="form-group">
-                    <label for="model-polygons">Количество полигонов (Polygons)</label>
-                    <input type="text" id="model-polygons" required placeholder="Например: 12500 или 12k">
+                    <label for="model-polygons">Polygon Count</label>
+                    <input type="text" id="model-polygons" required placeholder="e.g. 12500 or 12k">
                 </div>
                 <div class="form-group">
-                    <label for="model-price">Цена (только число)</label>
+                    <label for="model-price">Price (numbers only)</label>
                     <input type="text" id="model-price" required placeholder="19">
                 </div>
                 <div class="form-group">
-                    <label for="model-img">Фото / Галерея превью (несколько картинок)</label>
+                    <label for="model-img">Photos / Previews (multiple images)</label>
                     <input type="file" id="model-img" accept="image/*" multiple required>
                 </div>
                 <div class="form-group">
-                    <label for="model-desc">Описание модели</label>
-                    <textarea id="model-desc" rows="3" placeholder="Опишите вашу 3D-модель..."></textarea>
+                    <label for="model-desc">Description</label>
+                    <textarea id="model-desc" rows="3" placeholder="Describe your 3D model..."></textarea>
                 </div>
-                <button type="submit" class="submit-btn" id="submitBtn">Опубликовать</button>
+                <button type="submit" class="submit-btn" id="submitBtn">Publish</button>
             </form>
         </div>
     </div>
@@ -250,63 +250,63 @@
             <span class="version-badge">v4.3 NUCLEAR-FIX</span>
             
             <div class="auth-tabs" id="auth-tabs-header">
-                <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Вход</button>
-                <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Регистрация</button>
+                <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Sign Up</button>
             </div>
 
             <!-- Форма Входа -->
             <div id="auth-login-form">
                 <div class="form-group">
-                    <label>Логин или Email</label>
+                    <label>Username or Email</label>
                     <input type="text" id="login-identifier" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                    <label>Пароль</label>
+                    <label>Password</label>
                     <input type="password" id="login-password" placeholder="••••••••">
                 </div>
-                <button type="button" class="submit-btn" id="login-submit-btn" onclick="handleLogin()">Войти</button>
+                <button type="button" class="submit-btn" id="login-submit-btn" onclick="handleLogin()">Log In</button>
             </div>
 
             <!-- БЛОК РЕГИСТРАЦИИ -->
             <div id="auth-register-form" style="display: none;">
                 <div class="form-group">
-                    <label>Имя пользователя</label>
+                    <label>Username</label>
                     <input type="text" id="reg-username" placeholder="User3D">
                 </div>
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>Email (for verification)</label>
                     <input type="email" id="reg-email" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                    <label>Пароль</label>
+                    <label>Password</label>
                     <input type="password" id="reg-password" placeholder="••••••••">
                 </div>
 
-                <button type="button" class="submit-btn" id="reg-step1-btn" onclick="goToStep2()">Зарегистрироваться</button>
+                <button type="button" class="submit-btn" id="reg-step1-btn" onclick="goToStep2()">Sign Up</button>
             </div>
 
             <!-- БЛОК ВВОДА 6-ЗНАЧНОГО КОДА -->
             <div id="auth-verify-form" style="display: none;">
-                <h2 style="text-align: center;">Подтверждение Email</h2>
+                <h2 style="text-align: center;">Email Verification</h2>
                 <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px; text-align: center;">
-                    Мы отправили 6-значный код на почту:<br><b id="target-email-display" style="color: #6366f1;"></b>
+                    We sent a 6-digit code to:<br><b id="target-email-display" style="color: #6366f1;"></b>
                 </p>
                 <div class="form-group">
                     <input type="text" id="verify-code-input" class="code-input-field" maxlength="6" placeholder="123456" autocomplete="off">
                 </div>
-                <button type="button" class="submit-btn" id="verify-btn" onclick="handleVerifyCodeDirect()">Подтвердить код</button>
-                <button type="button" class="submit-btn btn-secondary" onclick="resetRegisterStep()">Назад</button>
+                <button type="button" class="submit-btn" id="verify-btn" onclick="handleVerifyCodeDirect()">Verify Code</button>
+                <button type="button" class="submit-btn btn-secondary" onclick="resetRegisterStep()">Back</button>
             </div>
         </div>
     </div>
 
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
-    const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=Нет+превью';
+    const FALLBACK_IMG = 'https://placehold.co/600x400/1a1d29/94a3b8?text=No+Preview';
     
     const modelGalleries = {};
     let pendingRegisterEmail = '';
-    let modelToDeleteId = null; // Хранит ID модели, которую хотят удалить
+    let modelToDeleteId = null; 
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
@@ -321,7 +321,7 @@
         localStorage.removeItem('jwt');
         localStorage.removeItem('username');
         localStorage.removeItem('user');
-        showToast("Вы вышли из аккаунта");
+        showToast("You have logged out");
         setTimeout(() => { window.location.reload(); }, 500);
     }
 
@@ -331,7 +331,7 @@
         localStorage.removeItem('username');
         localStorage.removeItem('user');
 
-        document.getElementById('user-name').textContent = "Вы не авторизованы";
+        document.getElementById('user-name').textContent = "Not logged in";
         document.getElementById('user-nick').textContent = "";
         document.getElementById('user-avatar').textContent = "?";
         
@@ -343,7 +343,7 @@
 
         const grid = document.getElementById('user-models-grid');
         if (grid) {
-            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">Пожалуйста, войдите в аккаунт, чтобы управлять моделями.</div>';
+            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">Please log in to manage your models.</div>';
         }
     }
 
@@ -373,12 +373,12 @@
         const submitBtn = document.getElementById('login-submit-btn');
 
         if (!identifier || !password) {
-            showToast("Пожалуйста, заполните все поля для входа!", true);
+            showToast("Please fill in all login fields!", true);
             return;
         }
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Вход...';
+        submitBtn.textContent = 'Logging in...';
 
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/auth/local`, {
@@ -390,9 +390,9 @@
             const data = await res.json();
 
             if (!res.ok) {
-                const errMsg = data.error?.message || 'Ошибка входа';
+                const errMsg = data.error?.message || 'Login error';
                 if (errMsg.toLowerCase().includes('confirmed') || errMsg.toLowerCase().includes('подтвержден')) {
-                    alert("Ваш Email ещё не подтвержден! Заполните данные во вкладке 'Регистрация', чтобы получить 6-значный код.");
+                    alert("Your email is not verified! Fill in the 'Sign Up' tab to get a 6-digit code.");
                     document.getElementById('reg-email').value = identifier.includes('@') ? identifier : '';
                     switchAuthTab('register');
                     return;
@@ -404,15 +404,15 @@
             localStorage.setItem('token', data.jwt);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            showToast("Успешная авторизация!");
+            showToast("Login successful!");
             closeAuthModal();
             window.location.reload(); 
             
         } catch (err) {
-            showToast("ОШИБКА ВХОДА: " + err.message, true);
+            showToast("LOGIN ERROR: " + err.message, true);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Войти';
+            submitBtn.textContent = 'Log In';
         }
     }
 
@@ -423,13 +423,13 @@
 
         const emailInput = document.getElementById('reg-email');
         const email = emailInput ? emailInput.value.trim() : '';
-        document.getElementById('target-email-display').textContent = email || 'вашу почту';
+        document.getElementById('target-email-display').textContent = email || 'your email';
 
         const username = document.getElementById('reg-username').value.trim();
         const password = document.getElementById('reg-password').value;
 
         if (!username || !email || !password) {
-            showToast("Внимание: Заполните все поля, чтобы код пришёл на почту!", true);
+            showToast("Warning: Fill in all fields to receive the code!", true);
             return;
         }
 
@@ -447,13 +447,13 @@
 
             const data = await res.json();
             if (!res.ok) {
-                showToast("Ошибка бэкенда: " + (data.error?.message || data.message || "Неизвестная ошибка"), true);
+                showToast("Backend error: " + (data.error?.message || data.message || "Unknown error"), true);
             } else {
-                showToast("Код успешно отправлен вам на почту!");
+                showToast("Code sent successfully to your email!");
             }
         } catch (err) {
-            console.error("Ошибка сети:", err);
-            showToast("Ошибка связи с сервером: " + err.message, true);
+            console.error("Network error:", err);
+            showToast("Server connection error: " + err.message, true);
         }
     }
 
@@ -461,13 +461,13 @@
         const code = document.getElementById('verify-code-input').value.trim();
 
         if (!code || code.length !== 6) {
-            showToast("Введите 6-значный код из письма!", true);
+            showToast("Enter the 6-digit code from the email!", true);
             return;
         }
 
         const btn = document.getElementById('verify-btn');
         btn.disabled = true;
-        btn.textContent = "Проверка...";
+        btn.textContent = "Verifying...";
 
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/email-auth/verify`, {
@@ -477,20 +477,20 @@
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error?.message || 'Неверный код!');
+            if (!res.ok) throw new Error(data.error?.message || 'Invalid code!');
 
             localStorage.setItem('jwt', data.jwt);
             localStorage.setItem('token', data.jwt); 
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            showToast("Аккаунт успешно подтверждён!");
+            showToast("Account verified successfully!");
             closeAuthModal();
             window.location.reload();
         } catch (err) {
-            showToast("ОШИБКА ПРОВЕРКИ КОДА: " + err.message, true);
+            showToast("VERIFICATION ERROR: " + err.message, true);
         } finally {
             btn.disabled = false;
-            btn.textContent = "Подтвердить код";
+            btn.textContent = "Verify Code";
         }
     }
 
@@ -519,7 +519,6 @@
 
     function resetCardImage(modelId) { changeCardImage(modelId, 0); }
 
-    // НОВАЯ ЛОГИКА УДАЛЕНИЯ (БЕЗ ОКНА БРАУЗЕРА)
     function openDeleteModal(modelId) {
         modelToDeleteId = modelId;
         document.getElementById('deleteConfirmModal').style.display = 'flex';
@@ -533,10 +532,10 @@
     async function executeDelete() {
         if (!modelToDeleteId) return;
         const modelId = modelToDeleteId;
-        closeDeleteModal(); // Сразу прячем окно для удобства пользователя
+        closeDeleteModal(); 
 
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
-        if (!token) { showToast("Ошибка авторизации.", true); return; }
+        if (!token) { showToast("Authorization error.", true); return; }
 
         try {
             const response = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}`, {
@@ -545,7 +544,7 @@
             });
 
             if (response.status === 200 || response.status === 204) {
-                showToast("Модель успешно удалена!");
+                showToast("Model deleted successfully!");
                 const cardEl = document.getElementById(`model-card-${modelId}`);
                 if (cardEl) {
                     cardEl.style.opacity = '0';
@@ -554,15 +553,15 @@
                         cardEl.remove();
                         const grid = document.getElementById('user-models-grid');
                         if (grid.querySelectorAll('[id^="model-card-"]').length === 0) {
-                            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
+                            grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">You haven\'t published any models yet</div>';
                         }
                     }, 400);
                 }
                 return;
             } 
             const errorText = await response.text();
-            showToast(`Ошибка: ${errorText}`, true);
-        } catch (error) { showToast(`Ошибка сети: ${error.message}`, true); }
+            showToast(`Error: ${errorText}`, true);
+        } catch (error) { showToast(`Network error: ${error.message}`, true); }
     }
 
     async function loadUserModels() {
@@ -576,13 +575,13 @@
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!res.ok) throw new Error("Не удалось загрузить ваши работы.");
+            if (!res.ok) throw new Error("Failed to load your artworks.");
 
             const responseData = await res.json();
             const models = responseData.data || [];
 
             if (models.length === 0) {
-                grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">У вас пока нет опубликованных моделей</div>';
+                grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">You haven\'t published any models yet</div>';
                 return;
             }
 
@@ -591,7 +590,7 @@
             models.forEach(item => {
                 const modelId = item.documentId || item.id;
                 const attrs = item.attributes || item;
-                const title = attrs.Title || "Без названия";
+                const title = attrs.Title || "Untitled";
                 const price = attrs.Price !== undefined ? attrs.Price : 0;
 
                 let imgUrls = [];
@@ -623,7 +622,6 @@
                     window.location.href = `product.html?id=${modelId}`;
                 };
 
-                // Заменили вызов deleteModel на openDeleteModal
                 card.innerHTML = `
                     <button class="delete-card-btn" onclick="event.stopPropagation(); openDeleteModal('${modelId}')">&times;</button>
                     <div class="card-media-wrapper" onmouseleave="resetCardImage('${modelId}')">
@@ -647,7 +645,7 @@
                 grid.appendChild(card);
             });
 
-        } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Ошибка загрузки: ${error.message}</div>`; }
+        } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Loading error: ${error.message}</div>`; }
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
@@ -674,7 +672,7 @@
                 } else { renderUnauthenticatedUI(); }
             } else { renderUnauthenticatedUI(); }
         } catch (err) {
-            console.error("Ошибка при получении профиля:", err);
+            console.error("Profile fetching error:", err);
             renderUnauthenticatedUI();
         }
     });
@@ -687,7 +685,6 @@
         btn.onclick = function() { modal.style.display = "flex"; }
         span.onclick = function() { modal.style.display = "none"; }
         window.onclick = function(event) { 
-            // Обработчик закрытия при клике мимо окон
             if (event.target == modal) modal.style.display = "none"; 
             if (event.target == document.getElementById("authModal")) closeAuthModal();
             if (event.target == document.getElementById("deleteConfirmModal")) closeDeleteModal();
@@ -697,11 +694,11 @@
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
-        if (!token) { showToast("Ошибка авторизации!", true); return; }
+        if (!token) { showToast("Authorization error!", true); return; }
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        submitBtn.textContent = "Загрузка файлов...";
+        submitBtn.textContent = "Uploading files...";
 
         const fileInput = document.getElementById('model-file').files[0];
         const glbFileInput = document.getElementById('model-glb').files[0];
@@ -716,7 +713,7 @@
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: fileData
                 });
-                if (!res.ok) throw new Error(`Не удалось загрузить файл ${file.name}`);
+                if (!res.ok) throw new Error(`Failed to upload file ${file.name}`);
                 const uploadedFiles = await res.json();
                 return uploadedFiles[0].id;
             }
@@ -725,21 +722,21 @@
 
             const imgIds = [];
             for (let i = 0; i < imgInputFiles.length; i++) {
-                submitBtn.textContent = `Загрузка фото (${i + 1}/${imgInputFiles.length})...`;
+                submitBtn.textContent = `Uploading photo (${i + 1}/${imgInputFiles.length})...`;
                 const uploadedId = await uploadToMediaLibrary(imgInputFiles[i]);
                 imgIds.push(uploadedId);
             }
 
             let glbId;
             if (glbFileInput) {
-                submitBtn.textContent = "Загрузка 3D GLB плеера...";
+                submitBtn.textContent = "Uploading 3D GLB viewer...";
                 glbId = await uploadToMediaLibrary(glbFileInput);
             } else {
                 const dummyFile = new File(["placeholder_content"], "empty.glb", { type: "application/octet-stream" });
                 glbId = await uploadToMediaLibrary(dummyFile);
             }
 
-            submitBtn.textContent = "Создание карточки...";
+            submitBtn.textContent = "Creating listing...";
 
             const finalPayload = {
                 data: {
@@ -761,20 +758,20 @@
             });
 
             if (response.ok) {
-                showToast("Модель успешно создана!");
+                showToast("Model created successfully!");
                 document.getElementById('upload-form').reset();
                 if (modal) modal.style.display = "none";
                 loadUserModels();
             } else {
                 const errJson = await response.json().catch(() => ({}));
-                const strapiErrorMessage = errJson?.error?.message || "Ошибка сохранения карточки";
+                const strapiErrorMessage = errJson?.error?.message || "Error saving listing";
                 showToast(strapiErrorMessage, true);
             }
         } catch (error) {
-            showToast(`Ошибка: ${error.message}`, true);
+            showToast(`Error: ${error.message}`, true);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = "Опубликовать";
+            submitBtn.textContent = "Publish";
         }
     });
 </script>
