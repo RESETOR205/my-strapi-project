@@ -367,6 +367,7 @@
             <button class="category-btn" data-category="Окружение">Окружение</button>
             <button class="category-btn" data-category="Транспорт">Транспорт</button>
             <button class="category-btn" data-category="Архитектура">Архитектура</button>
+            <button class="category-btn" data-category="props">Предметы / Прочее</button>
         </div>
 
         <div class="section-header">
@@ -632,7 +633,11 @@
 
             let filtered = allModels.filter(item => {
                 const attrs = item.attributes || item;
-                const matchesCategory = activeCategory === 'all' || attrs.Category === activeCategory;
+                // Адаптация под Strapi 5 и Strapi 4
+                const categoryValue = attrs.Category || attrs.category || 'props';
+                const matchesCategory = activeCategory === 'all' || 
+                                        categoryValue === activeCategory || 
+                                        categoryValue.toLowerCase() === activeCategory.toLowerCase();
                 const matchesSearch = (attrs.Title || attrs.name || '').toLowerCase().includes(searchQuery);
                 return matchesCategory && matchesSearch;
             });
@@ -646,11 +651,21 @@
 
             grid.innerHTML = filtered.map(item => {
                 const m = item.attributes || item;
+                
+                // Вот тот самый фикс с правильным ID для Strapi 5
+                const correctId = item.documentId || item.id;
+
                 let previewUrl = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
+                
+                // Обработка картинок для разных версий ответа Strapi
                 if (m.Previews?.data?.length > 0) {
-                    const url = m.Previews.data[0].attributes.url;
+                    const url = m.Previews.data[0].attributes?.url || m.Previews.data[0].url;
                     previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                } else if (m.Previews && m.Previews.length > 0) {
+                    const url = m.Previews[0].url;
+                    if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
                 }
+
                 return `
                     <div class="model-card">
                         <img src="${previewUrl}" class="model-preview" alt="Model">
@@ -658,7 +673,8 @@
                             <div class="model-title">${m.Title || 'Без названия'}</div>
                             <div class="model-footer">
                                 <span class="model-price">${m.Price ? m.Price + ' $' : 'Бесплатно'}</span>
-                                <a href="product.html?id=${item.id}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Подробнее</a>
+                                <!-- Подставляем правильный correctId -->
+                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Подробнее</a>
                             </div>
                         </div>
                     </div>`;
