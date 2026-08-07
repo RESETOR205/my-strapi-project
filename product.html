@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Детали модели | 3D Market</title>
+    <title>Model Details | 3D Market</title>
     
     <!-- Подключаем 3D-движок Google <model-viewer> -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
@@ -172,7 +172,7 @@
 
     <header>
         <a href="index.html" class="logo-link">3D Market</a>
-        <a href="index.html" class="back-btn">← На главную</a>
+        <a href="index.html" class="back-btn">&larr; Back to Home</a>
     </header>
 
     <div class="product-container">
@@ -180,7 +180,7 @@
         <div class="viewer-section">
             <div class="main-media-box">
                 <!-- Картинка превью -->
-                <img id="main-image" class="main-image" src="" alt="Превью модели">
+                <img id="main-image" class="main-image" src="" alt="Model Preview">
                 
                 <!-- Кнопка поверх картинки в стиле CGTrader -->
                 <button id="btn-load-3d" class="btn-load-3d">
@@ -190,14 +190,14 @@
                 <!-- 3D Интерактивный плеер -->
                 <model-viewer 
                     id="3d-viewer" 
-                    alt="3D Предосмотр модели" 
+                    alt="3D Model Preview" 
                     camera-controls 
                     auto-rotate 
                     shadow-intensity="1.5"
                     exposure="1">
                 </model-viewer>
 
-                <div id="viewer-hint" class="viewer-controls-hint">🖱️ Зажмите ЛКМ для вращения • Колесико для зума</div>
+                <div id="viewer-hint" class="viewer-controls-hint">🖱️ Left click & drag to rotate &bull; Scroll to zoom</div>
             </div>
 
             <!-- Нижняя лента миниатюр -->
@@ -208,35 +208,35 @@
 
         <!-- Правая колонка: Информация о товаре -->
         <div class="details-card">
-            <h1 class="product-title" id="p-title">Загрузка...</h1>
+            <h1 class="product-title" id="p-title">Loading...</h1>
             <div class="product-price" id="p-price">0 $</div>
             
-            <button class="buy-btn" id="p-buy-btn">Скачать / Купить</button>
+            <button class="buy-btn" id="p-buy-btn">Download / Buy</button>
 
             <div class="specs-list">
                 <div class="spec-item">
-                    <span class="spec-label">Категория:</span>
-                    <span class="spec-value" id="p-category">—</span>
+                    <span class="spec-label">Category:</span>
+                    <span class="spec-value" id="p-category">&mdash;</span>
                 </div>
                 <div class="spec-item">
-                    <span class="spec-label">Полигоны:</span>
-                    <span class="spec-value" id="p-polygons">—</span>
+                    <span class="spec-label">Polygons:</span>
+                    <span class="spec-value" id="p-polygons">&mdash;</span>
                 </div>
                 <div class="spec-item">
-                    <span class="spec-label">Формат файлов:</span>
+                    <span class="spec-label">File Format:</span>
                     <span class="spec-value">FBX / GLB</span>
                 </div>
             </div>
 
             <div class="description-box" id="p-desc">
-                Загрузка описания...
+                Loading description...
             </div>
         </div>
     </div>
 
 <script>
     const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
-    const FALLBACK_IMG = 'https://placehold.co/800x600/1a1d29/94a3b8?text=Нет+превью';
+    const FALLBACK_IMG = 'https://placehold.co/800x600/1a1d29/94a3b8?text=No+Preview';
 
     let currentGlbUrl = "";
     let imageGallery = [];
@@ -289,27 +289,27 @@
         const modelId = urlParams.get('id');
 
         if (!modelId) {
-            alert("Модель не найдена!");
+            alert("Model not found!");
             window.location.href = "index.html";
             return;
         }
 
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/models/${modelId}?populate=*`);
-            if (!res.ok) throw new Error("Не удалось загрузить данные модели");
+            if (!res.ok) throw new Error("Failed to load model data");
 
             const responseData = await res.json();
             const item = responseData.data;
             const attrs = item.attributes || item;
 
             // Заполняем текстовую информацию
-            document.getElementById('p-title').textContent = attrs.Title || "Без названия";
+            document.getElementById('p-title').textContent = attrs.Title || "Untitled";
             document.getElementById('p-price').textContent = `${attrs.Price !== undefined ? attrs.Price : 0} $`;
-            document.getElementById('p-polygons').textContent = attrs.Polygons || "Не указано";
+            document.getElementById('p-polygons').textContent = attrs.Polygons || "Not specified";
             
             const categoryValue = attrs.Category || attrs.category || "props";
             document.getElementById('p-category').textContent = categoryValue.toUpperCase();
-            document.getElementById('p-desc').textContent = attrs.Description || "Описание отсутствует.";
+            document.getElementById('p-desc').textContent = attrs.Description || "No description available.";
 
             // 1. Извлекаем изображения превью
             let rawPreviews = attrs.Previews || item.Previews;
@@ -378,8 +378,8 @@
             });
 
         } catch (error) {
-            console.error("Ошибка:", error);
-            document.getElementById('p-title').textContent = "Ошибка загрузки карточки";
+            console.error("Error:", error);
+            document.getElementById('p-title').textContent = "Error loading model details";
         }
     }
 
