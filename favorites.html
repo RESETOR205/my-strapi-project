@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites | 3D Market</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d0f12; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        header { display: flex; align-items: center; justify-content: space-between; padding: 15px 40px; background-color: #161a23; border-bottom: 1px solid #232936; }
+        .logo { font-size: 24px; font-weight: bold; color: #ffffff; text-decoration: none; }
+        .logo span { color: #3b82f6; }
+        .back-btn { padding: 10px 20px; background: #2d3748; border: none; border-radius: 8px; color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-btn:hover { background: #4a5568; }
+
+        main { flex: 1; padding: 30px 40px; max-width: 1400px; width: 100%; margin: 0 auto; }
+        .section-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+
+        .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; background-color: #161a23; border-radius: 12px; border: 1px dashed #2d3748; color: #a0aec0; }
+
+        .model-card { background-color: #161a23; border: 1px solid #2d3748; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: transform 0.2s; }
+        .model-card:hover { transform: translateY(-4px); border-color: #3b82f6; }
+        
+        .favorite-btn { position: absolute; top: 10px; right: 10px; background: rgba(15, 17, 26, 0.7); border: 1px solid #2d3748; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444; font-size: 16px; z-index: 10; transition: transform 0.2s; }
+        .favorite-btn:hover { transform: scale(1.1); }
+
+        .model-preview { width: 100%; height: 180px; object-fit: cover; background-color: #1a202c; }
+        .model-info { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .model-title { font-size: 16px; font-weight: 600; color: #fff; }
+        .model-price { font-weight: bold; color: #10b981; }
+        .model-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; }
+        
+        .btn { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; background-color: #2d3748; color: #e2e8f0; }
+        .btn:hover { background-color: #4a5568; }
+
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; background-color: #ef4444; color: #fff; font-size: 14px; font-weight: 500; display: none; z-index: 2000; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">3D <span>Market</span></a>
+        <a href="index.html" class="back-btn">&larr; Back to Catalog</a>
+    </header>
+
+    <main>
+        <h1 class="section-title">My Favorites ❤️</h1>
+        <div class="models-grid" id="favorites-grid">
+            <div class="empty-state">Loading favorites...</div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+        const FALLBACK_IMG = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        window.removeFavorite = function(modelId) {
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            favorites = favorites.filter(id => id !== modelId);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            showToast('Removed from favorites');
+            loadFavorites();
+        };
+
+        async function loadFavorites() {
+            const grid = document.getElementById('favorites-grid');
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+            if (favorites.length === 0) {
+                grid.innerHTML = '<div class="empty-state">You have no favorite models yet ❤️</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
+                if (!res.ok) throw new Error('Failed to load models');
+                const responseData = await res.json();
+                const allModels = responseData.data || [];
+
+                const favModels = allModels.filter(item => {
+                    const id = item.documentId || item.id;
+                    return favorites.includes(id);
+                });
+
+                if (favModels.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">You have no favorite models yet ❤️</div>';
+                    return;
+                }
+
+                grid.innerHTML = favModels.map(item => {
+                    const m = item.attributes || item;
+                    const correctId = item.documentId || item.id;
+
+                    let previewUrl = FALLBACK_IMG;
+                    if (m.Previews?.data?.length > 0) {
+                        const url = m.Previews.data[0].attributes?.url || m.Previews.data[0].url;
+                        previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                    } else if (m.Previews && m.Previews.length > 0) {
+                        const url = m.Previews[0].url;
+                        if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                    }
+
+                    return `
+                        <div class="model-card">
+                            <button class="favorite-btn" onclick="removeFavorite('${correctId}')" title="Remove">❤️</button>
+                            <img src="${previewUrl}" class="model-preview" alt="Model">
+                            <div class="model-info">
+                                <div class="model-title">${m.Title || 'Untitled'}</div>
+                                <div class="model-footer">
+                                    <span class="model-price">${m.Price ? m.Price + ' $' : 'Free'}</span>
+                                    <a href="product.html?id=${correctId}" class="btn">View Details</a>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+            } catch (err) {
+                grid.innerHTML = '<div class="empty-state">Error loading favorite models</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFavorites);
+    </script>
+</body>
+</html>

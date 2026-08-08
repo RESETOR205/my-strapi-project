@@ -36,7 +36,6 @@
             overflow: hidden;
         }
 
-        /* Главное изображение-картинка */
         .main-image {
             width: 100%;
             height: 100%;
@@ -45,16 +44,14 @@
             display: block;
         }
 
-        /* 3D-плеер */
         model-viewer {
             width: 100%;
             height: 100%;
             background-color: #0f111a;
             border-radius: 12px;
-            display: none; /* Включается по клику */
+            display: none;
         }
 
-        /* Кнопка "Загрузить 3D" поверх картинки (стиль CGTrader) */
         .btn-load-3d {
             position: absolute;
             top: 50%;
@@ -72,7 +69,7 @@
             backdrop-filter: blur(6px);
             transition: all 0.2s ease;
             z-index: 10;
-            display: none; /* Показывается если есть 3D файл */
+            display: none;
             align-items: center;
             gap: 10px;
         }
@@ -94,7 +91,6 @@
             z-index: 11;
         }
 
-        /* Лента миниатюр (Thumbnails) */
         .thumbnails-list {
             display: flex;
             gap: 12px;
@@ -140,7 +136,7 @@
             border-color: #6366f1;
         }
 
-        /* Правая колонка: Описание и Покупка */
+        /* Правая колонка */
         .details-card { background: #1a1d29; border-radius: 16px; padding: 25px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 20px; height: fit-content; }
         .product-title { font-size: 26px; font-weight: bold; line-height: 1.2; }
         .product-price { font-size: 32px; font-weight: bold; color: #10b981; }
@@ -176,18 +172,15 @@
     </header>
 
     <div class="product-container">
-        <!-- Левая колонка: Просмотрщик + Галерея миниатюр -->
+        <!-- Левая колонка -->
         <div class="viewer-section">
             <div class="main-media-box">
-                <!-- Картинка превью -->
                 <img id="main-image" class="main-image" src="" alt="Model Preview">
                 
-                <!-- Кнопка поверх картинки в стиле CGTrader -->
                 <button id="btn-load-3d" class="btn-load-3d">
                     <span>🎲</span> Click to load 3D View
                 </button>
 
-                <!-- 3D Интерактивный плеер -->
                 <model-viewer 
                     id="3d-viewer" 
                     alt="3D Model Preview" 
@@ -200,13 +193,10 @@
                 <div id="viewer-hint" class="viewer-controls-hint">🖱️ Left click & drag to rotate &bull; Scroll to zoom</div>
             </div>
 
-            <!-- Нижняя лента миниатюр -->
-            <div class="thumbnails-list" id="thumbnails-container">
-                <!-- Сюда динамически добавятся картинки и кнопка 3D -->
-            </div>
+            <div class="thumbnails-list" id="thumbnails-container"></div>
         </div>
 
-        <!-- Правая колонка: Информация о товаре -->
+        <!-- Правая колонка -->
         <div class="details-card">
             <h1 class="product-title" id="p-title">Loading...</h1>
             <div class="product-price" id="p-price">0 $</div>
@@ -215,12 +205,16 @@
 
             <div class="specs-list">
                 <div class="spec-item">
+                    <span class="spec-label">Author:</span>
+                    <span class="spec-value" id="p-author" style="color: #6366f1;">—</span>
+                </div>
+                <div class="spec-item">
                     <span class="spec-label">Category:</span>
-                    <span class="spec-value" id="p-category">&mdash;</span>
+                    <span class="spec-value" id="p-category">—</span>
                 </div>
                 <div class="spec-item">
                     <span class="spec-label">Polygons:</span>
-                    <span class="spec-value" id="p-polygons">&mdash;</span>
+                    <span class="spec-value" id="p-polygons">—</span>
                 </div>
                 <div class="spec-item">
                     <span class="spec-label">File Format:</span>
@@ -247,30 +241,24 @@
     const hintEl = document.getElementById('viewer-hint');
     const thumbsContainer = document.getElementById('thumbnails-container');
 
-    // Функция переключения в 3D режим
     function activate3DView() {
         if (!currentGlbUrl) return;
-        
         mainImgEl.style.display = 'none';
         btn3d.style.display = 'none';
-        
         viewerEl.style.display = 'block';
         if (!viewerEl.getAttribute('src')) {
             viewerEl.setAttribute('src', currentGlbUrl);
         }
         hintEl.style.display = 'block';
 
-        // Обновляем выделение в миниатюрах
         document.querySelectorAll('.thumb-item, .thumb-3d-btn').forEach(el => el.classList.remove('active'));
         const active3dThumb = document.getElementById('thumb-3d-icon');
         if (active3dThumb) active3dThumb.classList.add('active');
     }
 
-    // Функция переключения на картинку
     function activateImageView(imgUrl, index) {
         viewerEl.style.display = 'none';
         hintEl.style.display = 'none';
-        
         mainImgEl.src = imgUrl;
         mainImgEl.style.display = 'block';
 
@@ -278,7 +266,6 @@
             btn3d.style.display = 'flex';
         }
 
-        // Обновляем активную миниатюру
         document.querySelectorAll('.thumb-item, .thumb-3d-btn').forEach(el => el.classList.remove('active'));
         const targetThumb = document.getElementById(`thumb-img-${index}`);
         if (targetThumb) targetThumb.classList.add('active');
@@ -302,16 +289,17 @@
             const item = responseData.data;
             const attrs = item.attributes || item;
 
-            // Заполняем текстовую информацию
+            // Заполняем текстовую информацию + Автора
             document.getElementById('p-title').textContent = attrs.Title || "Untitled";
             document.getElementById('p-price').textContent = `${attrs.Price !== undefined ? attrs.Price : 0} $`;
+            document.getElementById('p-author').textContent = attrs.ownerUsername ? '@' + attrs.ownerUsername : 'Community Artist';
             document.getElementById('p-polygons').textContent = attrs.Polygons || "Not specified";
             
             const categoryValue = attrs.Category || attrs.category || "props";
             document.getElementById('p-category').textContent = categoryValue.toUpperCase();
             document.getElementById('p-desc').textContent = attrs.Description || "No description available.";
 
-            // 1. Извлекаем изображения превью
+            // Превью фото
             let rawPreviews = attrs.Previews || item.Previews;
             if (rawPreviews && rawPreviews.data) rawPreviews = rawPreviews.data;
             
@@ -332,32 +320,27 @@
                 imageGallery.push(FALLBACK_IMG);
             }
 
-            // Устанавливаем главное первое изображение
             mainImgEl.src = imageGallery[0];
 
-            // 2. Извлекаем 3D файл (.GLB)
+            // 3D GLB файл
             const rawGlb = attrs.ModelGLB || item.ModelGLB;
             if (rawGlb) {
                 const target = rawGlb.data ? rawGlb.data.attributes : (rawGlb.attributes || rawGlb);
                 const url = target?.url || "";
                 const size = target?.size || 0;
                 
-                // Проверяем, что это не пустая заглушка (размер больше 1 КБ)
                 if (url && (size > 1 || !url.includes('empty.glb'))) {
                     currentGlbUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
                 }
             }
 
-            // Показываем кнопку 3D поверх изображения, если GLB загружен
             if (currentGlbUrl) {
                 btn3d.style.display = 'flex';
                 btn3d.onclick = activate3DView;
             }
 
-            // 3. Рендерим нижнюю ленту миниатюр
             thumbsContainer.innerHTML = '';
 
-            // Кнопка 3D в миниатюрах (если есть файл)
             if (currentGlbUrl) {
                 const btn3dThumb = document.createElement('div');
                 btn3dThumb.className = 'thumb-3d-btn';
@@ -367,7 +350,6 @@
                 thumbsContainer.appendChild(btn3dThumb);
             }
 
-            // Миниатюры картинок
             imageGallery.forEach((url, index) => {
                 const imgThumb = document.createElement('img');
                 imgThumb.className = `thumb-item ${index === 0 ? 'active' : ''}`;
