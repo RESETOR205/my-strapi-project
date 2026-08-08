@@ -182,7 +182,7 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s, box-shadow 0.2s;
-            position: relative; /* Добавлено для позиционирования сердечка */
+            position: relative;
         }
 
         .model-card:hover {
@@ -216,7 +216,7 @@
             transform: scale(1.1);
         }
         .favorite-btn.active {
-            color: #ef4444; /* Красное сердечко */
+            color: #ef4444;
             border-color: rgba(239, 68, 68, 0.5);
             background: rgba(239, 68, 68, 0.15);
         }
@@ -372,7 +372,6 @@
         <a href="index.html" class="logo">3D <span>Market</span></a>
         
         <div class="search-bar">
-            <!-- Жесткая блокировка автозаполнения -->
             <input 
                 type="text" 
                 id="search-input" 
@@ -384,6 +383,8 @@
         </div>
 
         <div class="nav-actions">
+            <!-- КНОПКА ИЗБРАННОГО В ШАПКЕ -->
+            <a href="favorites.html" class="btn btn-secondary">Favorites ❤️</a>
             <button class="btn btn-primary" id="cabinet-btn">Dashboard</button>
         </div>
     </header>
@@ -493,10 +494,9 @@
             setTimeout(() => toastEl.style.display = 'none', 5000);
         }
 
-        // ЛОГИКА ИЗБРАННОГО
         window.toggleFavorite = function(event, modelId) {
             event.preventDefault(); 
-            event.stopPropagation(); // Чтобы не перекидывало на страницу модели при клике на сердечко
+            event.stopPropagation();
 
             let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
             const index = favorites.indexOf(modelId);
@@ -510,7 +510,7 @@
             }
 
             localStorage.setItem('favorites', JSON.stringify(favorites));
-            renderModels(); // Перерисовываем карточки, чтобы обновить цвет сердечка
+            renderModels();
         };
 
         function updateAuthUI() {
@@ -688,7 +688,6 @@
                 return;
             }
 
-            // Получаем список избранного для отрисовки сердечек
             const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
             grid.innerHTML = filtered.map(item => {
