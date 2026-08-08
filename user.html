@@ -558,15 +558,6 @@
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!grid) return;
 
-        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
-        const userId = userObj.id;
-        const userDocId = userObj.documentId;
-        
-        if (!userId && !userDocId) {
-            grid.innerHTML = '<div style="color: #ef4444; padding: 20px;">Error: User ID not found</div>';
-            return;
-        }
-
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
                 method: 'GET',
@@ -576,19 +567,7 @@
             if (!res.ok) throw new Error("Failed to load your artworks.");
 
             const responseData = await res.json();
-            const allModels = responseData.data || [];
-
-            const models = allModels.filter(item => {
-                const attrs = item.attributes || item;
-                const owner = attrs.owner || item.owner;
-                if (!owner) return false;
-
-                const ownerData = owner.data ? (owner.data.attributes || owner.data) : owner;
-                const ownerId = ownerData.id || owner.id;
-                const ownerDocId = ownerData.documentId || owner.documentId;
-
-                return ownerId === userId || ownerDocId === userDocId || owner === userId || owner === userDocId;
-            });
+            const models = responseData.data || [];
 
             if (models.length === 0) {
                 grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">You haven\'t published any models yet</div>';
@@ -716,9 +695,6 @@
         const glbFileInput = document.getElementById('model-glb').files[0];
         const imgInputFiles = document.getElementById('model-img').files;
 
-        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
-        const ownerId = userObj.id;
-
         try {
             async function uploadToMediaLibrary(file) {
                 const fileData = new FormData();
@@ -762,8 +738,7 @@
                     Category: document.getElementById('model-category').value,
                     ModelFBX: fbxId,
                     Previews: imgIds, 
-                    ModelGLB: glbId,
-                    owner: ownerId
+                    ModelGLB: glbId
                 }
             };
 
@@ -780,7 +755,7 @@
                 loadUserModels();
             } else {
                 const errJson = await response.json().catch(() => ({}));
-                const strapiErrorMessage = errJson?.error?.message || "Error saving listing. Please make sure field 'owner' is permitted in Settings -> Roles -> Authenticated.";
+                const strapiErrorMessage = errJson?.error?.message || "Error saving listing";
                 showToast(strapiErrorMessage, true);
             }
         } catch (error) {
