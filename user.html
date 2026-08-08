@@ -247,7 +247,7 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthModal()">&times;</span>
-            <span class="version-badge">v4.3 NUCLEAR-FIX</span>
+            <span class="version-badge">v4.3 USERNAME-FILTER</span>
             
             <div class="auth-tabs" id="auth-tabs-header">
                 <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Login</button>
@@ -558,6 +558,14 @@
         const token = localStorage.getItem('jwt') || localStorage.getItem('token');
         if (!grid) return;
 
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        const currentUsername = userObj.username || localStorage.getItem('username');
+
+        if (!currentUsername) {
+            grid.innerHTML = '<div style="color: #ef4444; padding: 20px;">Error: Username not found</div>';
+            return;
+        }
+
         try {
             const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*&_t=${Date.now()}`, {
                 method: 'GET',
@@ -567,7 +575,13 @@
             if (!res.ok) throw new Error("Failed to load your artworks.");
 
             const responseData = await res.json();
-            const models = responseData.data || [];
+            const allModels = responseData.data || [];
+
+            // Фильтруем модели по имени автора (ownerUsername)
+            const models = allModels.filter(item => {
+                const attrs = item.attributes || item;
+                return attrs.ownerUsername === currentUsername;
+            });
 
             if (models.length === 0) {
                 grid.innerHTML = '<div style="color: #94a3b8; padding: 20px;">You haven\'t published any models yet</div>';
@@ -695,6 +709,9 @@
         const glbFileInput = document.getElementById('model-glb').files[0];
         const imgInputFiles = document.getElementById('model-img').files;
 
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        const currentUsername = userObj.username || localStorage.getItem('username');
+
         try {
             async function uploadToMediaLibrary(file) {
                 const fileData = new FormData();
@@ -738,7 +755,8 @@
                     Category: document.getElementById('model-category').value,
                     ModelFBX: fbxId,
                     Previews: imgIds, 
-                    ModelGLB: glbId
+                    ModelGLB: glbId,
+                    ownerUsername: currentUsername // Записываем ник создателя в текстовое поле!
                 }
             };
 

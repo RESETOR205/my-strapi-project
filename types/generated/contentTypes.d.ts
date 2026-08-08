@@ -461,10 +461,7 @@ export interface ApiModelModel extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     ModelFBX: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     ModelGLB: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    owner: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
+    ownerUsername: Schema.Attribute.String;
     Polygons: Schema.Attribute.String;
     Previews: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
@@ -954,7 +951,6 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
-    models: Schema.Attribute.Relation<'oneToMany', 'api::model.model'>;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
