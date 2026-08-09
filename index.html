@@ -221,11 +221,60 @@
             background: rgba(239, 68, 68, 0.15);
         }
 
-        .model-preview {
+        /* СЛАЙДЕР В КАРТОЧКЕ */
+        .card-media-wrapper {
+            position: relative;
             width: 100%;
             height: 180px;
+            overflow: hidden;
+            background: #1a202c;
+        }
+        
+        .model-preview {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            background-color: #1a202c;
+            display: block;
+        }
+
+        .card-progress-bars {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .card-progress-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 2px;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-progress-bar.active {
+            background: #3b82f6;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+        }
+
+        .card-hover-zones {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 6;
+        }
+
+        .card-hover-segment {
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
         }
 
         .model-info {
@@ -513,6 +562,9 @@
         let allModels = [];
         let activeCategory = 'all';
         let pendingRegisterEmail = '';
+        
+        // Хранилище картинок для слайдера
+        const modelGalleries = {};
 
         const cabinetBtn = document.getElementById('cabinet-btn');
         const authModal = document.getElementById('auth-modal');
@@ -532,6 +584,27 @@
             toastEl.style.display = 'block';
             setTimeout(() => toastEl.style.display = 'none', 4000);
         }
+
+        // Логика слайдера
+        window.changeCardImage = function(modelId, index) {
+            const gallery = modelGalleries[modelId];
+            if (!gallery || !gallery[index]) return;
+
+            const imgEl = document.getElementById(`card-img-${modelId}`);
+            if (imgEl) imgEl.src = gallery[index];
+
+            gallery.forEach((_, idx) => {
+                const barEl = document.getElementById(`bar-${modelId}-${idx}`);
+                if (barEl) {
+                    if (idx === index) barEl.classList.add('active');
+                    else barEl.classList.remove('active');
+                }
+            });
+        };
+
+        window.resetCardImage = function(modelId) {
+            changeCardImage(modelId, 0);
+        };
 
         // Избранное
         window.toggleFavorite = function(event, modelId) {
@@ -765,15 +838,27 @@
                 const isInCart = cart.includes(correctId);
                 const author = m.ownerUsername || 'Artist';
 
-                let previewUrl = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
+                // Вытаскиваем ВСЕ картинки для слайдера
+                let imgUrls = [];
+                let rawPreviews = m.Previews;
+                if (rawPreviews && rawPreviews.data) rawPreviews = rawPreviews.data;
                 
-                if (m.Previews?.data?.length > 0) {
-                    const url = m.Previews.data[0].attributes?.url || m.Previews.data[0].url;
-                    previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
-                } else if (m.Previews && m.Previews.length > 0) {
-                    const url = m.Previews[0].url;
-                    if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                if (rawPreviews) {
+                    const previewsArray = Array.isArray(rawPreviews) ? rawPreviews : [rawPreviews];
+                    previewsArray.forEach(p => {
+                        const target = p.attributes || p;
+                        const url = target.url || p.url || '';
+                        if (url) {
+                            const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                            imgUrls.push(fullUrl);
+                        }
+                    });
                 }
+                if (imgUrls.length === 0) imgUrls.push('https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model');
+                
+                // Сохраняем в глобальный объект для слайдера
+                modelGalleries[correctId] = imgUrls;
+                const hasMultiple = imgUrls.length > 1;
 
                 return `
                     <div class="model-card">
@@ -782,7 +867,22 @@
                             ${isFav ? '❤️' : '🤍'}
                         </button>
                         
-                        <img src="${previewUrl}" class="model-preview" alt="Model">
+                        <!-- БЛОК СЛАЙДЕРА -->
+                        <a href="product.html?id=${correctId}" style="text-decoration: none;">
+                            <div class="card-media-wrapper" onmouseleave="resetCardImage('${correctId}')">
+                                <img id="card-img-${correctId}" src="${imgUrls[0]}" class="model-preview" alt="Model">
+                                ${hasMultiple ? `
+                                    <div class="card-progress-bars">
+                                        ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${correctId}-${idx}"></div>`).join('')}
+                                    </div>
+                                    <div class="card-hover-zones">
+                                        ${imgUrls.map((_, idx) => `
+                                            <div class="card-hover-segment" onmouseenter="changeCardImage('${correctId}', ${idx})" onmousemove="changeCardImage('${correctId}', ${idx})"></div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </a>
                         
                         <div class="model-info">
                             <div class="model-title">${m.Title || 'Untitled'}</div>
@@ -793,7 +893,7 @@
                                 <button class="btn-cart ${isInCart ? 'in-cart' : ''}" onclick="toggleCart(event, '${correctId}')">
                                     ${isInCart ? 'In Cart ✓' : 'Add to Cart'}
                                 </button>
-                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px;">Details</a>
+                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; text-decoration: none;">Details</a>
                             </div>
                         </div>
                         
