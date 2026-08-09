@@ -52,29 +52,6 @@
             display: none;
         }
 
-        .btn-load-3d {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(79, 70, 229, 0.9);
-            color: #fff;
-            padding: 16px 32px;
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(6px);
-            transition: all 0.2s ease;
-            z-index: 10;
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn-load-3d:hover { background: #4338ca; transform: translate(-50%, -50%) scale(1.05); }
-
         .viewer-controls-hint {
             position: absolute;
             bottom: 20px;
@@ -154,7 +131,7 @@
             transition: background 0.2s ease;
         }
         .buy-btn:hover { background: #4338ca; }
-        .buy-btn.in-cart { background: #10b981; } /* Стиль кнопки, когда товар в корзине */
+        .buy-btn.in-cart { background: #10b981; }
 
         .specs-list { background: #0f111a; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
         .spec-item { display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
@@ -162,7 +139,7 @@
         .spec-label { color: #94a3b8; }
         .spec-value { color: #fff; font-weight: bold; }
 
-        /* БЛОК АВТОРА (ОТДЕЛЬНОЕ ОКОШКО СПРАВА) */
+        /* БЛОК АВТОРА */
         .author-box {
             background: #0f111a;
             border-radius: 12px;
@@ -219,7 +196,6 @@
 
     <header>
         <a href="index.html" class="logo-link">3D Market</a>
-        <!-- Кнопка корзины в шапке на странице товара -->
         <div style="display: flex; gap: 10px;">
             <a href="cart.html" class="back-btn" style="background: #4f46e5;">🛒 Cart</a>
             <a href="index.html" class="back-btn">&larr; Back to Home</a>
@@ -232,10 +208,6 @@
             <div class="main-media-box">
                 <img id="main-image" class="main-image" src="" alt="Model Preview">
                 
-                <button id="btn-load-3d" class="btn-load-3d">
-                    <span>🎲</span> Click to load 3D View
-                </button>
-
                 <model-viewer 
                     id="3d-viewer" 
                     alt="3D Model Preview" 
@@ -298,7 +270,6 @@
 
     const mainImgEl = document.getElementById('main-image');
     const viewerEl = document.getElementById('3d-viewer');
-    const btn3d = document.getElementById('btn-load-3d');
     const hintEl = document.getElementById('viewer-hint');
     const thumbsContainer = document.getElementById('thumbnails-container');
 
@@ -347,7 +318,6 @@
     function activate3DView() {
         if (!currentGlbUrl) return;
         mainImgEl.style.display = 'none';
-        btn3d.style.display = 'none';
         viewerEl.style.display = 'block';
         if (!viewerEl.getAttribute('src')) {
             viewerEl.setAttribute('src', currentGlbUrl);
@@ -364,10 +334,6 @@
         hintEl.style.display = 'none';
         mainImgEl.src = imgUrl;
         mainImgEl.style.display = 'block';
-
-        if (currentGlbUrl) {
-            btn3d.style.display = 'flex';
-        }
 
         document.querySelectorAll('.thumb-item, .thumb-3d-btn').forEach(el => el.classList.remove('active'));
         const targetThumb = document.getElementById(`thumb-img-${index}`);
@@ -445,13 +411,9 @@
                 }
             }
 
-            if (currentGlbUrl) {
-                btn3d.style.display = 'flex';
-                btn3d.onclick = activate3DView;
-            }
-
             thumbsContainer.innerHTML = '';
 
+            // Добавляем миниатюру 3D, если файл есть
             if (currentGlbUrl) {
                 const btn3dThumb = document.createElement('div');
                 btn3dThumb.className = 'thumb-3d-btn';
@@ -461,6 +423,7 @@
                 thumbsContainer.appendChild(btn3dThumb);
             }
 
+            // Добавляем обычные фото
             imageGallery.forEach((url, index) => {
                 const imgThumb = document.createElement('img');
                 imgThumb.className = `thumb-item ${index === 0 ? 'active' : ''}`;
