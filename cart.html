@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | 3D Market</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d0f12; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        header { display: flex; align-items: center; justify-content: space-between; padding: 15px 40px; background-color: #161a23; border-bottom: 1px solid #232936; }
+        .logo { font-size: 24px; font-weight: bold; color: #ffffff; text-decoration: none; }
+        .logo span { color: #3b82f6; }
+        .back-btn { padding: 10px 20px; background: #2d3748; border: none; border-radius: 8px; color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-btn:hover { background: #4a5568; }
+
+        main { flex: 1; padding: 30px 40px; max-width: 1000px; width: 100%; margin: 0 auto; }
+        .section-title { font-size: 24px; font-weight: 700; margin-bottom: 25px; }
+
+        .cart-layout { display: grid; grid-template-columns: 1fr 320px; gap: 30px; }
+        @media (max-width: 800px) { .cart-layout { grid-template-columns: 1fr; } }
+
+        .cart-items { display: flex; flex-direction: column; gap: 15px; }
+        .cart-item { background-color: #161a23; border: 1px solid #2d3748; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 20px; position: relative; }
+        .cart-item-img { width: 90px; height: 70px; object-fit: cover; border-radius: 8px; background: #1a202c; }
+        .cart-item-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .cart-item-title { font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; }
+        .cart-item-title:hover { color: #3b82f6; }
+        .cart-item-price { font-weight: bold; color: #10b981; font-size: 16px; }
+        
+        .remove-btn { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; padding: 5px; }
+        .remove-btn:hover { color: #dc2626; }
+
+        .cart-summary { background-color: #161a23; border: 1px solid #2d3748; border-radius: 12px; padding: 25px; height: fit-content; display: flex; flex-direction: column; gap: 20px; }
+        .summary-title { font-size: 18px; font-weight: bold; border-bottom: 1px solid #2d3748; padding-bottom: 15px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 15px; color: #a0aec0; }
+        .summary-total { display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; color: #fff; border-top: 1px solid #2d3748; padding-top: 15px; }
+        
+        .checkout-btn { width: 100%; padding: 14px; background-color: #10b981; border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .checkout-btn:hover { background-color: #059669; }
+
+        .empty-state { text-align: center; padding: 60px 20px; background-color: #161a23; border-radius: 12px; border: 1px dashed #2d3748; color: #a0aec0; grid-column: 1 / -1; }
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; background-color: #ef4444; color: #fff; font-size: 14px; font-weight: 500; display: none; z-index: 2000; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">3D <span>Market</span></a>
+        <a href="index.html" class="back-btn">&larr; Continue Shopping</a>
+    </header>
+
+    <main>
+        <h1 class="section-title">Shopping Cart 🛒</h1>
+        
+        <div class="cart-layout">
+            <div class="cart-items" id="cart-items-container">
+                <div class="empty-state">Loading cart...</div>
+            </div>
+
+            <div class="cart-summary" id="cart-summary-box" style="display: none;">
+                <div class="summary-title">Order Summary</div>
+                <div class="summary-row"><span>Models count:</span> <span id="summary-count">0</span></div>
+                <div class="summary-total"><span>Total:</span> <span id="summary-total" style="color: #10b981;">0 $</span></div>
+                <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+        const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        window.removeFromCart = function(modelId) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart = cart.filter(id => id !== modelId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showToast('Removed from cart');
+            loadCart();
+        };
+
+        window.checkout = function() {
+            alert("Thank you for your order! Payment integration will be connected soon.");
+            localStorage.removeItem('cart');
+            loadCart();
+        };
+
+        async function loadCart() {
+            const container = document.getElementById('cart-items-container');
+            const summaryBox = document.getElementById('cart-summary-box');
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="empty-state">Your shopping cart is empty 🛒</div>';
+                summaryBox.style.display = 'none';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
+                if (!res.ok) throw new Error('Failed to load models');
+                const responseData = await res.json();
+                const allModels = responseData.data || [];
+
+                const cartModels = allModels.filter(item => {
+                    const id = item.documentId || item.id;
+                    return cart.includes(id);
+                });
+
+                if (cartModels.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Your shopping cart is empty 🛒</div>';
+                    summaryBox.style.display = 'none';
+                    return;
+                }
+
+                let totalPrice = 0;
+
+                container.innerHTML = cartModels.map(item => {
+                    const m = item.attributes || item;
+                    const correctId = item.documentId || item.id;
+                    const price = parseFloat(m.Price) || 0;
+                    totalPrice += price;
+
+                    let previewUrl = FALLBACK_IMG;
+                    if (m.Previews?.data?.length > 0) {
+                        const url = m.Previews.data[0].attributes?.url || m.Previews.data[0].url;
+                        previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                    } else if (m.Previews && m.Previews.length > 0) {
+                        const url = m.Previews[0].url;
+                        if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                    }
+
+                    return `
+                        <div class="cart-item">
+                            <img src="${previewUrl}" class="cart-item-img" alt="Model">
+                            <div class="cart-item-info">
+                                <a href="product.html?id=${correctId}" class="cart-item-title">${m.Title || 'Untitled'}</a>
+                                <div class="cart-item-price">${price > 0 ? price + ' $' : 'Free'}</div>
+                            </div>
+                            <button class="remove-btn" onclick="removeFromCart('${correctId}')" title="Remove">&times;</button>
+                        </div>`;
+                }).join('');
+
+                document.getElementById('summary-count').textContent = cartModels.length;
+                document.getElementById('summary-total').textContent = totalPrice + ' $';
+                summaryBox.style.display = 'flex';
+
+            } catch (err) {
+                container.innerHTML = '<div class="empty-state">Error loading cart items</div>';
+                summaryBox.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCart);
+    </script>
+</body>
+</html>
