@@ -240,6 +240,9 @@
             font-size: 16px;
             font-weight: 600;
             color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .model-price {
@@ -249,10 +252,45 @@
 
         .model-footer {
             display: flex;
-            justify-content: space-between;
+            gap: 8px;
             align-items: center;
             margin-top: auto;
             padding-top: 10px;
+        }
+
+        .btn-cart {
+            background-color: #4f46e5;
+            color: #fff;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            flex: 1;
+        }
+        .btn-cart:hover {
+            background-color: #4338ca;
+        }
+        .btn-cart.in-cart {
+            background-color: #10b981;
+        }
+
+        /* КАРТОЧКА АВТОРА В КАРТОЧКЕ ТОВАРА */
+        .model-author-badge { 
+            padding: 8px 16px; 
+            background: #0f111a; 
+            border-top: 1px solid #2d3748; 
+            font-size: 12px; 
+            color: #94a3b8; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .model-author-name { 
+            color: #3b82f6; 
+            font-weight: bold; 
         }
 
         /* Модальное окно Входа / Регистрации */
@@ -383,7 +421,8 @@
         </div>
 
         <div class="nav-actions">
-            <!-- КНОПКА ИЗБРАННОГО В ШАПКЕ -->
+            <!-- КНОПКИ КОРЗИНЫ, ИЗБРАННОГО И КАБИНЕТА -->
+            <a href="cart.html" class="btn btn-secondary">🛒 Cart</a>
             <a href="favorites.html" class="btn btn-secondary">Favorites ❤️</a>
             <button class="btn btn-primary" id="cabinet-btn">Dashboard</button>
         </div>
@@ -491,9 +530,10 @@
             toastEl.textContent = message;
             toastEl.className = 'toast' + (isError ? ' error' : '');
             toastEl.style.display = 'block';
-            setTimeout(() => toastEl.style.display = 'none', 5000);
+            setTimeout(() => toastEl.style.display = 'none', 4000);
         }
 
+        // Избранное
         window.toggleFavorite = function(event, modelId) {
             event.preventDefault(); 
             event.stopPropagation();
@@ -513,6 +553,27 @@
             renderModels();
         };
 
+        // Корзина
+        window.toggleCart = function(event, modelId) {
+            event.preventDefault(); 
+            event.stopPropagation();
+
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const index = cart.indexOf(modelId);
+
+            if (index === -1) {
+                cart.push(modelId);
+                showToast('Added to Cart 🛒');
+            } else {
+                cart.splice(index, 1);
+                showToast('Removed from Cart');
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderModels();
+        };
+
+        // Проверка авторизации
         function updateAuthUI() {
             const userStr = localStorage.getItem('user');
             if (localStorage.getItem('jwt') && userStr) {
@@ -554,6 +615,7 @@
             tabsHeader.style.display = 'flex';
         });
 
+        // Логин
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const identifier = document.getElementById('login-identifier').value.trim();
@@ -583,6 +645,7 @@
             }
         });
 
+        // Регистрация шаг 1
         window.goToStep2 = async function() {
             const username = document.getElementById('reg-username').value.trim();
             const email = document.getElementById('reg-email').value.trim();
@@ -620,6 +683,7 @@
             }
         };
 
+        // Регистрация шаг 2 (Код)
         window.handleVerifyCodeDirect = async function() {
             const code = document.getElementById('verify-code-input').value.trim();
             if (!code || code.length !== 6) {
@@ -655,6 +719,7 @@
             tabRegisterBtn.click();
         };
 
+        // Загрузка моделей с сервера
         async function loadModels() {
             try {
                 const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
@@ -667,6 +732,7 @@
             }
         }
 
+        // Рендер каталога
         function renderModels() {
             const grid = document.getElementById('models-grid');
             const countEl = document.getElementById('model-count');
@@ -689,11 +755,15 @@
             }
 
             const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
             grid.innerHTML = filtered.map(item => {
                 const m = item.attributes || item;
                 const correctId = item.documentId || item.id;
+                
                 const isFav = favorites.includes(correctId);
+                const isInCart = cart.includes(correctId);
+                const author = m.ownerUsername || 'Artist';
 
                 let previewUrl = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
                 
@@ -707,21 +777,35 @@
 
                 return `
                     <div class="model-card">
+                        <!-- КНОПКА ИЗБРАННОГО -->
                         <button class="favorite-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${correctId}')">
                             ${isFav ? '❤️' : '🤍'}
                         </button>
+                        
                         <img src="${previewUrl}" class="model-preview" alt="Model">
+                        
                         <div class="model-info">
                             <div class="model-title">${m.Title || 'Untitled'}</div>
+                            
                             <div class="model-footer">
                                 <span class="model-price">${m.Price ? m.Price + ' $' : 'Free'}</span>
-                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">View Details</a>
+                                <!-- КНОПКА КОРЗИНЫ -->
+                                <button class="btn-cart ${isInCart ? 'in-cart' : ''}" onclick="toggleCart(event, '${correctId}')">
+                                    ${isInCart ? 'In Cart ✓' : 'Add to Cart'}
+                                </button>
+                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px;">Details</a>
                             </div>
+                        </div>
+                        
+                        <!-- ПЛАШКА АВТОРА -->
+                        <div class="model-author-badge">
+                            by <span class="model-author-name">@${author}</span>
                         </div>
                     </div>`;
             }).join('');
         }
 
+        // Фильтрация категорий
         document.getElementById('categories-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('category-btn')) {
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
@@ -731,8 +815,10 @@
             }
         });
 
+        // Поиск
         searchInput.addEventListener('input', renderModels);
 
+        // Инициализация
         updateAuthUI();
         loadModels();
     </script>
