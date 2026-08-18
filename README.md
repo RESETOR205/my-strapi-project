@@ -62,3 +62,4 @@ Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/
 "# knighthubs-frontend" 
 "# knighthubs-frontend" 
 "# knighthubs-frontend" 
+"# knighthubs-frontend" 
