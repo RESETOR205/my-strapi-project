@@ -620,6 +620,7 @@
             const consentStatus = getCookie('cookie_consent');
             const banner = document.getElementById('cookie-banner');
 
+            // ПОКАЗЫВАЕМ БАННЕР ВСЕМ, ЕСЛИ У НИХ ЕЩЕ НЕТ КУКИ СОГЛАСИЯ
             if (!consentStatus && banner) {
                 banner.style.display = 'block';
             } else if (consentStatus === 'accepted') {
@@ -641,7 +642,6 @@
 
         function startTracking() {
             console.log("Трекинг запущен! Здесь будет работать аналитика.");
-            // Место для вставки Google Analytics, Яндекс.Метрики и т.д.
         }
         // ================= COOKIE СИСТЕМА И АНАЛИТИКА END =================
 
