@@ -68,6 +68,30 @@
             z-index: 11;
         }
 
+        /* Кнопка сетки */
+        .wireframe-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 17, 26, 0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 12;
+            display: none;
+            transition: all 0.2s ease;
+        }
+
+        .wireframe-toggle-btn:hover {
+            background: rgba(99, 102, 241, 0.9);
+            border-color: #6366f1;
+        }
+
         .thumbnails-list {
             display: flex;
             gap: 12px;
@@ -218,6 +242,8 @@
                 </model-viewer>
 
                 <div id="viewer-hint" class="viewer-controls-hint">🖱️ Left click & drag to rotate &bull; Scroll to zoom</div>
+                
+                <button id="wireframe-btn" class="wireframe-toggle-btn">Показать сетку</button>
             </div>
 
             <div class="thumbnails-list" id="thumbnails-container"></div>
@@ -272,6 +298,26 @@
     const viewerEl = document.getElementById('3d-viewer');
     const hintEl = document.getElementById('viewer-hint');
     const thumbsContainer = document.getElementById('thumbnails-container');
+    const wireframeBtn = document.getElementById('wireframe-btn');
+    let isWireframe = false;
+
+    // Логика кнопки переключения сетки
+    wireframeBtn.addEventListener('click', () => {
+        isWireframe = !isWireframe;
+        wireframeBtn.textContent = isWireframe ? 'Скрыть сетку' : 'Показать сетку';
+
+        const sceneSymbol = Object.getOwnPropertySymbols(viewerEl).find(s => s.description === 'scene');
+        if (sceneSymbol) {
+            const scene = viewerEl[sceneSymbol];
+            if (scene) {
+                scene.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        child.material.wireframe = isWireframe;
+                    }
+                });
+            }
+        }
+    });
 
     function showToast(message) {
         const toast = document.getElementById('toast');
@@ -319,6 +365,9 @@
         if (!currentGlbUrl) return;
         mainImgEl.style.display = 'none';
         viewerEl.style.display = 'block';
+        
+        wireframeBtn.style.display = 'block'; // Показываем кнопку сетки
+        
         if (!viewerEl.getAttribute('src')) {
             viewerEl.setAttribute('src', currentGlbUrl);
         }
@@ -332,6 +381,9 @@
     function activateImageView(imgUrl, index) {
         viewerEl.style.display = 'none';
         hintEl.style.display = 'none';
+        
+        wireframeBtn.style.display = 'none'; // Прячем кнопку сетки
+        
         mainImgEl.src = imgUrl;
         mainImgEl.style.display = 'block';
 
