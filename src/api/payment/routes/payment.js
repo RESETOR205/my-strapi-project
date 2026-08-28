@@ -7,6 +7,7 @@ module.exports = {
       path: '/payment/create',
       handler: 'payment.createInvoice',
       config: {
+        auth: false, // <--- Вот эта магия отключает проверку прав
         policies: [],
         middlewares: [],
       },
