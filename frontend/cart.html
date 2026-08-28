@@ -107,8 +107,8 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // ИЗМЕНЕНО: Запрос идет на наш прямой перехватчик, минуя роутер Strapi
-                const response = await fetch(`${STRAPI_BASE_URL}/api/payment-direct`, {
+                // Запрос к чистому и правильному API
+                const response = await fetch(`${STRAPI_BASE_URL}/api/payment/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
