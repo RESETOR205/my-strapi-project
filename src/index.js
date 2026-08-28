@@ -2,45 +2,22 @@
 const axios = require('axios');
 
 module.exports = {
-  register({ strapi }) {
-    // Вся логика в одном месте! Перехватываем запросы ДО роутера Strapi.
-    strapi.server.use(async (ctx, next) => {
-      
-      // Ловим только наш путь
-      if (ctx.path === '/api/oxapay/checkout') {
-        
-        // 1. Сразу разрешаем CORS, чтобы браузер не ругался
-        ctx.set('Access-Control-Allow-Origin', '*');
-        ctx.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  register(/*{ strapi }*/) {},
 
-        // 2. Отвечаем браузеру на скрытый проверочный запрос (убивает ошибку 405)
-        if (ctx.method === 'OPTIONS') {
-          ctx.status = 204;
-          return; 
-        }
-
-        // 3. Сама оплата
-        if (ctx.method === 'POST') {
+  bootstrap({ strapi }) {
+    // Официально регистрируем маршрут в ОДНОМ файле, без папок
+    strapi.server.routes([
+      {
+        method: 'POST',
+        path: '/oxapay-checkout', // Убрали /api/, чтобы Strapi не лез со своими правилами!
+        handler: async (ctx) => {
           try {
-            // Читаем данные напрямую
-            const body = await new Promise((resolve) => {
-              let data = '';
-              ctx.req.on('data', chunk => { data += chunk.toString(); });
-              ctx.req.on('end', () => {
-                try { resolve(JSON.parse(data)); } catch (e) { resolve({}); }
-              });
-            });
-
-            const { amount, orderId, email } = body;
+            const { amount, orderId, email } = ctx.request.body;
 
             if (!amount || !orderId) {
-              ctx.status = 400;
-              ctx.body = { error: 'Amount and orderId are required' };
-              return;
+              return ctx.badRequest('Amount and orderId are required');
             }
 
-            // Запрос в OxaPay
             const response = await axios.post('https://api.oxapay.com/merchants/request', {
               merchant: process.env.OXAPAY_MERCHANT_KEY,
               amount: Number(amount),
@@ -52,25 +29,19 @@ module.exports = {
             });
 
             if (response.data && (response.data.result === 100 || response.data.payLink)) {
-              ctx.status = 200;
-              ctx.body = { success: true, payLink: response.data.payLink };
+              ctx.send({ success: true, payLink: response.data.payLink });
             } else {
-              ctx.status = 400;
-              ctx.body = { error: response.data.message || 'Payment failed' };
+              ctx.badRequest(response.data.message || 'Payment failed');
             }
           } catch (err) {
             console.error('OxaPay Error:', err);
-            ctx.status = 500;
-            ctx.body = { error: 'Server error' };
+            ctx.internalServerError('Payment service error');
           }
-          return; // Завершаем запрос, Strapi его не увидит и не заблокирует
-        }
-      }
-      
-      // Все остальные запросы (админка, товары) идут дальше по правилам Strapi
-      await next();
-    });
+        },
+        config: {
+          auth: false, // Отключаем проверку токенов
+        },
+      },
+    ]);
   },
-
-  bootstrap(/*{ strapi }*/) {},
 };

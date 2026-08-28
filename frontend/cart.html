@@ -107,8 +107,7 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // Запрос идет на наш путь, который мы перехватываем в index.js
-                const response = await fetch(`${STRAPI_BASE_URL}/api/oxapay/checkout`, {
+                const response = await fetch(`${STRAPI_BASE_URL}/oxapay-checkout`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
