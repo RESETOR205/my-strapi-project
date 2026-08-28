@@ -501,6 +501,16 @@
         </div>
     </main>
 
+    <!-- ФУТЕР С ЮРИДИЧЕСКИМИ ССЫЛКАМИ -->
+    <footer style="text-align: center; padding: 25px 40px; margin-top: auto; background-color: #161a23; border-top: 1px solid #232936; color: #718096; font-size: 13px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>&copy; 2026 Knight Hub (knighthubs.xyz). All rights reserved.</div>
+        <div style="display: flex; gap: 20px;">
+            <a href="privacy.html" style="color: #a0aec0; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#a0aec0'">Privacy Policy</a>
+            <a href="terms.html" style="color: #a0aec0; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#a0aec0'">Terms of Service</a>
+            <a href="mailto:support@knighthubs.xyz" style="color: #a0aec0; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#a0aec0'">Support</a>
+        </div>
+    </footer>
+
     <div class="modal-overlay" id="auth-modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close">&times;</button>
@@ -555,7 +565,7 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- ================= COOKIE BANNER START ================= -->
+    <!-- COOKIE BANNER -->
     <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; color: #fff; padding: 20px; text-align: center; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); font-family: sans-serif;">
         <p style="margin: 0 0 15px 0; font-size: 14px;">
             We use cookies to improve your experience and for analytics. You can accept data collection or decline tracking.
@@ -563,7 +573,6 @@
         <button onclick="acceptCookies()" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; cursor: pointer; margin-right: 15px; border-radius: 5px; font-weight: bold;">Accept All</button>
         <button onclick="declineCookies()" style="background: #f44336; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold;">Decline (No Tracking)</button>
     </div>
-    <!-- ================= COOKIE BANNER END ================= -->
 
     <script>
         const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
@@ -572,7 +581,6 @@
         let activeCategory = 'all';
         let pendingRegisterEmail = '';
         
-        // Хранилище картинок для слайдера
         const modelGalleries = {};
 
         const cabinetBtn = document.getElementById('cabinet-btn');
@@ -594,7 +602,6 @@
             setTimeout(() => toastEl.style.display = 'none', 4000);
         }
 
-        // ================= COOKIE СИСТЕМА И АНАЛИТИКА START =================
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -620,7 +627,6 @@
             const consentStatus = getCookie('cookie_consent');
             const banner = document.getElementById('cookie-banner');
 
-            // ПОКАЗЫВАЕМ БАННЕР ВСЕМ, ЕСЛИ У НИХ ЕЩЕ НЕТ КУКИ СОГЛАСИЯ
             if (!consentStatus && banner) {
                 banner.style.display = 'block';
             } else if (consentStatus === 'accepted') {
@@ -637,15 +643,12 @@
         function declineCookies() {
             setCookie('cookie_consent', 'declined', 365);
             document.getElementById('cookie-banner').style.display = 'none';
-            console.log("Tracking declined by user.");
         }
 
         function startTracking() {
-            console.log("Tracking started! Analytics will run here.");
+            console.log("Tracking started!");
         }
-        // ================= COOKIE СИСТЕМА И АНАЛИТИКА END =================
 
-        // Логика слайдера
         window.changeCardImage = function(modelId, index) {
             const gallery = modelGalleries[modelId];
             if (!gallery || !gallery[index]) return;
@@ -666,7 +669,6 @@
             changeCardImage(modelId, 0);
         };
 
-        // Избранное
         window.toggleFavorite = function(event, modelId) {
             event.preventDefault(); 
             event.stopPropagation();
@@ -686,7 +688,6 @@
             renderModels();
         };
 
-        // Корзина
         window.toggleCart = function(event, modelId) {
             event.preventDefault(); 
             event.stopPropagation();
@@ -706,7 +707,6 @@
             renderModels();
         };
 
-        // Проверка авторизации
         function updateAuthUI() {
             const userStr = localStorage.getItem('user');
             if (localStorage.getItem('jwt') && userStr) {
@@ -748,7 +748,6 @@
             tabsHeader.style.display = 'flex';
         });
 
-        // Логин
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const identifier = document.getElementById('login-identifier').value.trim();
@@ -768,7 +767,6 @@
                     showToast('Login successful!');
                     authModal.classList.remove('active');
                     updateAuthUI();
-                    
                     window.location.href = 'user.html';
                 } else {
                     showToast(data.error?.message || 'Login error', true);
@@ -778,7 +776,6 @@
             }
         });
 
-        // Регистрация шаг 1
         window.goToStep2 = async function() {
             const username = document.getElementById('reg-username').value.trim();
             const email = document.getElementById('reg-email').value.trim();
@@ -816,7 +813,6 @@
             }
         };
 
-        // Регистрация шаг 2 (Код)
         window.handleVerifyCodeDirect = async function() {
             const code = document.getElementById('verify-code-input').value.trim();
             if (!code || code.length !== 6) {
@@ -840,7 +836,6 @@
                 showToast("Account verified!");
                 authModal.classList.remove('active');
                 updateAuthUI();
-                
                 window.location.href = 'user.html';
                 
             } catch (err) {
@@ -852,7 +847,6 @@
             tabRegisterBtn.click();
         };
 
-        // Загрузка моделей с сервера
         async function loadModels() {
             try {
                 const res = await fetch(`${STRAPI_BASE_URL}/api/models?populate=*`);
@@ -865,7 +859,6 @@
             }
         }
 
-        // Рендер каталога
         function renderModels() {
             const grid = document.getElementById('models-grid');
             const countEl = document.getElementById('model-count');
@@ -898,7 +891,6 @@
                 const isInCart = cart.includes(correctId);
                 const author = m.ownerUsername || 'Artist';
 
-                // Вытаскиваем ВСЕ картинки для слайдера
                 let imgUrls = [];
                 let rawPreviews = m.Previews;
                 if (rawPreviews && rawPreviews.data) rawPreviews = rawPreviews.data;
@@ -916,18 +908,15 @@
                 }
                 if (imgUrls.length === 0) imgUrls.push('https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model');
                 
-                // Сохраняем в глобальный объект для слайдера
                 modelGalleries[correctId] = imgUrls;
                 const hasMultiple = imgUrls.length > 1;
 
                 return `
                     <div class="model-card">
-                        <!-- КНОПКА ИЗБРАННОГО -->
                         <button class="favorite-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${correctId}')">
                             ${isFav ? '❤️' : '🤍'}
                         </button>
                         
-                        <!-- БЛОК СЛАЙДЕРА -->
                         <a href="product.html?id=${correctId}" style="text-decoration: none;">
                             <div class="card-media-wrapper" onmouseleave="resetCardImage('${correctId}')">
                                 <img id="card-img-${correctId}" src="${imgUrls[0]}" class="model-preview" alt="Model">
@@ -949,7 +938,6 @@
                             
                             <div class="model-footer">
                                 <span class="model-price">${m.Price ? m.Price + ' $' : 'Free'}</span>
-                                <!-- КНОПКА КОРЗИНЫ -->
                                 <button class="btn-cart ${isInCart ? 'in-cart' : ''}" onclick="toggleCart(event, '${correctId}')">
                                     ${isInCart ? 'In Cart ✓' : 'Add to Cart'}
                                 </button>
@@ -957,7 +945,6 @@
                             </div>
                         </div>
                         
-                        <!-- ПЛАШКА АВТОРА -->
                         <div class="model-author-badge">
                             by <span class="model-author-name">@${author}</span>
                         </div>
@@ -965,7 +952,6 @@
             }).join('');
         }
 
-        // Фильтрация категорий
         document.getElementById('categories-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('category-btn')) {
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
@@ -975,10 +961,8 @@
             }
         });
 
-        // Поиск
         searchInput.addEventListener('input', renderModels);
 
-        // Инициализация
         updateAuthUI();
         loadModels();
     </script>
