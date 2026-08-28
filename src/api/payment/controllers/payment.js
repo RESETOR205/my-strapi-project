@@ -9,18 +9,16 @@ module.exports = {
         return ctx.badRequest('Amount and orderId are required');
       }
 
-      // Данные для отправки запроса в OxaPay API
       const payload = {
-        merchant: process.env.OXAPAY_MERCHANT_KEY, // Ключ мерчанта будет браться из переменных окружения
-        amount: amount,
+        merchant: process.env.OXAPAY_MERCHANT_KEY,
+        amount: Number(amount),
         currency: 'USD',
-        order_id: orderId,
+        order_id: String(orderId),
         email: email || 'support@knighthubs.xyz',
-        return_url: `https://knighthubs.xyz/user.html`,
+        return_url: 'https://www.knighthubs.xyz/user.html',
         description: `Order #${orderId} on Knight Hub`
       };
 
-      // Запрос к API OxaPay на создание инвойса
       const response = await fetch('https://api.oxapay.com/merchants/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,7 +34,9 @@ module.exports = {
           trackId: data.trackId
         });
       } else {
-        return ctx.badRequest(data.message || 'Failed to create payment invoice');
+        return ctx.badRequest({
+          message: data.message || 'Failed to create payment invoice'
+        });
       }
 
     } catch (err) {
