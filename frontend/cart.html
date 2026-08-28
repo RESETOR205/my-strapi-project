@@ -107,8 +107,8 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // Запрос летит на официальный Strapi-роут
-                const response = await fetch(`${STRAPI_BASE_URL}/api/oxapay/pay`, {
+                // Запрос на наш уникальный роут
+                const response = await fetch(`${STRAPI_BASE_URL}/api/process-crypto-payment`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

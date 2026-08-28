@@ -4,7 +4,7 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/oxapay/pay',
+      path: '/process-crypto-payment', // Уникальный путь, 100% нет конфликтов с 405 ошибкой
       handler: 'oxapay.pay',
       config: {
         auth: false,
