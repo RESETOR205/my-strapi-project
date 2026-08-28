@@ -71,7 +71,8 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+        // Теперь все запросы идут через твой официальный домен бэкенда!
+        const STRAPI_BASE_URL = 'https://api.knighthubs.xyz';
         const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
 
         function showToast(message) {
@@ -107,7 +108,7 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // Запрос к финальному пути
+                // Запрос на создание инвойса
                 const response = await fetch(`${STRAPI_BASE_URL}/api/payment/create`, {
                     method: 'POST',
                     headers: {
