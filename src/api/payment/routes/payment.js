@@ -4,11 +4,10 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/oxapay/checkout', 
-      handler: 'payment.createInvoice', // Упростили обработчик!
+      path: '/payment/create',
+      handler: 'payment.createInvoice',
       config: {
-        auth: false,
-        prefix: false // Эта магия вытаскивает наш путь из-под ограничений /api
+        auth: false, // Отключает админку и делает маршрут публичным
       },
     },
   ],

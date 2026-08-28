@@ -107,8 +107,8 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // ИЗМЕНЕНО: Запрос идет без префикса /api/, напрямую на созданный роут
-                const response = await fetch(`${STRAPI_BASE_URL}/oxapay/checkout`, {
+                // Запрос к финальному пути
+                const response = await fetch(`${STRAPI_BASE_URL}/api/payment/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
