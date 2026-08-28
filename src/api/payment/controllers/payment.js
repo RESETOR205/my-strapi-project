@@ -2,7 +2,7 @@
 const axios = require('axios');
 
 module.exports = {
-  async pay(ctx) {
+  async createInvoice(ctx) {
     try {
       const { amount, orderId, email } = ctx.request.body;
 

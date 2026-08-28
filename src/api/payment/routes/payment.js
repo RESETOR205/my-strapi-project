@@ -4,8 +4,8 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/create-payment',
-      handler: 'order.pay',
+      path: '/payment/create',
+      handler: 'payment.createInvoice',
       config: {
         auth: false,
       },
