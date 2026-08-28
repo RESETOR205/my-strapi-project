@@ -107,8 +107,8 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // ИЗМЕНЕНО: Новый уникальный маршрут, чтобы Strapi не выдавал 405 ошибку
-                const response = await fetch(`${STRAPI_BASE_URL}/api/checkout/oxapay`, {
+                // ИЗМЕНЕНО: Запрос идет на кастомный роут, который Strapi теперь точно увидит
+                const response = await fetch(`${STRAPI_BASE_URL}/api/oxapay/pay`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
