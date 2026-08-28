@@ -4,10 +4,11 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/oxapay/pay', // Короткий и понятный путь
-      handler: 'api::payment.payment.createInvoice', // Точное указание на контроллер
+      path: '/pay-now', // Короткий путь прямо в корне сервера
+      handler: 'api::payment.payment.createInvoice',
       config: {
-        auth: false, // Полностью открытый доступ
+        auth: false, // Отключаем проверку токенов
+        prefix: false // ВЫКЛЮЧАЕМ префикс /api/. Strapi сюда больше не лезет.
       },
     },
   ],
