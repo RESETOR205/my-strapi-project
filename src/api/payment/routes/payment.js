@@ -4,10 +4,10 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/payment/create',
-      handler: 'payment.createInvoice',
+      path: '/oxapay/checkout', // <-- Сделали полностью уникальный путь, чтобы Strapi не путался
+      handler: 'api::payment.payment.createInvoice', // <-- Явно указываем Strapi, где лежит функция
       config: {
-        auth: false, // <--- Вот это делает маршрут публичным без админки
+        auth: false, // Отключаем проверку прав
         policies: [],
         middlewares: [],
       },
