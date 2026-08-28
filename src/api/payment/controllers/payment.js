@@ -1,4 +1,5 @@
 'use strict';
+const axios = require('axios'); // Используем надежный axios вместо fetch
 
 module.exports = {
   async createInvoice(ctx) {
@@ -19,13 +20,9 @@ module.exports = {
         description: `Order #${orderId} on Knight Hub`
       };
 
-      const response = await fetch('https://api.oxapay.com/merchants/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
+      // Запрос к OxaPay через axios
+      const response = await axios.post('https://api.oxapay.com/merchants/request', payload);
+      const data = response.data;
 
       if (data.result === 100 || data.payLink) {
         return ctx.send({
@@ -34,13 +31,12 @@ module.exports = {
           trackId: data.trackId
         });
       } else {
-        return ctx.badRequest({
-          message: data.message || 'Failed to create payment invoice'
-        });
+        return ctx.badRequest(data.message || 'Failed to create payment invoice');
       }
 
     } catch (err) {
-      return ctx.internalServerError('Payment service error: ' + err.message);
+      console.error('OxaPay Error:', err);
+      return ctx.internalServerError('Payment service error');
     }
   }
 };

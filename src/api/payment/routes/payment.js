@@ -7,7 +7,7 @@ module.exports = {
       path: '/payment/create',
       handler: 'payment.createInvoice',
       config: {
-        auth: false, // <--- Вот эта магия отключает проверку прав
+        auth: false, // <--- Вот это делает маршрут публичным без админки
         policies: [],
         middlewares: [],
       },
