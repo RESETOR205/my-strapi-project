@@ -107,6 +107,7 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
+                // Запрос летит ровно в наш перехватчик, минуя любые папки
                 const response = await fetch(`${STRAPI_BASE_URL}/oxapay-checkout`, {
                     method: 'POST',
                     headers: {

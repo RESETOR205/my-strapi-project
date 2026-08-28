@@ -2,22 +2,37 @@
 const axios = require('axios');
 
 module.exports = {
-  register(/*{ strapi }*/) {},
+  register({ strapi }) {
+    // Безопасный перехватчик: работает поверх всего и не ломает сервер
+    strapi.server.use(async (ctx, next) => {
+      // Используем гибкую проверку пути (includes), чтобы точно поймать запрос
+      if (ctx.path.includes('/oxapay-checkout')) {
+        
+        // 1. Вручную выдаем зеленый свет для браузера (CORS)
+        ctx.set('Access-Control-Allow-Origin', '*');
+        ctx.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  bootstrap({ strapi }) {
-    // Официально регистрируем маршрут в ОДНОМ файле, без папок
-    strapi.server.routes([
-      {
-        method: 'POST',
-        path: '/oxapay-checkout', // Убрали /api/, чтобы Strapi не лез со своими правилами!
-        handler: async (ctx) => {
+        // Отбиваем проверочный запрос браузера, не пуская его дальше
+        if (ctx.method === 'OPTIONS') {
+          ctx.status = 204;
+          return;
+        }
+
+        // 2. Сама оплата
+        if (ctx.method === 'POST') {
           try {
-            const { amount, orderId, email } = ctx.request.body;
+            // Strapi уже собрал тело запроса, берем его готовым
+            const body = ctx.request.body || {};
+            const { amount, orderId, email } = body;
 
             if (!amount || !orderId) {
-              return ctx.badRequest('Amount and orderId are required');
+              ctx.status = 400;
+              ctx.body = { error: 'Amount and orderId are required' };
+              return;
             }
 
+            // Отправляем запрос в OxaPay
             const response = await axios.post('https://api.oxapay.com/merchants/request', {
               merchant: process.env.OXAPAY_MERCHANT_KEY,
               amount: Number(amount),
@@ -29,19 +44,26 @@ module.exports = {
             });
 
             if (response.data && (response.data.result === 100 || response.data.payLink)) {
-              ctx.send({ success: true, payLink: response.data.payLink });
+              ctx.status = 200;
+              ctx.body = { success: true, payLink: response.data.payLink };
             } else {
-              ctx.badRequest(response.data.message || 'Payment failed');
+              ctx.status = 400;
+              ctx.body = { error: response.data.message || 'Payment failed' };
             }
           } catch (err) {
             console.error('OxaPay Error:', err);
-            ctx.internalServerError('Payment service error');
+            ctx.status = 500;
+            ctx.body = { error: 'Server error' };
           }
-        },
-        config: {
-          auth: false, // Отключаем проверку токенов
-        },
-      },
-    ]);
+          // Останавливаем выполнение. Strapi никогда не выдаст 405.
+          return;
+        }
+      }
+      
+      // Все остальные запросы идут стандартным путем
+      await next();
+    });
   },
+
+  bootstrap(/*{ strapi }*/) {},
 };
