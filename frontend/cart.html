@@ -38,6 +38,7 @@
         
         .checkout-btn { width: 100%; padding: 14px; background-color: #10b981; border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .checkout-btn:hover { background-color: #059669; }
+        .checkout-btn:disabled { background-color: #4b5563; cursor: not-allowed; }
 
         .empty-state { text-align: center; padding: 60px 20px; background-color: #161a23; border-radius: 12px; border: 1px dashed #2d3748; color: #a0aec0; grid-column: 1 / -1; }
         .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; background-color: #ef4444; color: #fff; font-size: 14px; font-weight: 500; display: none; z-index: 2000; }
@@ -46,8 +47,8 @@
 <body>
 
     <header>
-        <a href="index.html" class="logo">Knight <span>Hub</span></a>
-        <a href="index.html" class="back-btn">&larr; Continue Shopping</a>
+        <a href="https://www.knighthubs.xyz/index.html" class="logo">Knight <span>Hub</span></a>
+        <a href="https://www.knighthubs.xyz/index.html" class="back-btn">&larr; Continue Shopping</a>
     </header>
 
     <main>
@@ -62,7 +63,7 @@
                 <div class="summary-title">Order Summary</div>
                 <div class="summary-row"><span>Models count:</span> <span id="summary-count">0</span></div>
                 <div class="summary-total"><span>Total:</span> <span id="summary-total" style="color: #10b981;">0 $</span></div>
-                <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+                <button class="checkout-btn" id="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
             </div>
         </div>
     </main>
@@ -70,7 +71,7 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
+        const STRAPI_BASE_URL = 'https://my-strapi-project-production-4592.up.railway.app';
         const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
 
         function showToast(message) {
@@ -88,10 +89,52 @@
             loadCart();
         };
 
-        window.checkout = function() {
-            alert("Thank you for your order! Payment integration will be connected soon.");
-            localStorage.removeItem('cart');
-            loadCart();
+        window.checkout = async function() {
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const totalElement = document.getElementById('summary-total');
+            
+            const totalPriceText = totalElement ? totalElement.textContent.replace('$', '').trim() : '0';
+            const amount = parseFloat(totalPriceText);
+
+            if (!amount || amount <= 0) {
+                showToast('Cart is empty or invalid amount');
+                return;
+            }
+
+            const orderId = 'ORDER-' + Date.now();
+
+            try {
+                checkoutBtn.disabled = true;
+                checkoutBtn.textContent = 'Creating invoice...';
+
+                const response = await fetch(`${STRAPI_BASE_URL}/api/payment/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        orderId: orderId,
+                        email: 'support@knighthubs.xyz'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.payLink) {
+                    localStorage.removeItem('cart');
+                    window.location.href = data.payLink;
+                } else {
+                    showToast(data.error?.message || 'Failed to create payment invoice');
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.textContent = 'Proceed to Checkout';
+                }
+            } catch (err) {
+                console.error('Payment request error:', err);
+                showToast('Payment service connection error');
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = 'Proceed to Checkout';
+            }
         };
 
         async function loadCart() {
