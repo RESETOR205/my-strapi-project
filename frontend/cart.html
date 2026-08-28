@@ -71,7 +71,6 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Твой правильный адрес сервера
         const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
         const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
 
@@ -108,8 +107,8 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // ИЗМЕНЕНО: Новый уникальный маршрут
-                const response = await fetch(`${STRAPI_BASE_URL}/api/oxapay/checkout`, {
+                // ИЗМЕНЕНО: Запрос идет без префикса /api/, напрямую на созданный роут
+                const response = await fetch(`${STRAPI_BASE_URL}/oxapay/checkout`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
