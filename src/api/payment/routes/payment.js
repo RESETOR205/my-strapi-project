@@ -4,10 +4,10 @@ module.exports = {
   routes: [
     {
       method: 'POST',
-      path: '/payment/create',
+      path: '/checkout/oxapay', // <-- Уникальное имя, чтобы Strapi не путался
       handler: 'payment.createInvoice',
       config: {
-        auth: false, // Отключает админку и делает маршрут публичным
+        auth: false,
       },
     },
   ],
