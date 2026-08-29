@@ -25,6 +25,8 @@
         .login-btn-profile { padding: 10px 20px; background: #4f46e5; border: none; border-radius: 8px; color: #fff; font-weight: bold; text-decoration: none; margin-left: auto; display: inline-block; transition: background 0.2s; cursor: pointer; }
         .login-btn-profile:hover { background: #4338ca; }
 
+        .wallet-section { background: #1a1d29; padding: 25px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #334155; }
+
         .section-title-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; margin-bottom: 30px; }
         .section-title { font-size: 18px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; }
         .add-product-btn { padding: 8px 16px; background: #22c55e; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; text-decoration: none; }
@@ -168,9 +170,9 @@
         <button class="login-btn-profile" id="loginBtn" style="display: none;" onclick="openAuthModal()">Log In / Sign Up</button>
     </div>
 
-    <!-- БЛОК НАСТРОЕК КОШЕЛЬКА (Скрыт по умолчанию) -->
-    <div class="wallet-section" id="wallet-section" style="display: none; background: #1a1d29; padding: 25px; border-radius: 16px; margin-bottom: 40px;">
-        <h2 style="font-size: 20px; color: #fff; margin-bottom: 15px;">Payout Settings (Wallet)</h2>
+    <!-- БЛОК НАСТРОЕК КОШЕЛЬКА (ВИДИМЫЙ ДЛЯ АВТОРИЗОВАННЫХ) -->
+    <div class="wallet-section" id="wallet-section" style="display: none;">
+        <h2 style="font-size: 18px; color: #fff; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Payout Settings (Wallet)</h2>
         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
             <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
                 <label style="color: #94a3b8;">Network (e.g. USDT TRC20)</label>
@@ -353,7 +355,7 @@
         
         document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById('loginBtn').style.display = 'inline-block';
-        document.getElementById('wallet-section').style.display = 'none'; // Скрываем кошелек
+        document.getElementById('wallet-section').style.display = 'none';
         
         const openBtn = document.getElementById('openModalBtn');
         if (openBtn) openBtn.style.display = 'none';
@@ -650,7 +652,6 @@
             const responseData = await res.json();
             const allModels = responseData.data || [];
 
-            // Фильтруем модели по имени автора (ownerUsername)
             const models = allModels.filter(item => {
                 const attrs = item.attributes || item;
                 return attrs.ownerUsername === currentUsername;
@@ -747,7 +748,7 @@
                     document.getElementById('loginBtn').style.display = 'none';
                     document.getElementById('openModalBtn').style.display = 'inline-block';
                     
-                    // Показываем блок кошелька и грузим данные
+                    // Принудительно показываем блок кошелька и грузим данные
                     document.getElementById('wallet-section').style.display = 'block';
                     loadWallet();
                     
