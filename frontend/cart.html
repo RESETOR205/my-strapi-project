@@ -98,16 +98,13 @@
             const totalPriceText = totalElement ? totalElement.textContent.replace('$', '').trim() : '0';
             const amount = parseFloat(totalPriceText);
 
-            // Получаем список ID моделей из корзины и данные пользователя
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const userStr = localStorage.getItem('user');
             let userEmail = 'guest@knighthubs.xyz';
-            let userId = null;
 
             if (userStr) {
                 const user = JSON.parse(userStr);
                 userEmail = user.email || userEmail;
-                userId = user.id || null;
             }
 
             if (!amount || amount <= 0 || cart.length === 0) {
@@ -121,27 +118,30 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                const response = await fetch(`${STRAPI_BASE_URL}/api/payments/create`, {
+                // Прямой запрос на создание счета в OxaPay
+                const response = await fetch('https://api.oxapay.com/merchants/request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        amount: amount, 
+                        merchant: '3EX6UD-FKGFM1-NY59AK-C3RWVD',
+                        amount: amount,
+                        currency: 'USD',
+                        lifeTime: 60,
+                        returnUrl: 'https://www.knighthubs.xyz/success.html',
+                        description: `Order ${orderId}`,
                         orderId: orderId,
-                        email: userEmail,
-                        userId: userId,
-                        models: cart 
+                        email: userEmail
                     })
                 });
 
                 const data = await response.json();
 
-                if (data.success && data.payLink) {
-                    // Перенаправляем на шлюз OxaPay без очистки корзины (очистим после успеха)
+                if (data.result === 100 && data.payLink) {
                     window.location.href = data.payLink;
                 } else {
-                    showToast(data.error || data.message || 'Failed to create payment invoice');
+                    showToast(data.message || 'Failed to create payment invoice');
                     checkoutBtn.disabled = false;
                     checkoutBtn.textContent = 'Proceed to Checkout';
                 }
