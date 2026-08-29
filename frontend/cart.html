@@ -98,7 +98,19 @@
             const totalPriceText = totalElement ? totalElement.textContent.replace('$', '').trim() : '0';
             const amount = parseFloat(totalPriceText);
 
-            if (!amount || amount <= 0) {
+            // Получаем список ID моделей из корзины и данные пользователя
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const userStr = localStorage.getItem('user');
+            let userEmail = 'guest@knighthubs.xyz';
+            let userId = null;
+
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                userEmail = user.email || userEmail;
+                userId = user.id || null;
+            }
+
+            if (!amount || amount <= 0 || cart.length === 0) {
                 showToast('Cart is empty or invalid amount');
                 return;
             }
@@ -109,26 +121,27 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // Здесь подставь тот endpoint, через который решишь делать бэкенд (или свой старый рабочий путь)
                 const response = await fetch(`${STRAPI_BASE_URL}/api/payments/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        amount: amount, // Передается уже конечная сумма с учетом 15% комиссии
+                        amount: amount, 
                         orderId: orderId,
-                        email: 'support@knighthubs.xyz'
+                        email: userEmail,
+                        userId: userId,
+                        models: cart 
                     })
                 });
 
                 const data = await response.json();
 
                 if (data.success && data.payLink) {
-                    localStorage.removeItem('cart');
+                    // Перенаправляем на шлюз OxaPay без очистки корзины (очистим после успеха)
                     window.location.href = data.payLink;
                 } else {
-                    showToast(data.error?.message || 'Failed to create payment invoice');
+                    showToast(data.error || data.message || 'Failed to create payment invoice');
                     checkoutBtn.disabled = false;
                     checkoutBtn.textContent = 'Proceed to Checkout';
                 }
@@ -196,7 +209,6 @@
                         </div>`;
                 }).join('');
 
-                // Расчет 15% комиссии
                 const fee = subtotalPrice * 0.15;
                 const totalPrice = subtotalPrice + fee;
 
