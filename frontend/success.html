@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success | Knight Hub</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d0f12; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        .success-card { background-color: #161a23; border: 1px solid #2d3748; border-radius: 16px; padding: 40px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .success-icon { font-size: 50px; margin-bottom: 20px; }
+        .title { font-size: 24px; font-weight: bold; color: #fff; margin-bottom: 10px; }
+        .subtitle { color: #a0aec0; font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
+        
+        .home-btn { display: inline-block; width: 100%; padding: 14px; background-color: #3b82f6; border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: bold; text-decoration: none; transition: background 0.2s; }
+        .home-btn:hover { background-color: #2563eb; }
+    </style>
+</head>
+<body>
+
+    <div class="success-card">
+        <div class="success-icon">🎉</div>
+        <h1 class="title">Payment Successful!</h1>
+        <p class="subtitle">Thank you for your purchase on Knight Hub. Your transaction has been successfully processed via OxaPay.</p>
+        <a href="index.html" class="home-btn">Return to Marketplace</a>
+    </div>
+
+    <script>
+        // Очищаем корзину после успешной оплаты
+        localStorage.removeItem('cart');
+    </script>
+
+</body>
+</html>
