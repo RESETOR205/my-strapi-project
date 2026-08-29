@@ -11,7 +11,7 @@
         .logo-link { color: #fff; text-decoration: none; font-size: 28px; font-weight: bold; }
         .back-btn { padding: 10px 20px; background: #334155; border: none; border-radius: 8px; color: #fff; text-decoration: none; }
         .back-btn:hover { background: #475569; }
-        .profile-container { display: flex; align-items: center; gap: 25px; background: #1a1d29; padding: 30px; border-radius: 16px; margin-bottom: 40px; position: relative; }
+        .profile-container { display: flex; align-items: center; gap: 25px; background: #1a1d29; padding: 30px; border-radius: 16px; margin-bottom: 20px; position: relative; }
         .profile-avatar { width: 100px; height: 100px; background: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; text-transform: uppercase; }
         .profile-info { display: flex; flex-direction: column; gap: 8px; }
         .profile-header-row { display: flex; align-items: center; gap: 15px; }
@@ -166,6 +166,22 @@
         </div>
         <button class="logout-btn" id="logoutBtn" style="display: none;" onclick="logoutUser()">Log Out</button>
         <button class="login-btn-profile" id="loginBtn" style="display: none;" onclick="openAuthModal()">Log In / Sign Up</button>
+    </div>
+
+    <!-- БЛОК НАСТРОЕК КОШЕЛЬКА (Скрыт по умолчанию) -->
+    <div class="wallet-section" id="wallet-section" style="display: none; background: #1a1d29; padding: 25px; border-radius: 16px; margin-bottom: 40px;">
+        <h2 style="font-size: 20px; color: #fff; margin-bottom: 15px;">Payout Settings (Wallet)</h2>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                <label style="color: #94a3b8;">Network (e.g. USDT TRC20)</label>
+                <input type="text" id="wallet-network" placeholder="USDT TRC20">
+            </div>
+            <div class="form-group" style="flex: 2; min-width: 250px; margin-bottom: 0;">
+                <label style="color: #94a3b8;">Wallet Address</label>
+                <input type="text" id="wallet-address" placeholder="T...">
+            </div>
+        </div>
+        <button onclick="saveWallet()" class="submit-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;">Save Wallet</button>
     </div>
 
     <div class="section-title-bar">
@@ -337,6 +353,7 @@
         
         document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById('loginBtn').style.display = 'inline-block';
+        document.getElementById('wallet-section').style.display = 'none'; // Скрываем кошелек
         
         const openBtn = document.getElementById('openModalBtn');
         if (openBtn) openBtn.style.display = 'none';
@@ -487,6 +504,62 @@
         document.getElementById('auth-tabs-header').style.display = 'flex';
         document.getElementById('auth-verify-form').style.display = 'none';
         switchAuthTab('register');
+    }
+
+    // --- ФУНКЦИИ КОШЕЛЬКА ---
+    async function loadWallet() {
+        const token = localStorage.getItem('jwt') || localStorage.getItem('token');
+        if (!token) return;
+        
+        try {
+            const res = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const userData = await res.json();
+                if (userData.walletNetwork) document.getElementById('wallet-network').value = userData.walletNetwork;
+                if (userData.walletAddress) document.getElementById('wallet-address').value = userData.walletAddress;
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки кошелька:', error);
+        }
+    }
+
+    async function saveWallet() {
+        const token = localStorage.getItem('jwt') || localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+        
+        if (!token || !userStr) {
+            showToast('Сначала нужно войти в аккаунт!', true);
+            return;
+        }
+
+        const user = JSON.parse(userStr);
+        const network = document.getElementById('wallet-network').value.trim();
+        const address = document.getElementById('wallet-address').value.trim();
+
+        try {
+            const response = await fetch(`${STRAPI_BASE_URL}/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    walletNetwork: network,
+                    walletAddress: address
+                })
+            });
+
+            if (response.ok) {
+                showToast('Реквизиты кошелька успешно сохранены!');
+            } else {
+                showToast('Ошибка сохранения. Убедитесь, что в Strapi разрешено обновление (update) для роли Authenticated.', true);
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
+            showToast('Ошибка соединения с сервером.', true);
+        }
     }
 
     /* --- ЛОГИКА ВИТРИНЫ И КАРТОЧЕК --- */
@@ -673,6 +746,11 @@
                     document.getElementById('logoutBtn').style.display = 'inline-block';
                     document.getElementById('loginBtn').style.display = 'none';
                     document.getElementById('openModalBtn').style.display = 'inline-block';
+                    
+                    // Показываем блок кошелька и грузим данные
+                    document.getElementById('wallet-section').style.display = 'block';
+                    loadWallet();
+                    
                     loadUserModels();
                 } else { renderUnauthenticatedUI(); }
             } else { renderUnauthenticatedUI(); }
@@ -756,7 +834,7 @@
                     ModelFBX: fbxId,
                     Previews: imgIds, 
                     ModelGLB: glbId,
-                    ownerUsername: currentUsername // Записываем ник создателя в текстовое поле!
+                    ownerUsername: currentUsername 
                 }
             };
 
