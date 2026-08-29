@@ -170,7 +170,7 @@
         <button class="login-btn-profile" id="loginBtn" style="display: none;" onclick="openAuthModal()">Log In / Sign Up</button>
     </div>
 
-    <!-- БЛОК НАСТРОЕК КОШЕЛЬКА (ВИДИМЫЙ ДЛЯ АВТОРИЗОВАННЫХ) -->
+    <!-- БЛОК НАСТРОЕК КОШЕЛЬКА -->
     <div class="wallet-section" id="wallet-section" style="display: none;">
         <h2 style="font-size: 18px; color: #fff; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Payout Settings (Wallet)</h2>
         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -554,9 +554,18 @@
             });
 
             if (response.ok) {
+                // Подтягиваем и обновляем локальный кэш пользователя, чтобы данные не пропадали
+                const updatedRes = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (updatedRes.ok) {
+                    const freshData = await updatedRes.json();
+                    localStorage.setItem('user', JSON.stringify(freshData));
+                }
+
                 showToast('Реквизиты кошелька успешно сохранены!');
             } else {
-                showToast('Ошибка сохранения. Убедитесь, что в Strapi разрешено обновление (update) для роли Authenticated.', true);
+                showToast('Ошибка сохранения. Проверьте права в Strapi.', true);
             }
         } catch (error) {
             console.error('Ошибка сохранения:', error);
@@ -748,7 +757,7 @@
                     document.getElementById('loginBtn').style.display = 'none';
                     document.getElementById('openModalBtn').style.display = 'inline-block';
                     
-                    // Принудительно показываем блок кошелька и грузим данные
+                    // Показываем блок кошелька и грузим данные из базы
                     document.getElementById('wallet-section').style.display = 'block';
                     loadWallet();
                     
