@@ -1,9 +1,7 @@
 export default {
-  async create(ctx: any) {
+  async create(ctx) {
     try {
       const { amount, orderId, email, userId, models } = ctx.request.body;
-      
-      // Тот самый тестовый ключ интегрирован прямо сюда
       const merchantKey = '3EX6UD-FKGFM1-NY59AK-C3RWVD'; 
 
       const response = await fetch('https://api.oxapay.com/merchants/request', {
