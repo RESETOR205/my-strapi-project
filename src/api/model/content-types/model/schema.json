@@ -58,12 +58,6 @@
     },
     "ownerUsername": {
       "type": "string"
-    },
-    "walletAddress": {
-      "type": "string"
-    },
-    "walletNetwork": {
-      "type": "string"
     }
   }
 }

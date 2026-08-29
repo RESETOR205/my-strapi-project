@@ -65,6 +65,12 @@
       "target": "plugin::users-permissions.role",
       "inversedBy": "users",
       "configurable": false
+    },
+    "walletAddress": {
+      "type": "string"
+    },
+    "walletNetwork": {
+      "type": "string"
     }
   }
 }

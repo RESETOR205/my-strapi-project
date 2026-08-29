@@ -473,8 +473,6 @@ export interface ApiModelModel extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    walletAddress: Schema.Attribute.String;
-    walletNetwork: Schema.Attribute.String;
   };
 }
 
@@ -974,6 +972,8 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
+    walletAddress: Schema.Attribute.String;
+    walletNetwork: Schema.Attribute.String;
   };
 }
 
