@@ -63,7 +63,8 @@
                 <div class="summary-title">Order Summary</div>
                 <div class="summary-row"><span>Models count:</span> <span id="summary-count">0</span></div>
                 <div class="summary-row"><span>Subtotal:</span> <span id="summary-subtotal">0 $</span></div>
-                <div class="summary-row"><span>Fee (15%):</span> <span id="summary-fee">0 $</span></div>
+                <!-- Изменили текст с 15% на 10% -->
+                <div class="summary-row"><span>Fee (10%):</span> <span id="summary-fee">0 $</span></div>
                 <div class="summary-total"><span>Total:</span> <span id="summary-total" style="color: #10b981;">0 $</span></div>
                 <button class="checkout-btn" id="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
             </div>
@@ -118,7 +119,6 @@
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Creating invoice...';
 
-                // Прямой запрос на создание счета в OxaPay
                 const response = await fetch('https://api.oxapay.com/merchants/request', {
                     method: 'POST',
                     headers: {
@@ -209,7 +209,8 @@
                         </div>`;
                 }).join('');
 
-                const fee = subtotalPrice * 0.15;
+                // Изменили множитель комиссии с 0.15 на 0.10
+                const fee = subtotalPrice * 0.10;
                 const totalPrice = subtotalPrice + fee;
 
                 document.getElementById('summary-count').textContent = cartModels.length;
