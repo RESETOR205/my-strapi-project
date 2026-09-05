@@ -41,6 +41,28 @@
     <script>
         const STRAPI_BASE_URL = 'https://api.knighthubs.xyz';
 
+        // 🔒 ЗАЩИТА ОТ XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function safeDownloadUrl(url) {
+            if (!url || url === '#') return '#';
+            try {
+                const parsed = new URL(url);
+                if (['http:', 'https:'].includes(parsed.protocol)) {
+                    return escapeHtml(url);
+                }
+            } catch(e) {}
+            return '#';
+        }
+
         async function initSuccessPage() {
             const container = document.getElementById('downloads-container');
             const loadingText = document.getElementById('loading-text');
@@ -74,9 +96,8 @@
 
                 container.innerHTML = purchasedModels.map(item => {
                     const m = item.attributes || item;
-                    const title = m.Title || '3D Model';
+                    const safeTitle = escapeHtml(m.Title || '3D Model');
                     
-                    // Ищем ссылку на файл модели в Strapi (предполагаем наличие поля File или Archive)
                     let fileUrl = '#';
                     const fileField = m.File?.data || m.File;
                     if (fileField) {
@@ -86,10 +107,12 @@
                         }
                     }
 
+                    const validatedUrl = safeDownloadUrl(fileUrl);
+
                     return `
                         <div class="download-item">
-                            <span class="download-info">📦 ${title}</span>
-                            <a href="${fileUrl}" class="download-btn" target="_blank" download>Download</a>
+                            <span class="download-info">📦 ${safeTitle}</span>
+                            <a href="${validatedUrl}" class="download-btn" target="_blank" rel="noopener noreferrer" download>Download</a>
                         </div>
                     `;
                 }).join('');

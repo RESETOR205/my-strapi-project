@@ -583,6 +583,32 @@
         
         const modelGalleries = {};
 
+        // 🔒 ЗАЩИТА ОТ XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function sanitizeId(id) {
+            return String(id).replace(/[^a-zA-Z0-9-_]/g, '');
+        }
+
+        function safeUrl(url) {
+            if (!url) return 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
+            try {
+                const parsed = new URL(url);
+                if (['http:', 'https:'].includes(parsed.protocol)) {
+                    return escapeHtml(url);
+                }
+            } catch(e) {}
+            return 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
+        }
+
         const cabinetBtn = document.getElementById('cabinet-btn');
         const authModal = document.getElementById('auth-modal');
         const modalClose = document.getElementById('modal-close');
@@ -911,22 +937,28 @@
                 modelGalleries[correctId] = imgUrls;
                 const hasMultiple = imgUrls.length > 1;
 
+                // 🔒 Применяем защиту от XSS для рендера карточки
+                const safeId = sanitizeId(correctId);
+                const safeTitle = escapeHtml(m.Title || 'Untitled');
+                const safeAuthor = escapeHtml(author);
+                const safeImgUrl = safeUrl(imgUrls[0]);
+
                 return `
                     <div class="model-card">
-                        <button class="favorite-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${correctId}')">
+                        <button class="favorite-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${safeId}')">
                             ${isFav ? '❤️' : '🤍'}
                         </button>
                         
-                        <a href="product.html?id=${correctId}" style="text-decoration: none;">
-                            <div class="card-media-wrapper" onmouseleave="resetCardImage('${correctId}')">
-                                <img id="card-img-${correctId}" src="${imgUrls[0]}" class="model-preview" alt="Model">
+                        <a href="product.html?id=${safeId}" style="text-decoration: none;">
+                            <div class="card-media-wrapper" onmouseleave="resetCardImage('${safeId}')">
+                                <img id="card-img-${safeId}" src="${safeImgUrl}" class="model-preview" alt="Model">
                                 ${hasMultiple ? `
                                     <div class="card-progress-bars">
-                                        ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${correctId}-${idx}"></div>`).join('')}
+                                        ${imgUrls.map((_, idx) => `<div class="card-progress-bar ${idx === 0 ? 'active' : ''}" id="bar-${safeId}-${idx}"></div>`).join('')}
                                     </div>
                                     <div class="card-hover-zones">
                                         ${imgUrls.map((_, idx) => `
-                                            <div class="card-hover-segment" onmouseenter="changeCardImage('${correctId}', ${idx})" onmousemove="changeCardImage('${correctId}', ${idx})"></div>
+                                            <div class="card-hover-segment" onmouseenter="changeCardImage('${safeId}', ${idx})" onmousemove="changeCardImage('${safeId}', ${idx})"></div>
                                         `).join('')}
                                     </div>
                                 ` : ''}
@@ -934,19 +966,19 @@
                         </a>
                         
                         <div class="model-info">
-                            <div class="model-title">${m.Title || 'Untitled'}</div>
+                            <div class="model-title">${safeTitle}</div>
                             
                             <div class="model-footer">
                                 <span class="model-price">${m.Price ? m.Price + ' $' : 'Free'}</span>
-                                <button class="btn-cart ${isInCart ? 'in-cart' : ''}" onclick="toggleCart(event, '${correctId}')">
+                                <button class="btn-cart ${isInCart ? 'in-cart' : ''}" onclick="toggleCart(event, '${safeId}')">
                                     ${isInCart ? 'In Cart ✓' : 'Add to Cart'}
                                 </button>
-                                <a href="product.html?id=${correctId}" class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; text-decoration: none;">Details</a>
+                                <a href="product.html?id=${safeId}" class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; text-decoration: none;">Details</a>
                             </div>
                         </div>
                         
                         <div class="model-author-badge">
-                            by <span class="model-author-name">@${author}</span>
+                            by <span class="model-author-name">@${safeAuthor}</span>
                         </div>
                     </div>`;
             }).join('');

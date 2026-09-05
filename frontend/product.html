@@ -301,6 +301,32 @@
     const wireframeBtn = document.getElementById('wireframe-btn');
     let isWireframe = false;
 
+    // 🔒 ЗАЩИТА ОТ XSS
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return String(unsafe)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function sanitizeId(id) {
+        return String(id).replace(/[^a-zA-Z0-9-_]/g, '');
+    }
+
+    function safeUrl(url) {
+        if (!url) return FALLBACK_IMG;
+        try {
+            const parsed = new URL(url);
+            if (['http:', 'https:'].includes(parsed.protocol)) {
+                return escapeHtml(url);
+            }
+        } catch(e) {}
+        return FALLBACK_IMG;
+    }
+
     // Логика кнопки переключения сетки
     wireframeBtn.addEventListener('click', () => {
         isWireframe = !isWireframe;
@@ -321,7 +347,7 @@
 
     function showToast(message) {
         const toast = document.getElementById('toast');
-        toast.textContent = message;
+        toast.textContent = escapeHtml(message);
         toast.style.display = 'block';
         setTimeout(() => toast.style.display = 'none', 3000);
     }
@@ -366,7 +392,7 @@
         mainImgEl.style.display = 'none';
         viewerEl.style.display = 'block';
         
-        wireframeBtn.style.display = 'block'; // Показываем кнопку сетки
+        wireframeBtn.style.display = 'block';
         
         if (!viewerEl.getAttribute('src')) {
             viewerEl.setAttribute('src', currentGlbUrl);
@@ -382,9 +408,9 @@
         viewerEl.style.display = 'none';
         hintEl.style.display = 'none';
         
-        wireframeBtn.style.display = 'none'; // Прячем кнопку сетки
+        wireframeBtn.style.display = 'none';
         
-        mainImgEl.src = imgUrl;
+        mainImgEl.src = safeUrl(imgUrl);
         mainImgEl.style.display = 'block';
 
         document.querySelectorAll('.thumb-item, .thumb-3d-btn').forEach(el => el.classList.remove('active'));
@@ -394,7 +420,8 @@
 
     async function loadProductDetails() {
         const urlParams = new URLSearchParams(window.location.search);
-        currentModelId = urlParams.get('id');
+        const rawId = urlParams.get('id');
+        currentModelId = rawId ? sanitizeId(rawId) : null;
 
         if (!currentModelId) {
             alert("Model not found!");
@@ -410,19 +437,20 @@
             const item = responseData.data;
             const attrs = item.attributes || item;
 
-            // Заполняем текстовую информацию
+            // 🔒 Заполняем текстовую информацию безопасно через textContent
             document.getElementById('p-title').textContent = attrs.Title || "Untitled";
-            document.getElementById('p-price').textContent = `${attrs.Price !== undefined ? attrs.Price : 0} $`;
+            const priceVal = parseFloat(attrs.Price);
+            document.getElementById('p-price').textContent = `${!isNaN(priceVal) ? priceVal : 0} $`;
             
-            // Заполняем данные автора и аватарку
-            const authorName = attrs.ownerUsername ? attrs.ownerUsername : 'Community Artist';
+            // Данные автора
+            const authorName = attrs.ownerUsername ? String(attrs.ownerUsername) : 'Community Artist';
             document.getElementById('p-author').textContent = '@' + authorName;
             document.getElementById('author-avatar').textContent = authorName.charAt(0).toUpperCase();
 
             document.getElementById('p-polygons').textContent = attrs.Polygons || "Not specified";
             
             const categoryValue = attrs.Category || attrs.category || "props";
-            document.getElementById('p-category').textContent = categoryValue.toUpperCase();
+            document.getElementById('p-category').textContent = String(categoryValue).toUpperCase();
             document.getElementById('p-desc').textContent = attrs.Description || "No description available.";
 
             // Проверяем, есть ли товар в корзине
@@ -440,7 +468,7 @@
                     const url = target.url || p.url || '';
                     if (url) {
                         const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
-                        imageGallery.push(fullUrl);
+                        imageGallery.push(safeUrl(fullUrl));
                     }
                 });
             }
@@ -459,7 +487,8 @@
                 const size = target?.size || 0;
                 
                 if (url && (size > 1 || !url.includes('empty.glb'))) {
-                    currentGlbUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                    const fullGlbUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+                    currentGlbUrl = safeUrl(fullGlbUrl);
                 }
             }
 

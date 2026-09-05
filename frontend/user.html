@@ -326,9 +326,35 @@
     let pendingRegisterEmail = '';
     let modelToDeleteId = null; 
 
+    // 🔒 ЗАЩИТА ОТ XSS
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return String(unsafe)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function sanitizeId(id) {
+        return String(id).replace(/[^a-zA-Z0-9-_]/g, '');
+    }
+
+    function safeUrl(url) {
+        if (!url) return FALLBACK_IMG;
+        try {
+            const parsed = new URL(url);
+            if (['http:', 'https:'].includes(parsed.protocol)) {
+                return escapeHtml(url);
+            }
+        } catch(e) {}
+        return FALLBACK_IMG;
+    }
+
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
-        toast.textContent = message;
+        toast.textContent = escapeHtml(message);
         toast.style.background = isError ? '#ef4444' : '#22c55e';
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
@@ -519,8 +545,8 @@
             });
             if (res.ok) {
                 const userData = await res.json();
-                if (userData.walletNetwork) document.getElementById('wallet-network').value = userData.walletNetwork;
-                if (userData.walletAddress) document.getElementById('wallet-address').value = userData.walletAddress;
+                if (userData.walletNetwork) document.getElementById('wallet-network').value = escapeHtml(userData.walletNetwork);
+                if (userData.walletAddress) document.getElementById('wallet-address').value = escapeHtml(userData.walletAddress);
             }
         } catch (error) {
             console.error('Ошибка загрузки кошелька:', error);
@@ -554,7 +580,6 @@
             });
 
             if (response.ok) {
-                // Подтягиваем и обновляем локальный кэш пользователя, чтобы данные не пропадали
                 const updatedRes = await fetch(`${STRAPI_BASE_URL}/api/users/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -593,7 +618,7 @@
     function resetCardImage(modelId) { changeCardImage(modelId, 0); }
 
     function openDeleteModal(modelId) {
-        modelToDeleteId = modelId;
+        modelToDeleteId = sanitizeId(modelId);
         document.getElementById('deleteConfirmModal').style.display = 'flex';
     }
 
@@ -674,10 +699,12 @@
             grid.innerHTML = ''; 
 
             models.forEach(item => {
-                const modelId = item.documentId || item.id;
+                const rawId = item.documentId || item.id;
+                const modelId = sanitizeId(rawId);
                 const attrs = item.attributes || item;
-                const title = attrs.Title || "Untitled";
-                const price = attrs.Price !== undefined ? attrs.Price : 0;
+                const title = escapeHtml(attrs.Title || "Untitled");
+                const priceVal = parseFloat(attrs.Price);
+                const price = !isNaN(priceVal) ? priceVal : 0;
 
                 let imgUrls = [];
                 let rawPreviews = attrs.Previews || item.Previews;
@@ -689,7 +716,7 @@
                         const url = target.url || p.url || '';
                         if (url) {
                             const fullUrl = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
-                            imgUrls.push(fullUrl);
+                            imgUrls.push(safeUrl(fullUrl));
                         }
                     });
                 }
@@ -731,7 +758,7 @@
                 grid.appendChild(card);
             });
 
-        } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Loading error: ${error.message}</div>`; }
+        } catch (error) { grid.innerHTML = `<div style="color: #ef4444; padding: 20px;">Loading error: ${escapeHtml(error.message)}</div>`; }
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
@@ -746,18 +773,18 @@
             if (res.ok) {
                 const user = await res.json();
                 if (user && user.username) {
+                    const safeUname = escapeHtml(user.username);
                     localStorage.setItem('username', user.username);
                     localStorage.setItem('user', JSON.stringify(user));
 
-                    document.getElementById('user-name').textContent = user.username;
-                    document.getElementById('user-nick').textContent = '@' + user.username.toLowerCase().replace(/\s+/g, '');
-                    document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
+                    document.getElementById('user-name').textContent = safeUname;
+                    document.getElementById('user-nick').textContent = '@' + safeUname.toLowerCase().replace(/\s+/g, '');
+                    document.getElementById('user-avatar').textContent = safeUname.charAt(0).toUpperCase();
                     
                     document.getElementById('logoutBtn').style.display = 'inline-block';
                     document.getElementById('loginBtn').style.display = 'none';
                     document.getElementById('openModalBtn').style.display = 'inline-block';
                     
-                    // Показываем блок кошелька и грузим данные из базы
                     document.getElementById('wallet-section').style.display = 'block';
                     loadWallet();
                     

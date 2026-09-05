@@ -135,7 +135,7 @@
     <div id="error-message" style="color: #ef4444; background-color: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 6px; font-size: 14px; text-align: center; margin-top: 15px; display: none; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
 
     <div class="toggle-text" id="toggle-zone">
-        Уже есть аккаунт? <span id="switch-mode">Войти</span>
+        <span id="toggle-hint">Уже есть аккаунт? </span><span id="switch-mode">Войти</span>
     </div>
 
     <a href="#" class="guest-link" onclick="saveGuestAndGo()">Пропустить регистрацию →</a>
@@ -148,41 +148,47 @@
     const usernameGroup = document.getElementById('username-group');
     const usernameInput = document.getElementById('username');
     const submitBtn = document.getElementById('submit-btn');
-    const toggleZone = document.getElementById('toggle-zone');
+    const toggleHint = document.getElementById('toggle-hint');
+    const switchModeBtn = document.getElementById('switch-mode');
+    const errorBox = document.getElementById('error-message');
 
     // Твой боевой адрес сервера на Railway
     const STRAPI_URL = 'https://my-strapi-project-production-f85a.up.railway.app'; 
 
-    // Функция переключения режимов Вход / Регистрация
-    function initSwitchBehavior() {
-        const switchModeBtn = document.getElementById('switch-mode');
-        if (!switchModeBtn) return;
-
-        switchModeBtn.addEventListener('click', () => {
-            isSignUpMode = !isSignUpMode;
-            // Сбрасываем текст ошибки при переключении
-            document.getElementById('error-message').style.display = 'none';
-            
-            if (isSignUpMode) {
-                formTitle.innerText = 'Регистрация';
-                submitBtn.innerText = 'Создать аккаунт';
-                usernameGroup.style.display = 'block';
-                usernameInput.setAttribute('required', 'true');
-                toggleZone.innerHTML = 'Уже есть аккаунт? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Войти</span>';
-            } else {
-                formTitle.innerText = 'Вход в систему';
-                submitBtn.innerText = 'Войти';
-                usernameGroup.style.display = 'none';
-                usernameInput.removeAttribute('required');
-                toggleZone.innerHTML = 'Нет аккаунта? <span id="switch-mode" style="color: #38bdf8; cursor: pointer; text-decoration: underline;">Зарегистрироваться</span>';
-            }
-            
-            initSwitchBehavior(); // Перепривязываем событие на новую кнопку
-        });
+    // 🔒 Защитная функция экранирования
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return String(unsafe)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
-    // Запускаем переключатель режимов
-    initSwitchBehavior();
+    // Безопасное переключение режимов Вход / Регистрация через textContent
+    if (switchModeBtn) {
+        switchModeBtn.addEventListener('click', () => {
+            isSignUpMode = !isSignUpMode;
+            errorBox.style.display = 'none';
+            
+            if (isSignUpMode) {
+                formTitle.textContent = 'Регистрация';
+                submitBtn.textContent = 'Создать аккаунт';
+                usernameGroup.style.display = 'block';
+                usernameInput.setAttribute('required', 'true');
+                toggleHint.textContent = 'Уже есть аккаунт? ';
+                switchModeBtn.textContent = 'Войти';
+            } else {
+                formTitle.textContent = 'Вход в систему';
+                submitBtn.textContent = 'Войти';
+                usernameGroup.style.display = 'none';
+                usernameInput.removeAttribute('required');
+                toggleHint.textContent = 'Нет аккаунта? ';
+                switchModeBtn.textContent = 'Зарегистрироваться';
+            }
+        });
+    }
 
     // Обработка отправки формы
     document.getElementById('auth-form').addEventListener('submit', async (e) => {
@@ -190,12 +196,10 @@
 
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value.trim();
-        const errorBox = document.getElementById('error-message');
         
-        // Прячем старую ошибку перед новым запросом
         errorBox.style.display = 'none';
         
-        let endpoint = isSignUpMode ? '/api/auth/local/register' : '/api/auth/local';
+        const endpoint = isSignUpMode ? '/api/auth/local/register' : '/api/auth/local';
         
         let requestBody = {
             identifier: email, 
@@ -223,15 +227,14 @@
             const data = await response.json();
 
             if (response.ok && data.jwt) {
-                // Сохраняем сессию успешного юзера в браузер
                 localStorage.setItem('userStatus', 'user');
                 localStorage.setItem('token', data.jwt);
+                localStorage.setItem('jwt', data.jwt);
                 localStorage.setItem('username', data.user.username);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 
-                // Перенаправляем на главную без алертов
                 window.location.href = 'index.html';
             } else {
-                // Ловим ошибки и переводим их для вывода на плашку
                 let msg = 'Неверные данные или сбой сервера';
                 if (data.error && data.error.message === 'Email or Username are already taken') {
                     msg = '⚠️ Этот Email или Имя пользователя уже заняты!';
@@ -241,14 +244,13 @@
                     msg = data.error.message;
                 }
 
-                // Показываем плашку с текстом ошибки
-                errorBox.innerText = msg;
+                errorBox.textContent = escapeHtml(msg);
                 errorBox.style.display = 'block';
             }
 
         } catch (error) {
             console.error('Ошибка запроса:', error);
-            errorBox.innerText = '🤖 Не удалось связаться с сервером. Проверь сеть!';
+            errorBox.textContent = '🤖 Не удалось связаться с сервером. Проверь сеть!';
             errorBox.style.display = 'block';
         }
     });

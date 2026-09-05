@@ -58,16 +58,43 @@
         const STRAPI_BASE_URL = 'https://my-strapi-project-production-f85a.up.railway.app';
         const FALLBACK_IMG = 'https://via.placeholder.com/300x180/1a202c/ffffff?text=3D+Model';
 
+        // 🔒 ЗАЩИТА ОТ XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function sanitizeId(id) {
+            return String(id).replace(/[^a-zA-Z0-9-_]/g, '');
+        }
+
+        function safeUrl(url) {
+            if (!url) return FALLBACK_IMG;
+            try {
+                const parsed = new URL(url);
+                if (['http:', 'https:'].includes(parsed.protocol)) {
+                    return escapeHtml(url);
+                }
+            } catch(e) {}
+            return FALLBACK_IMG;
+        }
+
         function showToast(message) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
+            toast.textContent = escapeHtml(message);
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 3000);
         }
 
         window.removeFavorite = function(modelId) {
+            const safeModelId = sanitizeId(modelId);
             let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            favorites = favorites.filter(id => id !== modelId);
+            favorites = favorites.filter(id => id !== safeModelId);
             localStorage.setItem('favorites', JSON.stringify(favorites));
             showToast('Removed from favorites');
             loadFavorites();
@@ -111,15 +138,22 @@
                         if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
                     }
 
+                    // 🔒 Применяем очистку данных
+                    const safeId = sanitizeId(correctId);
+                    const safeTitle = escapeHtml(m.Title || 'Untitled');
+                    const safeImgUrl = safeUrl(previewUrl);
+                    const priceVal = parseFloat(m.Price);
+                    const priceText = !isNaN(priceVal) && priceVal > 0 ? `${priceVal} $` : 'Free';
+
                     return `
                         <div class="model-card">
-                            <button class="favorite-btn" onclick="removeFavorite('${correctId}')" title="Remove">❤️</button>
-                            <img src="${previewUrl}" class="model-preview" alt="Model">
+                            <button class="favorite-btn" onclick="removeFavorite('${safeId}')" title="Remove">❤️</button>
+                            <img src="${safeImgUrl}" class="model-preview" alt="Model">
                             <div class="model-info">
-                                <div class="model-title">${m.Title || 'Untitled'}</div>
+                                <div class="model-title">${safeTitle}</div>
                                 <div class="model-footer">
-                                    <span class="model-price">${m.Price ? m.Price + ' $' : 'Free'}</span>
-                                    <a href="product.html?id=${correctId}" class="btn">View Details</a>
+                                    <span class="model-price">${priceText}</span>
+                                    <a href="product.html?id=${safeId}" class="btn">View Details</a>
                                 </div>
                             </div>
                         </div>`;
