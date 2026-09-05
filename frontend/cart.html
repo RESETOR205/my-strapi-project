@@ -63,7 +63,6 @@
                 <div class="summary-title">Order Summary</div>
                 <div class="summary-row"><span>Models count:</span> <span id="summary-count">0</span></div>
                 <div class="summary-row"><span>Subtotal:</span> <span id="summary-subtotal">0 $</span></div>
-                <!-- Изменили текст с 15% на 10% -->
                 <div class="summary-row"><span>Fee (10%):</span> <span id="summary-fee">0 $</span></div>
                 <div class="summary-total"><span>Total:</span> <span id="summary-total" style="color: #10b981;">0 $</span></div>
                 <button class="checkout-btn" id="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
@@ -77,7 +76,7 @@
         const STRAPI_BASE_URL = 'https://api.knighthubs.xyz';
         const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
 
-        // 🔒 ЗАЩИТА ОТ XSS
+        // 🔒 ХЕЛПЕРЫ БЕЗОПАСНОСТИ И ВАЛИДАЦИИ
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
             return String(unsafe)
@@ -103,16 +102,31 @@
             return FALLBACK_IMG;
         }
 
+        // Строгая валидация и нормализация цены
+        function parsePrice(value) {
+            const num = parseFloat(value);
+            return (!isNaN(num) && num >= 0) ? num : 0;
+        }
+
+        // Валидация Email для передачи в API без HTML-сущностей
+        function sanitizeEmailForApi(email) {
+            if (typeof email !== 'string') return 'guest@knighthubs.xyz';
+            const cleaned = email.trim().replace(/[\r\n\t]/g, '');
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return emailRegex.test(cleaned) ? cleaned : 'guest@knighthubs.xyz';
+        }
+
         function showToast(message) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
+            toast.textContent = escapeHtml(message);
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 3000);
         }
 
         window.removeFromCart = function(modelId) {
+            const safeModelId = sanitizeId(modelId);
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart = cart.filter(id => id !== modelId);
+            cart = cart.filter(id => id !== safeModelId);
             localStorage.setItem('cart', JSON.stringify(cart));
             showToast('Removed from cart');
             loadCart();
@@ -122,19 +136,23 @@
             const checkoutBtn = document.getElementById('checkout-btn');
             const totalElement = document.getElementById('summary-total');
             
-            const totalPriceText = totalElement ? totalElement.textContent.replace('$', '').trim() : '0';
-            const amount = parseFloat(totalPriceText);
+            const rawPriceText = totalElement ? totalElement.textContent.replace('$', '').trim() : '0';
+            const amount = parsePrice(rawPriceText);
 
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const userStr = localStorage.getItem('user');
-            let userEmail = 'guest@knighthubs.xyz';
+            let rawUserEmail = 'guest@knighthubs.xyz';
 
             if (userStr) {
-                const user = JSON.parse(userStr);
-                userEmail = user.email || userEmail;
+                try {
+                    const user = JSON.parse(userStr);
+                    rawUserEmail = user.email || rawUserEmail;
+                } catch(e) {}
             }
 
-            if (!amount || amount <= 0 || cart.length === 0) {
+            const cleanEmail = sanitizeEmailForApi(rawUserEmail);
+
+            if (amount <= 0 || cart.length === 0) {
                 showToast('Cart is empty or invalid amount');
                 return;
             }
@@ -158,7 +176,7 @@
                         returnUrl: 'https://www.knighthubs.xyz/success.html',
                         description: `Order ${orderId}`,
                         orderId: orderId,
-                        email: escapeHtml(userEmail) // Очистка email перед отправкой
+                        email: cleanEmail
                     })
                 });
 
@@ -167,7 +185,7 @@
                 if (data.result === 100 && data.payLink) {
                     window.location.href = data.payLink;
                 } else {
-                    showToast(escapeHtml(data.message) || 'Failed to create payment invoice'); // Очистка сообщения об ошибке
+                    showToast(data.message || 'Failed to create payment invoice');
                     checkoutBtn.disabled = false;
                     checkoutBtn.textContent = 'Proceed to Checkout';
                 }
@@ -212,7 +230,9 @@
                 container.innerHTML = cartModels.map(item => {
                     const m = item.attributes || item;
                     const correctId = item.documentId || item.id;
-                    const price = parseFloat(m.Price) || 0;
+                    
+                    // Строго парсим и суммируем цену
+                    const price = parsePrice(m.Price);
                     subtotalPrice += price;
 
                     let previewUrl = FALLBACK_IMG;
@@ -224,17 +244,17 @@
                         if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
                     }
 
-                    // 🔒 Применяем очистку данных
                     const safeId = sanitizeId(correctId);
                     const safeTitle = escapeHtml(m.Title || 'Untitled');
                     const safeImgUrl = safeUrl(previewUrl);
+                    const priceLabel = price > 0 ? `${price.toFixed(2)} $` : 'Free';
 
                     return `
                         <div class="cart-item">
                             <img src="${safeImgUrl}" class="cart-item-img" alt="Model">
                             <div class="cart-item-info">
                                 <a href="product.html?id=${safeId}" class="cart-item-title">${safeTitle}</a>
-                                <div class="cart-item-price">${price > 0 ? price + ' $' : 'Free'}</div>
+                                <div class="cart-item-price">${priceLabel}</div>
                             </div>
                             <button class="remove-btn" onclick="removeFromCart('${safeId}')" title="Remove">&times;</button>
                         </div>`;
