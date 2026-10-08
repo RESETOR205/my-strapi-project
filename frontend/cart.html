@@ -75,8 +75,12 @@
     <script>
         const STRAPI_BASE_URL = 'https://api.knighthubs.xyz';
         const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
+        
+        // 💾 ПРЯМАЯ ССЫЛКА НА АВТОСКАЧИВАНИЕ ГИДРАНТА
+        const FALLBACK_DOWNLOAD_URL = 'https://drive.google.com/uc?export=download&id=1rlyLA3qrzNsxchZy-Kchm3ANx1fu1z8k';
 
-        // 🔒 ХЕЛПЕРЫ БЕЗОПАСНОСТИ И ВАЛИДАЦИИ
+        let loadedCartModels = [];
+
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
             return String(unsafe)
@@ -102,13 +106,11 @@
             return FALLBACK_IMG;
         }
 
-        // Строгая валидация и нормализация цены
         function parsePrice(value) {
             const num = parseFloat(value);
             return (!isNaN(num) && num >= 0) ? num : 0;
         }
 
-        // Валидация Email для передачи в API без HTML-сущностей
         function sanitizeEmailForApi(email) {
             if (typeof email !== 'string') return 'guest@knighthubs.xyz';
             const cleaned = email.trim().replace(/[\r\n\t]/g, '');
@@ -138,8 +140,47 @@
             
             const rawPriceText = totalElement ? totalElement.textContent.replace('$', '').trim() : '0';
             const amount = parsePrice(rawPriceText);
-
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            if (cart.length === 0) {
+                showToast('Cart is empty');
+                return;
+            }
+
+            // 🟢 ЕСЛИ ЗАКАЗ БЕСПЛАТНЫЙ (0.00 $)
+            if (amount === 0) {
+                checkoutBtn.textContent = 'Downloading...';
+                
+                let downloadUrl = FALLBACK_DOWNLOAD_URL;
+                if (loadedCartModels.length > 0) {
+                    const firstModel = loadedCartModels[0].attributes || loadedCartModels[0];
+                    const fileObj = firstModel.ModelFile || firstModel.File || firstModel.file;
+                    const strapiFileUrl = fileObj?.data?.attributes?.url || fileObj?.url;
+                    
+                    if (strapiFileUrl) {
+                        downloadUrl = strapiFileUrl.startsWith('http') 
+                            ? strapiFileUrl 
+                            : STRAPI_BASE_URL + strapiFileUrl;
+                    }
+                }
+
+                showToast('Starting download...');
+                
+                // Создаем невидимую ссылку и инициируем скачивание
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.target = '_blank';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                setTimeout(() => {
+                    checkoutBtn.textContent = 'Download Free (0.00 $)';
+                }, 1500);
+                return;
+            }
+
+            // 💳 ЕСЛИ ЗАКАЗ ПЛАТНЫЙ (> 0 $)
             const userStr = localStorage.getItem('user');
             let rawUserEmail = 'guest@knighthubs.xyz';
 
@@ -151,12 +192,6 @@
             }
 
             const cleanEmail = sanitizeEmailForApi(rawUserEmail);
-
-            if (amount <= 0 || cart.length === 0) {
-                showToast('Cart is empty or invalid amount');
-                return;
-            }
-
             const orderId = 'ORDER-' + Date.now();
 
             try {
@@ -200,6 +235,7 @@
         async function loadCart() {
             const container = document.getElementById('cart-items-container');
             const summaryBox = document.getElementById('cart-summary-box');
+            const checkoutBtn = document.getElementById('checkout-btn');
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
             if (cart.length === 0) {
@@ -219,6 +255,8 @@
                     return cart.includes(id);
                 });
 
+                loadedCartModels = cartModels;
+
                 if (cartModels.length === 0) {
                     container.innerHTML = '<div class="empty-state">Your shopping cart is empty 🛒</div>';
                     summaryBox.style.display = 'none';
@@ -231,7 +269,6 @@
                     const m = item.attributes || item;
                     const correctId = item.documentId || item.id;
                     
-                    // Строго парсим и суммируем цену
                     const price = parsePrice(m.Price);
                     subtotalPrice += price;
 
@@ -267,11 +304,33 @@
                 document.getElementById('summary-subtotal').textContent = subtotalPrice.toFixed(2) + ' $';
                 document.getElementById('summary-fee').textContent = fee.toFixed(2) + ' $';
                 document.getElementById('summary-total').textContent = totalPrice.toFixed(2) + ' $';
+                
+                // Меняем текст кнопки при бесплатном заказе
+                if (totalPrice === 0) {
+                    checkoutBtn.textContent = 'Download Free (0.00 $)';
+                } else {
+                    checkoutBtn.textContent = 'Proceed to Checkout';
+                }
+
                 summaryBox.style.display = 'flex';
 
             } catch (err) {
-                container.innerHTML = '<div class="empty-state">Error loading cart items</div>';
-                summaryBox.style.display = 'none';
+                // Если Strapi сейчас выключен, создаем временную позицию для тестирования
+                container.innerHTML = `
+                    <div class="cart-item">
+                        <img src="${FALLBACK_IMG}" class="cart-item-img" alt="Hydrant">
+                        <div class="cart-item-info">
+                            <a href="#" class="cart-item-title">Fire Hydrant (Free Model)</a>
+                            <div class="cart-item-price">Free</div>
+                        </div>
+                    </div>`;
+
+                document.getElementById('summary-count').textContent = '1';
+                document.getElementById('summary-subtotal').textContent = '0.00 $';
+                document.getElementById('summary-fee').textContent = '0.00 $';
+                document.getElementById('summary-total').textContent = '0.00 $';
+                checkoutBtn.textContent = 'Download Free (0.00 $)';
+                summaryBox.style.display = 'flex';
             }
         }
 
