@@ -243,7 +243,7 @@
 
                 <div id="viewer-hint" class="viewer-controls-hint">🖱️ Left click & drag to rotate &bull; Scroll to zoom</div>
                 
-                <button id="wireframe-btn" class="wireframe-toggle-btn">Показать сетку</button>
+                <button id="wireframe-btn" class="wireframe-toggle-btn">Show Wireframe</button>
             </div>
 
             <div class="thumbnails-list" id="thumbnails-container"></div>
@@ -330,7 +330,7 @@
     // Логика кнопки переключения сетки
     wireframeBtn.addEventListener('click', () => {
         isWireframe = !isWireframe;
-        wireframeBtn.textContent = isWireframe ? 'Скрыть сетку' : 'Показать сетку';
+        wireframeBtn.textContent = isWireframe ? 'Hide Wireframe' : 'Show Wireframe';
 
         const sceneSymbol = Object.getOwnPropertySymbols(viewerEl).find(s => s.description === 'scene');
         if (sceneSymbol) {
