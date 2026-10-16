@@ -75,9 +75,6 @@
     <script>
         const STRAPI_BASE_URL = 'https://api.knighthubs.xyz';
         const FALLBACK_IMG = 'https://placehold.co/300x180/1a1d29/94a3b8?text=3D+Model';
-        
-        // 💾 ПРЯМАЯ ССЫЛКА НА АВТОСКАЧИВАНИЕ ГИДРАНТА
-        const FALLBACK_DOWNLOAD_URL = 'https://drive.google.com/uc?export=download&id=1rlyLA3qrzNsxchZy-Kchm3ANx1fu1z8k';
 
         let loadedCartModels = [];
 
@@ -118,17 +115,81 @@
             return emailRegex.test(cleaned) ? cleaned : 'guest@knighthubs.xyz';
         }
 
-        function showToast(message) {
+        function showToast(message, isSuccess = false) {
             const toast = document.getElementById('toast');
             toast.textContent = escapeHtml(message);
+            toast.style.backgroundColor = isSuccess ? '#10b981' : '#ef4444';
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        // Достаем URL и имя файла из любого формата поля Media в Strapi (v4 / v5, одиночный или массив)
+        function extractFileFromField(field) {
+            if (!field) return null;
+            let data = field.data !== undefined ? field.data : field;
+            if (Array.isArray(data)) {
+                data = data[0];
+            }
+            if (!data) return null;
+
+            const attrs = data.attributes || data;
+            if (!attrs || !attrs.url) return null;
+
+            const fullUrl = attrs.url.startsWith('http') ? attrs.url : STRAPI_BASE_URL + attrs.url;
+            const fileName = attrs.name || attrs.url.split('/').pop() || 'model.fbx';
+            return { url: fullUrl, name: fileName };
+        }
+
+        // Ищем подходящий файл для скачивания у конкретной модели
+        function getModelDownloadInfo(item) {
+            const m = item.attributes || item;
+
+            // 1. Приоритет: поле ModelFBX
+            const fbx = extractFileFromField(m.ModelFBX);
+            if (fbx && fbx.name.toLowerCase() !== 'empty.fbx') return fbx;
+
+            // 2. Дополнительные поля (если назовешь поле ModelFile или File)
+            const customFile = extractFileFromField(m.ModelFile || m.File || m.file);
+            if (customFile) return customFile;
+
+            // 3. Резерв: поле ModelGLB (если там не пустая заглушка empty.glb)
+            const glb = extractFileFromField(m.ModelGLB);
+            if (glb && glb.name.toLowerCase() !== 'empty.glb') return glb;
+
+            return null;
+        }
+
+        // Принудительное скачивание файла напрямую с сервера Strapi
+        async function triggerDirectDownload(fileUrl, fileName) {
+            try {
+                const response = await fetch(fileUrl);
+                if (!response.ok) throw new Error('Network error');
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+                // Фолбэк, если браузер блокирует CORS при fetch
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
         }
 
         window.removeFromCart = function(modelId) {
             const safeModelId = sanitizeId(modelId);
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart = cart.filter(id => id !== safeModelId);
+            cart = cart.filter(id => String(id) !== String(safeModelId));
             localStorage.setItem('cart', JSON.stringify(cart));
             showToast('Removed from cart');
             loadCart();
@@ -142,39 +203,34 @@
             const amount = parsePrice(rawPriceText);
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-            if (cart.length === 0) {
+            if (cart.length === 0 || loadedCartModels.length === 0) {
                 showToast('Cart is empty');
                 return;
             }
 
-            // 🟢 ЕСЛИ ЗАКАЗ БЕСПЛАТНЫЙ (0.00 $)
+            // 🟢 ЕСЛИ ЗАКАЗ БЕСПЛАТНЫЙ (0.00 $) — КАЧАЕМ ФАЙЛЫ МОДЕЛЕЙ ИЗ STRAPI
             if (amount === 0) {
+                checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Downloading...';
-                
-                let downloadUrl = FALLBACK_DOWNLOAD_URL;
-                if (loadedCartModels.length > 0) {
-                    const firstModel = loadedCartModels[0].attributes || loadedCartModels[0];
-                    const fileObj = firstModel.ModelFile || firstModel.File || firstModel.file;
-                    const strapiFileUrl = fileObj?.data?.attributes?.url || fileObj?.url;
-                    
-                    if (strapiFileUrl) {
-                        downloadUrl = strapiFileUrl.startsWith('http') 
-                            ? strapiFileUrl 
-                            : STRAPI_BASE_URL + strapiFileUrl;
+
+                let downloadedCount = 0;
+
+                for (const modelItem of loadedCartModels) {
+                    const fileInfo = getModelDownloadInfo(modelItem);
+                    if (fileInfo) {
+                        await triggerDirectDownload(fileInfo.url, fileInfo.name);
+                        downloadedCount++;
                     }
                 }
 
-                showToast('Starting download...');
-                
-                // Создаем невидимую ссылку и инициируем скачивание
-                const downloadLink = document.createElement('a');
-                downloadLink.href = downloadUrl;
-                downloadLink.target = '_blank';
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
+                if (downloadedCount > 0) {
+                    showToast('Download started!', true);
+                } else {
+                    showToast('No downloadable file attached to this model in Strapi');
+                }
 
                 setTimeout(() => {
+                    checkoutBtn.disabled = false;
                     checkoutBtn.textContent = 'Download Free (0.00 $)';
                 }, 1500);
                 return;
@@ -251,8 +307,9 @@
                 const allModels = responseData.data || [];
 
                 const cartModels = allModels.filter(item => {
-                    const id = item.documentId || item.id;
-                    return cart.includes(id);
+                    const docId = String(item.documentId || '');
+                    const numId = String(item.id || '');
+                    return cart.some(cId => String(cId) === docId || String(cId) === numId);
                 });
 
                 loadedCartModels = cartModels;
@@ -276,9 +333,9 @@
                     if (m.Previews?.data?.length > 0) {
                         const url = m.Previews.data[0].attributes?.url || m.Previews.data[0].url;
                         previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
-                    } else if (m.Previews && m.Previews.length > 0) {
+                    } else if (Array.isArray(m.Previews) && m.Previews.length > 0) {
                         const url = m.Previews[0].url;
-                        if(url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
+                        if (url) previewUrl = url.startsWith('http') ? url : STRAPI_BASE_URL + url;
                     }
 
                     const safeId = sanitizeId(correctId);
@@ -305,7 +362,6 @@
                 document.getElementById('summary-fee').textContent = fee.toFixed(2) + ' $';
                 document.getElementById('summary-total').textContent = totalPrice.toFixed(2) + ' $';
                 
-                // Меняем текст кнопки при бесплатном заказе
                 if (totalPrice === 0) {
                     checkoutBtn.textContent = 'Download Free (0.00 $)';
                 } else {
@@ -315,22 +371,9 @@
                 summaryBox.style.display = 'flex';
 
             } catch (err) {
-                // Если Strapi сейчас выключен, создаем временную позицию для тестирования
-                container.innerHTML = `
-                    <div class="cart-item">
-                        <img src="${FALLBACK_IMG}" class="cart-item-img" alt="Hydrant">
-                        <div class="cart-item-info">
-                            <a href="#" class="cart-item-title">Fire Hydrant (Free Model)</a>
-                            <div class="cart-item-price">Free</div>
-                        </div>
-                    </div>`;
-
-                document.getElementById('summary-count').textContent = '1';
-                document.getElementById('summary-subtotal').textContent = '0.00 $';
-                document.getElementById('summary-fee').textContent = '0.00 $';
-                document.getElementById('summary-total').textContent = '0.00 $';
-                checkoutBtn.textContent = 'Download Free (0.00 $)';
-                summaryBox.style.display = 'flex';
+                console.error('Error loading cart:', err);
+                container.innerHTML = '<div class="empty-state">Failed to connect to server. Please try again later.</div>';
+                summaryBox.style.display = 'none';
             }
         }
 
