@@ -21,14 +21,35 @@
         @media (max-width: 800px) { .cart-layout { grid-template-columns: 1fr; } }
 
         .cart-items { display: flex; flex-direction: column; gap: 15px; }
-        .cart-item { background-color: #161a23; border: 1px solid #2d3748; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 20px; position: relative; }
-        .cart-item-img { width: 90px; height: 70px; object-fit: cover; border-radius: 8px; background: #1a202c; }
-        .cart-item-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-        .cart-item-title { font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; }
+        .cart-item { background-color: #161a23; border: 1px solid #2d3748; border-radius: 12px; padding: 18px; display: flex; align-items: flex-start; gap: 20px; position: relative; }
+        .cart-item-img { width: 100px; height: 80px; object-fit: cover; border-radius: 8px; background: #1a202c; flex-shrink: 0; }
+        .cart-item-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .cart-item-title { font-size: 17px; font-weight: 600; color: #fff; text-decoration: none; }
         .cart-item-title:hover { color: #3b82f6; }
-        .cart-item-price { font-weight: bold; color: #10b981; font-size: 16px; }
+        .cart-item-price { font-weight: bold; color: #10b981; font-size: 16px; margin-bottom: 4px; }
         
-        .remove-btn { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; padding: 5px; }
+        .format-buttons { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+        .format-btn { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            padding: 8px 14px; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            border: 1px solid transparent; 
+            transition: all 0.2s ease;
+        }
+        .format-btn-fbx { background: #3b82f6; color: #fff; border-color: #2563eb; }
+        .format-btn-fbx:hover { background: #2563eb; }
+        
+        .format-btn-glb { background: #1e293b; color: #93c5fd; border: 1px solid #3b82f6; }
+        .format-btn-glb:hover { background: #2d3748; color: #fff; }
+
+        .no-files-tag { font-size: 12px; color: #94a3b8; font-style: italic; }
+
+        .remove-btn { background: none; border: none; color: #ef4444; font-size: 22px; cursor: pointer; padding: 0 5px; line-height: 1; }
         .remove-btn:hover { color: #dc2626; }
 
         .cart-summary { background-color: #161a23; border: 1px solid #2d3748; border-radius: 12px; padding: 25px; height: fit-content; display: flex; flex-direction: column; gap: 15px; }
@@ -65,7 +86,7 @@
                 <div class="summary-row"><span>Subtotal:</span> <span id="summary-subtotal">0 $</span></div>
                 <div class="summary-row"><span>Fee (10%):</span> <span id="summary-fee">0 $</span></div>
                 <div class="summary-total"><span>Total:</span> <span id="summary-total" style="color: #10b981;">0 $</span></div>
-                <button class="checkout-btn" id="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+                <button class="checkout-btn" id="checkout-btn">Proceed to Checkout</button>
             </div>
         </div>
     </main>
@@ -92,15 +113,18 @@
             return String(id).replace(/[^a-zA-Z0-9-_]/g, '');
         }
 
-        function safeUrl(url) {
-            if (!url) return FALLBACK_IMG;
+        function isSafeHttpUrl(url) {
+            if (!url || typeof url !== 'string') return false;
             try {
                 const parsed = new URL(url);
-                if (['http:', 'https:'].includes(parsed.protocol)) {
-                    return escapeHtml(url);
-                }
-            } catch(e) {}
-            return FALLBACK_IMG;
+                return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+            } catch {
+                return false;
+            }
+        }
+
+        function safeUrl(url) {
+            return isSafeHttpUrl(url) ? escapeHtml(url) : FALLBACK_IMG;
         }
 
         function parsePrice(value) {
@@ -117,50 +141,50 @@
 
         function showToast(message, isSuccess = false) {
             const toast = document.getElementById('toast');
-            toast.textContent = escapeHtml(message);
+            toast.textContent = String(message || '');
             toast.style.backgroundColor = isSuccess ? '#10b981' : '#ef4444';
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 3000);
         }
 
-        // Достаем URL и имя файла из любого формата поля Media в Strapi (v4 / v5, одиночный или массив)
-        function extractFileFromField(field) {
+        function extractFile(field) {
             if (!field) return null;
-            let data = field.data !== undefined ? field.data : field;
-            if (Array.isArray(data)) {
-                data = data[0];
+            let target = field.data !== undefined ? field.data : field;
+            if (Array.isArray(target)) {
+                if (target.length === 0) return null;
+                target = target[0];
             }
-            if (!data) return null;
+            if (!target) return null;
 
-            const attrs = data.attributes || data;
+            const attrs = target.attributes || target;
             if (!attrs || !attrs.url) return null;
 
-            const fullUrl = attrs.url.startsWith('http') ? attrs.url : STRAPI_BASE_URL + attrs.url;
-            const fileName = attrs.name || attrs.url.split('/').pop() || 'model.fbx';
-            return { url: fullUrl, name: fileName };
+            const rawUrl = String(attrs.url).trim();
+            const fullUrl = rawUrl.startsWith('http') ? rawUrl : STRAPI_BASE_URL + (rawUrl.startsWith('/') ? '' : '/') + rawUrl;
+
+            // Строгая проверка валидности URL и схемы
+            if (!isSafeHttpUrl(fullUrl)) return null;
+
+            const fileName = String(attrs.name || fullUrl.split('/').pop() || 'model').replace(/[^\w\s.-]/gi, '_');
+
+            if (fileName.toLowerCase().includes('empty.') || fullUrl.toLowerCase().includes('empty.')) {
+                return null;
+            }
+
+            return {
+                url: fullUrl,
+                name: fileName
+            };
         }
 
-        // Ищем подходящий файл для скачивания у конкретной модели
-        function getModelDownloadInfo(item) {
-            const m = item.attributes || item;
-
-            // 1. Приоритет: поле ModelFBX
-            const fbx = extractFileFromField(m.ModelFBX);
-            if (fbx && fbx.name.toLowerCase() !== 'empty.fbx') return fbx;
-
-            // 2. Дополнительные поля (если назовешь поле ModelFile или File)
-            const customFile = extractFileFromField(m.ModelFile || m.File || m.file);
-            if (customFile) return customFile;
-
-            // 3. Резерв: поле ModelGLB (если там не пустая заглушка empty.glb)
-            const glb = extractFileFromField(m.ModelGLB);
-            if (glb && glb.name.toLowerCase() !== 'empty.glb') return glb;
-
-            return null;
-        }
-
-        // Принудительное скачивание файла напрямую с сервера Strapi
         async function triggerDirectDownload(fileUrl, fileName) {
+            if (!isSafeHttpUrl(fileUrl)) {
+                showToast('Invalid download URL');
+                return;
+            }
+
+            const safeName = String(fileName || 'asset').replace(/[^a-zA-Z0-9._-]/g, '_');
+
             try {
                 const response = await fetch(fileUrl);
                 if (!response.ok) throw new Error('Network error');
@@ -169,33 +193,38 @@
 
                 const link = document.createElement('a');
                 link.href = blobUrl;
-                link.download = fileName;
+                link.download = safeName;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(blobUrl);
             } catch (e) {
-                // Фолбэк, если браузер блокирует CORS при fetch
                 const link = document.createElement('a');
                 link.href = fileUrl;
-                link.download = fileName;
+                link.download = safeName;
                 link.target = '_blank';
+                link.rel = 'noopener noreferrer';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             }
         }
 
-        window.removeFromCart = function(modelId) {
+        async function downloadAsset(url, fileName) {
+            showToast(`Downloading: ${fileName}...`, true);
+            await triggerDirectDownload(url, fileName);
+        }
+
+        function removeFromCart(modelId) {
             const safeModelId = sanitizeId(modelId);
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             cart = cart.filter(id => String(id) !== String(safeModelId));
             localStorage.setItem('cart', JSON.stringify(cart));
             showToast('Removed from cart');
             loadCart();
-        };
+        }
 
-        window.checkout = async function() {
+        async function checkout() {
             const checkoutBtn = document.getElementById('checkout-btn');
             const totalElement = document.getElementById('summary-total');
             
@@ -208,7 +237,6 @@
                 return;
             }
 
-            // 🟢 ЕСЛИ ЗАКАЗ БЕСПЛАТНЫЙ (0.00 $) — КАЧАЕМ ФАЙЛЫ МОДЕЛЕЙ ИЗ STRAPI
             if (amount === 0) {
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Downloading...';
@@ -216,9 +244,13 @@
                 let downloadedCount = 0;
 
                 for (const modelItem of loadedCartModels) {
-                    const fileInfo = getModelDownloadInfo(modelItem);
-                    if (fileInfo) {
-                        await triggerDirectDownload(fileInfo.url, fileInfo.name);
+                    const m = modelItem.attributes || modelItem;
+                    const fbx = extractFile(m.ModelFBX);
+                    const glb = extractFile(m.ModelGLB);
+
+                    const targetFile = fbx || glb;
+                    if (targetFile) {
+                        await triggerDirectDownload(targetFile.url, targetFile.name);
                         downloadedCount++;
                     }
                 }
@@ -226,7 +258,7 @@
                 if (downloadedCount > 0) {
                     showToast('Download started!', true);
                 } else {
-                    showToast('No downloadable file attached to this model in Strapi');
+                    showToast('No downloadable files found');
                 }
 
                 setTimeout(() => {
@@ -236,7 +268,6 @@
                 return;
             }
 
-            // 💳 ЕСЛИ ЗАКАЗ ПЛАТНЫЙ (> 0 $)
             const userStr = localStorage.getItem('user');
             let rawUserEmail = 'guest@knighthubs.xyz';
 
@@ -256,9 +287,7 @@
 
                 const response = await fetch('https://api.oxapay.com/merchants/request', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         merchant: '3EX6UD-FKGFM1-NY59AK-C3RWVD',
                         amount: amount,
@@ -286,7 +315,7 @@
                 checkoutBtn.disabled = false;
                 checkoutBtn.textContent = 'Proceed to Checkout';
             }
-        };
+        }
 
         async function loadCart() {
             const container = document.getElementById('cart-items-container');
@@ -343,14 +372,51 @@
                     const safeImgUrl = safeUrl(previewUrl);
                     const priceLabel = price > 0 ? `${price.toFixed(2)} $` : 'Free';
 
+                    const fbxFile = extractFile(m.ModelFBX);
+                    const glbFile = extractFile(m.ModelGLB);
+
+                    let formatButtonsHtml = '';
+
+                    if (price === 0) {
+                        if (fbxFile) {
+                            formatButtonsHtml += `
+                                <button type="button" class="format-btn format-btn-fbx" 
+                                    data-action="download" 
+                                    data-url="${escapeHtml(fbxFile.url)}" 
+                                    data-name="${escapeHtml(fbxFile.name)}">
+                                    📦 Download .FBX
+                                </button>`;
+                        }
+                        if (glbFile) {
+                            formatButtonsHtml += `
+                                <button type="button" class="format-btn format-btn-glb" 
+                                    data-action="download" 
+                                    data-url="${escapeHtml(glbFile.url)}" 
+                                    data-name="${escapeHtml(glbFile.name)}">
+                                    🎲 Download .GLB
+                                </button>`;
+                        }
+                        if (!fbxFile && !glbFile) {
+                            formatButtonsHtml = `<span class="no-files-tag">⚠️ No files attached in Strapi</span>`;
+                        }
+                    } else {
+                        let formats = [];
+                        if (fbxFile) formats.push('.FBX');
+                        if (glbFile) formats.push('.GLB');
+                        formatButtonsHtml = `<span style="font-size: 13px; color: #94a3b8;">Includes: <strong>${escapeHtml(formats.join(' / ')) || 'None'}</strong></span>`;
+                    }
+
                     return `
                         <div class="cart-item">
                             <img src="${safeImgUrl}" class="cart-item-img" alt="Model">
                             <div class="cart-item-info">
                                 <a href="product.html?id=${safeId}" class="cart-item-title">${safeTitle}</a>
                                 <div class="cart-item-price">${priceLabel}</div>
+                                <div class="format-buttons">
+                                    ${formatButtonsHtml}
+                                </div>
                             </div>
-                            <button class="remove-btn" onclick="removeFromCart('${safeId}')" title="Remove">&times;</button>
+                            <button class="remove-btn" data-action="remove" data-id="${safeId}" title="Remove">&times;</button>
                         </div>`;
                 }).join('');
 
@@ -377,6 +443,30 @@
             }
         }
 
+        // Единый безопасный обработчик событий (Event Delegation)
+        document.getElementById('cart-items-container').addEventListener('click', (e) => {
+            const downloadBtn = e.target.closest('[data-action="download"]');
+            if (downloadBtn) {
+                const url = downloadBtn.dataset.url;
+                const name = downloadBtn.dataset.name;
+                if (!isSafeHttpUrl(url)) {
+                    showToast('Blocked unsafe download URL');
+                    return;
+                }
+                downloadAsset(url, name);
+                return;
+            }
+
+            const removeBtn = e.target.closest('[data-action="remove"]');
+            if (removeBtn) {
+                const id = removeBtn.dataset.id;
+                if (id) {
+                    removeFromCart(id);
+                }
+            }
+        });
+
+        document.getElementById('checkout-btn').addEventListener('click', checkout);
         document.addEventListener('DOMContentLoaded', loadCart);
     </script>
 </body>
