@@ -1,4 +1,4 @@
-module.exports = ({ env }) => ({
+export default ({ env }) => ({
   email: {
     config: {
       provider: 'nodemailer',
