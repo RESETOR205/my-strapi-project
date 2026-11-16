@@ -99,6 +99,21 @@
 
         let loadedCartModels = [];
 
+        // Проверка авторизации (проверяем наличие объекта пользователя или JWT токена)
+        function checkUserAuth() {
+            const userStr = localStorage.getItem('user');
+            const token = localStorage.getItem('jwt') || localStorage.getItem('token');
+            if (!userStr && !token) {
+                return false;
+            }
+            try {
+                const user = JSON.parse(userStr);
+                return !!(user && (user.email || user.id));
+            } catch (e) {
+                return !!token;
+            }
+        }
+
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
             return String(unsafe)
@@ -162,7 +177,6 @@
             const rawUrl = String(attrs.url).trim();
             const fullUrl = rawUrl.startsWith('http') ? rawUrl : STRAPI_BASE_URL + (rawUrl.startsWith('/') ? '' : '/') + rawUrl;
 
-            // Строгая проверка валидности URL и схемы
             if (!isSafeHttpUrl(fullUrl)) return null;
 
             const fileName = String(attrs.name || fullUrl.split('/').pop() || 'model').replace(/[^\w\s.-]/gi, '_');
@@ -237,7 +251,13 @@
                 return;
             }
 
+            // Защита бесплатного скачивания: требуем авторизацию
             if (amount === 0) {
+                if (!checkUserAuth()) {
+                    showToast('Please sign in or register to download models!');
+                    return;
+                }
+
                 checkoutBtn.disabled = true;
                 checkoutBtn.textContent = 'Downloading...';
 
@@ -443,10 +463,16 @@
             }
         }
 
-        // Единый безопасный обработчик событий (Event Delegation)
+        // Обработчик событий с проверкой авторизации для кнопок скачивания
         document.getElementById('cart-items-container').addEventListener('click', (e) => {
             const downloadBtn = e.target.closest('[data-action="download"]');
             if (downloadBtn) {
+                // Если пользователь не авторизован — блокируем загрузку и просим войти
+                if (!checkUserAuth()) {
+                    showToast('Please sign in or register to download models!');
+                    return;
+                }
+
                 const url = downloadBtn.dataset.url;
                 const name = downloadBtn.dataset.name;
                 if (!isSafeHttpUrl(url)) {
